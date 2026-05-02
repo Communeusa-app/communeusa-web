@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Class-based dark mode — toggled via JS on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Brand palette — light */
+  --color-brand-primary: #185FA5;
+  --color-brand-navy: #0C447C;
+  --color-brand-light-blue: #B5D4F4;
+  --color-brand-light-gray: #D3D1C7;
+  --color-brand-off-white: #F1EFE8;
+
+  /* Brand palette — dark */
+  --color-brand-charcoal: #2C2C2A;
+  --color-brand-dark-gray: #444441;
+  --color-brand-mid-gray: #888780;
+  --color-brand-red: #E24B4A;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter);
+}
+
+:root {
+  --background: #F1EFE8;
+  --foreground: #0C447C;
+}
+
+.dark {
+  --background: #2C2C2A;
+  --foreground: #F1EFE8;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}
