@@ -7,19 +7,19 @@ const FEATURES = [
   {
     title: "Your Representatives",
     description:
-      "Find every elected and appointed official representing you — from city council to Congress — instantly by address.",
+      "Find every official by address — from city hall to Congress — in seconds.",
     Icon: UsersIcon,
   },
   {
     title: "Voting Records",
     description:
-      "See exactly how your officials vote on legislation. Track patterns, compare positions, and hold your representatives accountable.",
+      "See exactly how your officials vote on the issues that matter to you.",
     Icon: ClipboardIcon,
   },
   {
     title: "Campaign Finance",
     description:
-      "Follow the money. Explore donation histories, PAC contributions, and spending reports for every candidate in your district.",
+      "Follow the money and see who funds your representatives.",
     Icon: DollarIcon,
   },
 ];
@@ -76,12 +76,16 @@ export default function Home() {
           </h1>
 
           {/* Subheading */}
-          <p className="mt-6 max-w-xl text-lg text-brand-navy/65 dark:text-brand-off-white/60 leading-relaxed">
+          <p className="mt-6 max-w-2xl text-lg text-brand-navy/65 dark:text-brand-off-white/60 leading-relaxed">
             Find every official representing you at the federal, state, and
-            local level&nbsp;— in seconds.
+            local level. See how they vote, where their money comes from, and
+            how to reach them.
+          </p>
+          <p className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight text-brand-primary dark:text-brand-red">
+            Want change? Command it.
           </p>
 
-          {/* Address input + CTA — stacked */}
+          {/* Address input + CTAs */}
           <div className="mt-10 w-full max-w-md flex flex-col gap-3">
             <input
               type="text"
@@ -91,6 +95,12 @@ export default function Home() {
             <button className="w-full rounded-xl bg-brand-primary hover:bg-brand-navy dark:bg-brand-red text-white font-semibold px-6 py-3.5 text-base transition-colors">
               Find my representatives
             </button>
+            <a
+              href="#map"
+              className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-transparent hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10 text-brand-navy dark:text-brand-off-white font-medium px-6 py-3.5 text-base transition-colors text-center"
+            >
+              Explore the map ↓
+            </a>
           </div>
         </section>
 
@@ -103,7 +113,7 @@ export default function Home() {
             {FEATURES.map(({ title, description, Icon }) => (
               <div
                 key={title}
-                className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray p-6 hover:shadow-sm transition-shadow"
+                className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray p-6 hover:border-brand-primary/40 dark:hover:border-brand-red/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
               >
                 <div className="w-10 h-10 rounded-lg bg-brand-light-blue dark:bg-brand-red/20 flex items-center justify-center text-brand-primary dark:text-brand-red mb-4 shrink-0">
                   <Icon />
