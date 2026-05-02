@@ -76,9 +76,17 @@ export function USMap({ onStateClick, onCountyClick }: Props) {
     const countiesLayer = zoomGroup.append("g");
 
     // ── Zoom behaviour ────────────────────────────────────────────────────
+    // translateExtent is intentionally omitted: it reads the SVG's rendered
+    // pixel size, which differs from the viewBox when the element scales
+    // responsively. Instead, we clamp x/y manually in viewBox coordinates.
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 8])
-      .on("zoom", (ev) => zoomGroup.attr("transform", ev.transform));
+      .on("zoom", (ev) => {
+        const { k, x, y } = ev.transform;
+        const clampedX = Math.min(0, Math.max(x, WIDTH  * (1 - k)));
+        const clampedY = Math.min(0, Math.max(y, HEIGHT * (1 - k)));
+        zoomGroup.attr("transform", `translate(${clampedX},${clampedY}) scale(${k})`);
+      });
     svg.call(zoom);
 
     // Prevent the browser from scrolling the page when the wheel is used over
@@ -165,20 +173,19 @@ export function USMap({ onStateClick, onCountyClick }: Props) {
       setInStateView(false);
       setTooltip(null);
 
-      countiesLayer.selectAll("path")
-        .transition().duration(250).attr("opacity", 0)
-        .remove();
+      // Named "zoom" cancels any in-progress zoom-in. Restore layers only after
+      // the transition fully completes so the viewport is settled first.
+      svg.transition("zoom").duration(400)
+        .call(zoom.transform, d3.zoomIdentity)
+        .on("end", () => {
+          countiesLayer.selectAll("path").remove();
 
-      statesLayer
-        .selectAll<SVGPathElement, GeoJSON.Feature>("path")
-        .transition().duration(ZOOM_DURATION)
-        .attr("fill", FILL)
-        .attr("pointer-events", "auto")
-        .attr("cursor", "pointer");
-
-      // Same transition name "zoom" cancels any in-progress zoom-in before resetting
-      svg.transition("zoom").duration(ZOOM_DURATION)
-        .call(zoom.transform, d3.zoomIdentity);
+          statesLayer
+            .selectAll<SVGPathElement, GeoJSON.Feature>("path")
+            .attr("fill", FILL)
+            .attr("pointer-events", "auto")
+            .attr("cursor", "pointer");
+        });
     };
 
     // ── Helper: cursor-relative tooltip position ──────────────────────────
