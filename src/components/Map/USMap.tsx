@@ -37,18 +37,20 @@ const WA_COUNTY_NAMES: Record<string, string> = {
 let waCountiesCache: GeoJSON.Feature[] | null = null;
 
 interface Props {
+  initialState?:  string;
   onStateClick?:  (fipsId: string) => void;
   onCountyClick?: (countyName: string) => void;
 }
 
 interface Tooltip { x: number; y: number }
 
-export function USMap({ onStateClick, onCountyClick }: Props) {
+export function USMap({ initialState, onStateClick, onCountyClick }: Props) {
   const containerRef    = useRef<HTMLDivElement>(null);
   const svgRef          = useRef<SVGSVGElement>(null);
   const onClickRef      = useRef(onStateClick);
   const onCountyClickRef = useRef(onCountyClick);
   const resetRef        = useRef<(() => void) | null>(null);
+  const initialStateRef = useRef(initialState);
   // Ref so D3 handlers can read current zoom state without going stale
   const inStateViewRef = useRef(false);
 
@@ -252,6 +254,25 @@ export function USMap({ onStateClick, onCountyClick }: Props) {
           zoomToFeature(d);
           loadCounties();
         });
+
+      // ── Auto-zoom if returning from an official's profile page ────────────
+      if (initialStateRef.current === WA_FIPS) {
+        const waFeature = features.find((f) => String(f.id ?? "") === WA_FIPS);
+        if (waFeature) {
+          inStateViewRef.current = true;
+          setInStateView(true);
+
+          statesLayer
+            .selectAll<SVGPathElement, GeoJSON.Feature>("path")
+            .filter((f) => String(f.id ?? "") !== WA_FIPS)
+            .attr("fill", FILL_MUTED)
+            .attr("pointer-events", "none")
+            .attr("cursor", "default");
+
+          zoomToFeature(waFeature);
+          loadCounties();
+        }
+      }
     });
 
     return () => {
@@ -263,12 +284,14 @@ export function USMap({ onStateClick, onCountyClick }: Props) {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    // pointer-events-none on the container so the positioned div itself is
+    // never the hit target — only the SVG and the overlay buttons inside it are.
+    <div ref={containerRef} className="relative w-full pointer-events-none">
       <svg
         ref={svgRef}
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         width="100%"
-        style={{ display: "block", touchAction: "none" }}
+        style={{ display: "block", touchAction: "none", pointerEvents: "auto" }}
         role="img"
         aria-label="Interactive map of the United States"
       />
@@ -277,6 +300,7 @@ export function USMap({ onStateClick, onCountyClick }: Props) {
       {inStateView && (
         <button
           onClick={() => resetRef.current?.()}
+          style={{ pointerEvents: "auto" }}
           className="absolute top-3 left-3 flex items-center gap-1.5 rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-3 py-1.5 text-sm font-medium text-brand-navy dark:text-brand-off-white shadow-sm hover:bg-brand-light-blue/30 dark:hover:bg-brand-red/10 hover:text-brand-primary dark:hover:text-brand-red transition-colors"
         >
           ← All States

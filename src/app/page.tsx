@@ -24,7 +24,12 @@ const FEATURES = [
   },
 ];
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ state?: string }>;
+}) {
+  const { state: initialState } = await searchParams;
   return (
     <>
       {/* ── Navbar ──────────────────────────────────────────────── */}
@@ -105,7 +110,7 @@ export default function Home() {
         </section>
 
         {/* ── Map ───────────────────────────────────────────────── */}
-        <USMapSection />
+        <USMapSection initialState={initialState} />
 
         {/* ── Feature Cards ─────────────────────────────────────── */}
         <section className="px-6 pb-28">

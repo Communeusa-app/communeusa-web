@@ -4,7 +4,11 @@ import { useState } from "react";
 import { USMap } from "./USMap";
 import { CountyPanel } from "./CountyPanel";
 
-export function USMapSection() {
+interface Props {
+  initialState?: string;
+}
+
+export function USMapSection({ initialState }: Props) {
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
 
   return (
@@ -22,6 +26,7 @@ export function USMapSection() {
           {/* Map shrinks slightly when panel is open */}
           <div className="flex-1 min-w-0">
             <USMap
+              initialState={initialState}
               onStateClick={(fipsId) =>
                 console.log("State clicked — FIPS:", fipsId)
               }
@@ -30,10 +35,12 @@ export function USMapSection() {
           </div>
 
           {selectedCounty && (
-            <CountyPanel
-              countyName={selectedCounty}
-              onClose={() => setSelectedCounty(null)}
-            />
+            <div className="relative z-10">
+              <CountyPanel
+                countyName={selectedCounty}
+                onClose={() => setSelectedCounty(null)}
+              />
+            </div>
           )}
         </div>
       </div>

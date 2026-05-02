@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getOfficialsByCounty } from "@/app/actions/officials";
 import type { Official } from "@/app/actions/officials";
 
@@ -16,6 +17,7 @@ function partyClass(party: string | null) {
 }
 
 export function CountyPanel({ countyName, onClose }: Props) {
+  const router = useRouter();
   const [officials, setOfficials] = useState<Official[]>([]);
   const [loading, setLoading]     = useState(true);
 
@@ -69,22 +71,40 @@ export function CountyPanel({ countyName, onClose }: Props) {
             No officials on record for {countyName} County.
           </p>
         ) : (
-          <ul className="space-y-4">
-            {officials.map((o, i) => (
-              <li
-                key={i}
-                className="border-b border-brand-light-gray/50 dark:border-brand-dark-gray/60 pb-4 last:border-0 last:pb-0"
-              >
-                <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/50 dark:text-brand-off-white/45">
-                  {o.office_title ?? "—"}
-                </p>
-                <p className="mt-0.5 text-sm font-semibold text-brand-navy dark:text-brand-off-white">
-                  {o.official_name}
-                </p>
-                <p className={`mt-0.5 text-xs ${partyClass(o.party)}`}>
-                  {o.party ?? "—"}
-                  {o.term_end ? ` · until ${o.term_end}` : ""}
-                </p>
+          <ul className="space-y-1">
+            {officials.map((o) => (
+              <li key={o.id}>
+                <div
+                  role="button"
+                  onClick={() => router.push(`/officials/${o.id}`)}
+                  className="group flex items-center justify-between gap-3 rounded-lg px-3 py-3 -mx-3 cursor-pointer hover:bg-brand-light-blue/20 dark:hover:bg-brand-red/10 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/50 dark:text-brand-off-white/45">
+                      {o.office_title ?? "—"}
+                    </p>
+                    <p className="mt-0.5 text-sm font-semibold text-brand-navy dark:text-brand-off-white truncate">
+                      {o.official_name}
+                    </p>
+                    <p className={`mt-0.5 text-xs ${partyClass(o.party)}`}>
+                      {o.party ?? "—"}
+                      {o.term_end ? ` · until ${o.term_end}` : ""}
+                    </p>
+                  </div>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0 text-brand-navy/25 dark:text-brand-off-white/25 group-hover:text-brand-primary dark:group-hover:text-brand-red transition-colors"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </div>
               </li>
             ))}
           </ul>
