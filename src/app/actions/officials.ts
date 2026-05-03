@@ -44,6 +44,48 @@ export async function getOfficialById(
   return data as OfficialProfile;
 }
 
+export async function getFederalOfficials(stateAbbr: string): Promise<Official[]> {
+  const { data: state } = await supabase
+    .from("states")
+    .select("id")
+    .eq("abbreviation", stateAbbr.toUpperCase())
+    .single();
+
+  if (!state) return [];
+
+  const { data, error } = await supabase
+    .from("officials")
+    .select("id, office_title, official_name, party, term_end")
+    .eq("level", "federal")
+    .eq("state_id", state.id)
+    .not("official_name", "is", null)
+    .order("office_title");
+
+  if (error) {
+    console.error("getFederalOfficials:", error.message);
+    return [];
+  }
+
+  return (data ?? []) as Official[];
+}
+
+export async function findOfficialIdsByNames(
+  names: string[],
+): Promise<Record<string, string>> {
+  if (names.length === 0) return {};
+
+  const { data } = await supabase
+    .from("officials")
+    .select("id, official_name")
+    .in("official_name", names);
+
+  const map: Record<string, string> = {};
+  for (const row of data ?? []) {
+    map[row.official_name] = row.id;
+  }
+  return map;
+}
+
 export async function getOfficialsByCounty(
   countyName: string,
 ): Promise<Official[]> {

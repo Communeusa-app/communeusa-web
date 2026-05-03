@@ -1,5 +1,6 @@
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { USMapSection } from "@/components/Map/USMapSection";
+import { AddressLookup } from "@/components/AddressLookup";
 
 const NAV_LINKS = ["Representatives", "Elections", "Finance", "About"] as const;
 
@@ -90,23 +91,7 @@ export default async function Home({
             Want change? Command it.
           </p>
 
-          {/* Address input + CTAs */}
-          <div className="mt-10 w-full max-w-md flex flex-col gap-3">
-            <input
-              type="text"
-              placeholder="Enter your address..."
-              className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white placeholder:text-brand-mid-gray px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 focus:border-transparent transition"
-            />
-            <button className="w-full rounded-xl bg-brand-primary hover:bg-brand-navy dark:bg-brand-red text-white font-semibold px-6 py-3.5 text-base transition-colors">
-              Find my representatives
-            </button>
-            <a
-              href="#map"
-              className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-transparent hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10 text-brand-navy dark:text-brand-off-white font-medium px-6 py-3.5 text-base transition-colors text-center"
-            >
-              Explore the map ↓
-            </a>
-          </div>
+          <AddressLookup />
         </section>
 
         {/* ── Map ───────────────────────────────────────────────── */}
