@@ -45,12 +45,13 @@ export async function getOfficialById(
 }
 
 export async function getFederalOfficials(stateAbbr: string): Promise<Official[]> {
-  const { data: state } = await supabase
+  const { data: state, error: stateError } = await supabase
     .from("states")
     .select("id")
     .eq("abbreviation", stateAbbr.toUpperCase())
     .single();
 
+  if (stateError) console.error("getFederalOfficials (state lookup):", stateError.message);
   if (!state) return [];
 
   const { data, error } = await supabase
@@ -58,6 +59,7 @@ export async function getFederalOfficials(stateAbbr: string): Promise<Official[]
     .select("id, office_title, official_name, party, term_end")
     .eq("level", "federal")
     .eq("state_id", state.id)
+    .eq("is_active", true)
     .not("official_name", "is", null)
     .order("office_title");
 
@@ -74,11 +76,13 @@ export async function findOfficialIdsByNames(
 ): Promise<Record<string, string>> {
   if (names.length === 0) return {};
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("officials")
     .select("id, official_name")
-    .in("official_name", names);
+    .in("official_name", names)
+    .eq("is_active", true);
 
+  if (error) console.error("findOfficialIdsByNames:", error.message);
   const map: Record<string, string> = {};
   for (const row of data ?? []) {
     map[row.official_name] = row.id;
@@ -89,21 +93,23 @@ export async function findOfficialIdsByNames(
 export async function getOfficialsByCounty(
   countyName: string,
 ): Promise<Official[]> {
-  const { data: state } = await supabase
+  const { data: state, error: stateError } = await supabase
     .from("states")
     .select("id")
     .eq("abbreviation", "WA")
     .single();
 
+  if (stateError) console.error("getOfficialsByCounty (state lookup):", stateError.message);
   if (!state) return [];
 
-  const { data: county } = await supabase
+  const { data: county, error: countyError } = await supabase
     .from("counties")
     .select("id")
     .eq("name", countyName)
     .eq("state_id", state.id)
     .single();
 
+  if (countyError) console.error("getOfficialsByCounty (county lookup):", countyError.message);
   if (!county) return [];
 
   const { data, error } = await supabase
@@ -111,6 +117,7 @@ export async function getOfficialsByCounty(
     .select("id, office_title, official_name, party, term_end")
     .eq("level", "county")
     .eq("county_id", county.id)
+    .eq("is_active", true)
     .not("official_name", "is", null)
     .order("office_title");
 

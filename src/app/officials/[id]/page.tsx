@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getOfficialById } from "@/app/actions/officials";
 import type { OfficialProfile } from "@/app/actions/officials";

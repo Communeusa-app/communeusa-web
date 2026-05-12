@@ -20,17 +20,25 @@ export function CountyPanel({ countyName, onClose }: Props) {
   const router = useRouter();
   const [officials, setOfficials] = useState<Official[]>([]);
   const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
     setOfficials([]);
+    setError(null);
 
-    getOfficialsByCounty(countyName).then((data) => {
-      if (!alive) return;
-      setOfficials(data);
-      setLoading(false);
-    });
+    getOfficialsByCounty(countyName)
+      .then((data) => {
+        if (!alive) return;
+        setOfficials(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setError("Failed to load officials. Please try again.");
+        setLoading(false);
+      });
 
     return () => { alive = false; };
   }, [countyName]);
@@ -66,6 +74,8 @@ export function CountyPanel({ countyName, onClose }: Props) {
               </li>
             ))}
           </ul>
+        ) : error ? (
+          <p className="text-xs text-brand-red leading-relaxed">{error}</p>
         ) : officials.length === 0 ? (
           <p className="text-xs text-brand-navy/50 dark:text-brand-off-white/45 leading-relaxed">
             No officials on record for {countyName} County.

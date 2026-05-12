@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   getFederalOfficials,
@@ -8,6 +8,7 @@ import {
   findOfficialIdsByNames,
 } from "@/app/actions/officials";
 import type { Official } from "@/app/actions/officials";
+import { geocodeAddress } from "@/app/actions/geocode";
 
 type Level = "Federal" | "State" | "County";
 const LEVEL_ORDER: Level[] = ["Federal", "State", "County"];
@@ -18,42 +19,6 @@ interface Rep {
   party: string | null;
   level: Level;
   dbId: string | null;
-}
-
-// ── Geocoding via Nominatim ────────────────────────────────────────────────
-interface GeoResult {
-  lat: number;
-  lng: number;
-  county: string | null;   // "King"  (stripped of "County" suffix)
-  stateAbbr: string | null; // "WA"
-}
-
-async function geocodeAddress(address: string): Promise<GeoResult | null> {
-  const url =
-    `https://nominatim.openstreetmap.org/search` +
-    `?q=${encodeURIComponent(address)}&format=json&limit=1&addressdetails=1`;
-
-  const res = await fetch(url, {
-    headers: { "User-Agent": "CommuneUSA/1.0" },
-  });
-  if (!res.ok) return null;
-
-  const data = await res.json();
-  if (!data.length) return null;
-
-  const item = data[0];
-  const addr = item.address ?? {};
-
-  const county =
-    (addr.county ?? "").replace(/\s+county$/i, "").trim() || null;
-  const stateAbbr = addr.state_code?.toUpperCase() ?? null;
-
-  return {
-    lat:       parseFloat(item.lat),
-    lng:       parseFloat(item.lon),
-    county,
-    stateAbbr,
-  };
 }
 
 // ── Open States API → state legislators ───────────────────────────────────
@@ -81,15 +46,16 @@ async function fetchStateLegs(
   lng: number,
 ): Promise<Omit<Rep, "dbId">[]> {
   const apiKey = process.env.NEXT_PUBLIC_OPENSTATES_API_KEY;
-  const url = `https://v3.openstates.org/people?latitude=${lat}&longitude=${lng}`;
+  const url = `https://v3.openstates.org/people.geo?lat=${lat}&lng=${lng}&apikey=${apiKey ?? ""}`;
 
-  const res = await fetch(url, {
-    headers: { "X-API-KEY": apiKey ?? "" },
-  });
+  const res = await fetch(url);
   if (!res.ok) return [];
 
   const data = await res.json();
-  return (data.results ?? []).map(openStatesToRep);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const statePeople = (data.results ?? []).filter((p: any) => p.jurisdiction?.classification === "state");
+  return statePeople.map(openStatesToRep);
 }
 
 // ── DB officials → Rep ─────────────────────────────────────────────────────
@@ -111,19 +77,20 @@ function partyClass(party: string) {
   return "text-brand-mid-gray";
 }
 
+const SESSION_KEY = "communeusa_lookup";
+
 // ── Component ──────────────────────────────────────────────────────────────
 export function AddressLookup() {
   const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef     = useRef<HTMLInputElement>(null);
   const [address, setAddress] = useState("");
   const [reps, setReps]       = useState<Rep[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = address.trim();
-    if (!trimmed) return;
-
+  const runLookup = useCallback(async (trimmed: string) => {
+    sessionStorage.removeItem(SESSION_KEY);
     setLoading(true);
     setError(null);
     setReps(null);
@@ -135,12 +102,13 @@ export function AddressLookup() {
         setError("Address not found. Please try a more specific address.");
         return;
       }
+      const county = geo.county?.replace(/\s+county$/i, "").trim() ?? null;
 
       // 2. Fetch all three sources in parallel
       const [stateLegsRaw, countyOfficials, federalOfficials] =
         await Promise.all([
           fetchStateLegs(geo.lat, geo.lng),
-          geo.county ? getOfficialsByCounty(geo.county) : Promise.resolve<Official[]>([]),
+          county ? getOfficialsByCounty(county) : Promise.resolve<Official[]>([]),
           geo.stateAbbr ? getFederalOfficials(geo.stateAbbr) : Promise.resolve<Official[]>([]),
         ]);
 
@@ -167,11 +135,69 @@ export function AddressLookup() {
       }
 
       setReps(allReps);
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ address: trimmed, reps: allReps, county, navigatedAway: false }));
+      window.history.replaceState(null, "", `/?address=${encodeURIComponent(trimmed)}`);
+      window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county } }));
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Restore from sessionStorage on mount (survives Next.js cache restores and fresh remounts)
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) {
+        const { address: savedAddress, reps: savedReps, county: savedCounty, navigatedAway } =
+          JSON.parse(saved) as { address: string; reps: Rep[]; county: string | null; navigatedAway: boolean };
+        setAddress(savedAddress);
+        setReps(savedReps);
+        if (navigatedAway) {
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify({ address: savedAddress, reps: savedReps, county: savedCounty, navigatedAway: false }));
+          // Strip hash (e.g. #map) so the browser doesn't auto-scroll to the map
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          requestAnimationFrame(() => {
+            inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          });
+          // Delay long enough for the map component to mount and attach its listener
+          if (savedCounty) {
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: savedCounty } }));
+            }, 300);
+          }
+        }
+        return;
+      }
+    } catch {
+      // ignore malformed session data
+    }
+    // Fall back to URL param for direct/shared links
+    const param = new URLSearchParams(window.location.search).get("address");
+    if (param) {
+      setAddress(param);
+      runLookup(param);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function navigateToProfile(id: string) {
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...data, navigatedAway: true }));
+      }
+    } catch {}
+    router.push(`/officials/${id}`);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = address.trim();
+    if (!trimmed) return;
+    await runLookup(trimmed);
   }
 
   const grouped = reps
@@ -183,14 +209,22 @@ export function AddressLookup() {
     : null;
 
   return (
-    <div className="mt-10 w-full max-w-md">
+    <div ref={containerRef} className="mt-10 w-full max-w-md">
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
           type="text"
           value={address}
-          onChange={(e) => setAddress(e.target.value)}
+          onChange={(e) => {
+            setAddress(e.target.value);
+            if (!e.target.value) {
+              sessionStorage.removeItem(SESSION_KEY);
+              setReps(null);
+              window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: null } }));
+            }
+          }}
           placeholder="Enter your address…"
+          ref={inputRef}
           className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white placeholder:text-brand-mid-gray px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 focus:border-transparent transition"
         />
         <button
@@ -230,7 +264,7 @@ export function AddressLookup() {
                       <li key={i}>
                         <div
                           role="button"
-                          onClick={() => router.push(`/officials/${rep.dbId}`)}
+                          onClick={() => navigateToProfile(rep.dbId!)}
                           className="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 -mx-3 cursor-pointer hover:bg-brand-light-blue/20 dark:hover:bg-brand-red/10 transition-colors"
                         >
                           <RepCard rep={rep} />
