@@ -138,7 +138,7 @@ export default async function Home({
 
           {/* Footer links */}
           <div className="flex flex-wrap justify-center sm:justify-end gap-x-6 gap-y-2 text-sm text-brand-navy/55 dark:text-brand-off-white/55">
-            {[...NAV_LINKS, "Privacy", "Terms"].map((link) => (
+            {NAV_LINKS.map((link) => (
               <a
                 key={link}
                 href="#"
@@ -147,6 +147,8 @@ export default async function Home({
                 {link}
               </a>
             ))}
+            <a href="/privacy" className="hover:text-brand-primary dark:hover:text-brand-red transition-colors">Privacy</a>
+            <a href="/terms" className="hover:text-brand-primary dark:hover:text-brand-red transition-colors">Terms</a>
           </div>
         </div>
 

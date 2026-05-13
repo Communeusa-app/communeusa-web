@@ -37,3 +37,28 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
 }
+
+/* ── Policy page prose ─────────────────────────────────────────── */
+.prose-communeusa > p {
+  @apply text-[15px] leading-relaxed text-brand-navy/75 dark:text-brand-off-white/70;
+}
+
+.prose-communeusa a {
+  @apply text-brand-primary dark:text-brand-red underline underline-offset-2 hover:opacity-75 transition-opacity;
+}
+
+.prose-communeusa strong {
+  @apply text-brand-navy dark:text-brand-off-white font-semibold;
+}
+
+.prose-communeusa code {
+  @apply text-[13px] font-mono bg-brand-light-gray/60 dark:bg-brand-dark-gray px-1.5 py-0.5 rounded;
+}
+
+.prose-communeusa ul {
+  @apply list-disc pl-5 space-y-1.5 text-[15px] leading-relaxed text-brand-navy/75 dark:text-brand-off-white/70;
+}
+
+.prose-communeusa li {
+  @apply leading-relaxed;
+}
