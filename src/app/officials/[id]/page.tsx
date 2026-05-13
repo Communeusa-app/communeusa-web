@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getOfficialById } from "@/app/actions/officials";
+import { getOfficialById, getVotingRecords } from "@/app/actions/officials";
 import type { OfficialProfile } from "@/app/actions/officials";
+import { VotingRecordsList } from "./VotingRecordsList";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -8,7 +9,10 @@ interface Props {
 
 export default async function OfficialPage({ params }: Props) {
   const { id } = await params;
-  const official = await getOfficialById(id);
+  const [official, votingRecords] = await Promise.all([
+    getOfficialById(id),
+    getVotingRecords(id),
+  ]);
 
   if (!official) {
     return (
@@ -100,9 +104,9 @@ export default async function OfficialPage({ params }: Props) {
           </div>
         </Section>
 
-        {/* ── Voting records placeholder ───────────────────────────── */}
+        {/* ── Voting records ───────────────────────────────────────── */}
         <Section title="Voting Records">
-          <Placeholder message="Voting records coming soon" />
+          <VotingRecordsList records={votingRecords} />
         </Section>
 
         {/* ── Campaign finance placeholder ─────────────────────────── */}
