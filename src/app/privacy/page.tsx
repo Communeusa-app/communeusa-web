@@ -168,9 +168,8 @@ export default function PrivacyPage() {
 
             <Section title="Contact">
               <p>
-                Questions or concerns? Reach us at{" "}
-                <a href="mailto:hello@communeusa.com">hello@communeusa.com</a>.
-                We read everything and respond to every serious inquiry.
+                Questions or concerns? Contact form coming soon. We read
+                everything and respond to every serious inquiry.
               </p>
             </Section>
           </div>

@@ -160,8 +160,7 @@ export default function TermsPage() {
 
             <Section title="Contact">
               <p>
-                Questions about these terms? Reach us at{" "}
-                <a href="mailto:hello@communeusa.com">hello@communeusa.com</a>.
+                Questions about these terms? Contact form coming soon.
               </p>
             </Section>
           </div>
