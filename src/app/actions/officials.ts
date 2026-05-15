@@ -243,6 +243,34 @@ export async function findOfficialIdsByNames(
   return map;
 }
 
+export async function getCityOfficials(cityName: string): Promise<Official[]> {
+  // ilike handles the Census geocoder returning city names in uppercase
+  const { data: munis, error: muniError } = await supabase
+    .from("municipalities")
+    .select("id")
+    .ilike("name", cityName)
+    .limit(1);
+
+  if (muniError) console.error("getCityOfficials (municipality lookup):", muniError.message);
+  const municipality = munis?.[0];
+  if (!municipality) return [];
+
+  const { data, error } = await supabase
+    .from("officials")
+    .select("id, office_title, official_name, party, term_end")
+    .eq("municipality_id", municipality.id)
+    .eq("level", "city")
+    .eq("is_active", true)
+    .not("official_name", "is", null)
+    .order("office_title");
+
+  if (error) {
+    console.error("getCityOfficials:", error.message);
+    return [];
+  }
+  return (data ?? []) as Official[];
+}
+
 export async function getOfficialsByCounty(
   countyName: string,
 ): Promise<Official[]> {

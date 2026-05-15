@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import {
   getFederalOfficials,
   getOfficialsByCounty,
+  getCityOfficials,
   findOfficialIdsByNames,
 } from "@/app/actions/officials";
 import type { Official } from "@/app/actions/officials";
 import { geocodeAddress } from "@/app/actions/geocode";
 
-type Level = "Federal" | "State" | "County";
-const LEVEL_ORDER: Level[] = ["Federal", "State", "County"];
+type Level = "Federal" | "State" | "County" | "City";
+const LEVEL_ORDER: Level[] = ["Federal", "State", "County", "City"];
 
 interface Rep {
   name: string;
@@ -104,12 +105,13 @@ export function AddressLookup() {
       }
       const county = geo.county?.replace(/\s+county$/i, "").trim() ?? null;
 
-      // 2. Fetch all three sources in parallel
-      const [stateLegsRaw, countyOfficials, federalOfficials] =
+      // 2. Fetch all four sources in parallel
+      const [stateLegsRaw, countyOfficials, federalOfficials, cityOfficials] =
         await Promise.all([
           fetchStateLegs(geo.lat, geo.lng),
           county ? getOfficialsByCounty(county) : Promise.resolve<Official[]>([]),
           geo.stateAbbr ? getFederalOfficials(geo.stateAbbr) : Promise.resolve<Official[]>([]),
+          geo.city ? getCityOfficials(geo.city) : Promise.resolve<Official[]>([]),
         ]);
 
       // 3. Cross-reference Open States names against our DB
@@ -127,6 +129,7 @@ export function AddressLookup() {
         ...federalOfficials.map((o) => dbToRep(o, "Federal")),
         ...stateReps,
         ...countyOfficials.map((o) => dbToRep(o, "County")),
+        ...cityOfficials.map((o) => dbToRep(o, "City")),
       ];
 
       if (!allReps.length) {
