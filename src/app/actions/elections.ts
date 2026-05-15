@@ -64,15 +64,51 @@ const ELECTION_SELECT =
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-// Strip trailing district/footnote numbers appended to candidate names (e.g. "Jeff Holy 6").
+// Strip trailing district numbers and status parentheticals scraped from Ballotpedia.
 function sanitizeCandidateName(name: string): string {
-  return name.replace(/\s+\d+\s*$/, "").trim();
+  return name
+    .replace(/\s+\d+\s*$/, "")                  // "Jeff Holy 6" → "Jeff Holy"
+    .replace(/\s*\(Unofficially [^)]+\)/gi, "")  // "(Unofficially withdrew)"
+    .replace(/\s*\(withdrew\)/gi, "")
+    .trim();
 }
 
-// Reject numeric-only entries, citation markers like [1], and single characters
-// that slipped in from Ballotpedia footnote anchors or district number cells.
+// Known text strings scraped from Ballotpedia table UI rather than actual candidates.
+const CANDIDATE_NOISE = new Set([
+  "submit photo",
+  "other/write-in votes",
+  "write-in",
+  "popular votes",
+  "popular vote",
+]);
+
 function isValidCandidateName(name: string): boolean {
-  return name.length >= 2 && !/^[\d\s\[\].,\-()]+$/.test(name);
+  if (name.length < 2) return false;
+  // Vote counts, percentages, district numbers, citation markers
+  if (/^[\d\s\[\].,\-()/%]+$/.test(name)) return false;
+  // Known Ballotpedia UI noise
+  if (CANDIDATE_NOISE.has(name.toLowerCase())) return false;
+  return true;
+}
+
+// Filter elections that are not meaningful WA races:
+//   - other-state elections stored under WA's state_id by the scraper
+//   - Ballotpedia category/overview pages (not specific races)
+function isWARelevantElection(election: ElectionRow): boolean {
+  const name = election.office_name ?? "";
+  // Other states' named elections: "election(s) in [not Washington]"
+  if (/\belections? in (?!washington\b)/i.test(name)) return false;
+  // National category pages with no specific seat
+  if (/^united states (senate|house|congress) (elections?|primaries?)$/i.test(name)) return false;
+  if (/party (battleground )?primaries$/i.test(name)) return false;
+  if (/^special elections to the \d+/i.test(name)) return false;
+  // WA bundle/category pages (list many seats, no specific candidates)
+  if (/^wa state legislature\b/i.test(name)) return false;
+  if (/^multiple wa\b/i.test(name)) return false;
+  if (/^u\.s\. house.+\ball wa\b/i.test(name)) return false;
+  if (/\bstate (senate|house) elections$/i.test(name)) return false;
+  if (/^united states (senate|house).+elections in washington$/i.test(name)) return false;
+  return true;
 }
 
 async function attachCandidates(elections: ElectionRow[]): Promise<Election[]> {
@@ -100,7 +136,7 @@ async function dedupeAndAttach(rows: ElectionRow[]): Promise<Election[]> {
   const seen = new Set<string>();
   const unique: ElectionRow[] = [];
   for (const r of rows) {
-    if (!seen.has(r.id)) {
+    if (!seen.has(r.id) && isWARelevantElection(r)) {
       seen.add(r.id);
       unique.push(r);
     }
