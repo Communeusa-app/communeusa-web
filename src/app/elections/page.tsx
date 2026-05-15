@@ -51,7 +51,7 @@ export default async function ElectionsPage() {
       </header>
 
       <main className="flex-1 px-6 py-12">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
           <div className="mb-10">
             <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
               Elections

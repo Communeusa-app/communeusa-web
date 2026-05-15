@@ -8,6 +8,7 @@ import {
   getElectionsForBrowse,
 } from "@/app/actions/elections";
 import type { Election, ElectionCandidate } from "@/app/actions/elections";
+import { ElectionsMap } from "./ElectionsMap";
 
 type Tab = "location" | "browse";
 
@@ -35,6 +36,12 @@ export function ElectionsBrowser({ counties, cities }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Derived: county name for map highlight (follows Browse tab selection)
+  const selectedCountyName =
+    selectedCountyId
+      ? (counties.find((c) => c.id === selectedCountyId)?.name ?? null)
+      : null;
+
   const runLocationLookup = useCallback(async (addr: string) => {
     setLoading(true);
     setError(null);
@@ -45,6 +52,17 @@ export function ElectionsBrowser({ counties, cities }: Props) {
         setError("Address not found. Please try a more specific address.");
         return;
       }
+
+      // Highlight the user's county on the map
+      if (geo.county) {
+        const bare = geo.county.replace(/\s+county$/i, "").trim();
+        window.dispatchEvent(
+          new CustomEvent("communeusa:county-highlight", {
+            detail: { county: bare },
+          }),
+        );
+      }
+
       const results = await getElectionsByLocation(
         geo.stateAbbr ?? "WA",
         geo.county,
@@ -87,7 +105,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Browse mode: fetch when selections change
+  // Browse mode: fetch when county/city selection changes
   useEffect(() => {
     if (tab !== "browse") return;
     if (!selectedCountyId && !selectedCityId) {
@@ -123,6 +141,29 @@ export function ElectionsBrowser({ counties, cities }: Props) {
     setError(null);
   }
 
+  // Map county click → switch to Browse tab with that county selected
+  function handleMapCountySelect(countyName: string) {
+    const match = counties.find(
+      (c) => c.name.toLowerCase() === countyName.toLowerCase(),
+    );
+    if (match) {
+      setSelectedCountyId(match.id);
+      setSelectedCityId("");
+      setTab("browse");
+    }
+  }
+
+  // Clear map county selection and reset browse tab
+  function handleMapReset() {
+    window.dispatchEvent(
+      new CustomEvent("communeusa:county-highlight", { detail: { county: null } }),
+    );
+    setSelectedCountyId("");
+    setSelectedCityId("");
+    setElections(null);
+    setError(null);
+  }
+
   const grouped = elections
     ? LEVEL_ORDER.reduce<Partial<Record<string, Election[]>>>((acc, lvl) => {
         const group = elections.filter((e) => e.level === lvl);
@@ -133,6 +174,13 @@ export function ElectionsBrowser({ counties, cities }: Props) {
 
   return (
     <div>
+      {/* Interactive map — always visible above tabs */}
+      <ElectionsMap
+        selectedCounty={tab === "browse" ? selectedCountyName : null}
+        onCountySelect={handleMapCountySelect}
+        onReset={handleMapReset}
+      />
+
       {/* Tabs */}
       <div className="flex gap-1 p-1 rounded-xl bg-brand-light-gray/30 dark:bg-brand-dark-gray/50 w-fit mb-8">
         {(["location", "browse"] as Tab[]).map((t) => (
@@ -235,7 +283,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
       {/* Empty prompt for browse */}
       {tab === "browse" && !selectedCountyId && !selectedCityId && !loading && (
         <p className="text-sm text-brand-navy/45 dark:text-brand-off-white/40">
-          Select a county or city to browse elections.
+          Select a county or city above, or click a county on the map.
         </p>
       )}
 
