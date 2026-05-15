@@ -64,6 +64,17 @@ const ELECTION_SELECT =
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
+// Strip trailing district/footnote numbers appended to candidate names (e.g. "Jeff Holy 6").
+function sanitizeCandidateName(name: string): string {
+  return name.replace(/\s+\d+\s*$/, "").trim();
+}
+
+// Reject numeric-only entries, citation markers like [1], and single characters
+// that slipped in from Ballotpedia footnote anchors or district number cells.
+function isValidCandidateName(name: string): boolean {
+  return name.length >= 2 && !/^[\d\s\[\].,\-()]+$/.test(name);
+}
+
 async function attachCandidates(elections: ElectionRow[]): Promise<Election[]> {
   if (!elections.length) return [];
   const ids = elections.map((e) => e.id);
@@ -74,11 +85,12 @@ async function attachCandidates(elections: ElectionRow[]): Promise<Election[]> {
     )
     .in("election_id", ids);
   if (error) console.error("attachCandidates:", error.message);
-  console.log("[elections] attachCandidates: %d elections, %d candidates fetched", elections.length, (data ?? []).length);
   const byElection = new Map<string, ElectionCandidate[]>();
   for (const c of (data ?? []) as (ElectionCandidate & { election_id: string })[]) {
+    const cleanName = sanitizeCandidateName(c.name);
+    if (!isValidCandidateName(cleanName)) continue;
     const list = byElection.get(c.election_id) ?? [];
-    list.push(c);
+    list.push({ ...c, name: cleanName });
     byElection.set(c.election_id, list);
   }
   return elections.map((e) => ({ ...e, candidates: byElection.get(e.id) ?? [] }));
@@ -245,22 +257,24 @@ export async function getElectionsForBrowse(
     );
   }
 
-  if (countyId) {
+  if (countyId && stateId) {
     queries.push(
       supabase
         .from("elections")
         .select(ELECTION_SELECT)
+        .eq("state_id", stateId)
         .eq("county_id", countyId)
         .order("election_date")
         .then(({ data }) => (data ?? []) as ElectionRow[]),
     );
   }
 
-  if (municipalityId) {
+  if (municipalityId && stateId) {
     queries.push(
       supabase
         .from("elections")
         .select(ELECTION_SELECT)
+        .eq("state_id", stateId)
         .eq("municipality_id", municipalityId)
         .order("election_date")
         .then(({ data }) => (data ?? []) as ElectionRow[]),
