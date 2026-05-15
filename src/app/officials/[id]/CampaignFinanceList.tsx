@@ -26,7 +26,6 @@ export function CampaignFinanceList({ records }: { records: CampaignFinanceRecor
 
   const totalRaised = records.reduce((sum, r) => sum + (r.amount ?? 0), 0);
   const hasMore = records.length > DEFAULT_VISIBLE;
-  const hiddenCount = records.length - DEFAULT_VISIBLE;
 
   return (
     <div>

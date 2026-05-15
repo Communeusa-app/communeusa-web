@@ -147,6 +147,15 @@ export function AddressLookup() {
 
   // Restore from sessionStorage on mount (survives Next.js cache restores and fresh remounts)
   useEffect(() => {
+    // Clear stale cache when returning from a 404 official page (deactivated ID)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("clearSession") === "true") {
+      sessionStorage.removeItem(SESSION_KEY);
+      params.delete("clearSession");
+      const newSearch = params.toString();
+      window.history.replaceState(null, "", window.location.pathname + (newSearch ? `?${newSearch}` : ""));
+    }
+
     try {
       const saved = sessionStorage.getItem(SESSION_KEY);
       if (saved) {

@@ -491,7 +491,11 @@ async function batchInsert(supabase: SupabaseClient, rows: VoteRow[]): Promise<n
     const { error } = await supabase
       .from("voting_records")
       .insert(rows.slice(i, i + chunkSize));
-    if (!error) inserted += Math.min(chunkSize, rows.length - i);
+    if (error) {
+      console.error(`sync-votes: batch insert failed at offset ${i}:`, error.message);
+    } else {
+      inserted += Math.min(chunkSize, rows.length - i);
+    }
   }
   return inserted;
 }

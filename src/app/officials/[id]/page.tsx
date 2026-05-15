@@ -29,7 +29,7 @@ export default async function OfficialPage({ params }: Props) {
           This profile may have been removed or the link is incorrect.
         </p>
         <Link
-          href="/?state=53#map"
+          href="/?state=53&clearSession=true#map"
           className="rounded-lg bg-brand-primary hover:bg-brand-navy dark:bg-brand-red text-white font-medium px-5 py-2.5 text-sm transition-colors"
         >
           ← Back to map
@@ -158,14 +158,6 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
       {label}
       <ArrowUpRightIcon />
     </a>
-  );
-}
-
-function Placeholder({ message }: { message: string }) {
-  return (
-    <div className="rounded-lg border border-dashed border-brand-light-gray dark:border-brand-dark-gray/80 px-6 py-8 text-center">
-      <p className="text-sm text-brand-navy/40 dark:text-brand-off-white/35">{message}</p>
-    </div>
   );
 }
 

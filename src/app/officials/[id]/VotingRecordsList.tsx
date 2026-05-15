@@ -19,7 +19,6 @@ export function VotingRecordsList({ records }: { records: VotingRecord[] }) {
   }
 
   const hasMore = records.length > DEFAULT_VISIBLE;
-  const hiddenCount = records.length - DEFAULT_VISIBLE;
 
   return (
     <div>

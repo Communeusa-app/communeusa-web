@@ -212,10 +212,12 @@ async function syncOfficials(
   incoming: ApiOfficial[],
   level: "state" | "federal",
 ): Promise<SyncResult> {
-  const { data: existingRows } = await supabase
+  const { data: existingRows, error: existingError } = await supabase
     .from("officials")
     .select("id,official_name,party,term_end,phone,email,office_title,district,official_website,is_active")
     .eq("level", level);
+
+  if (existingError) throw new Error(`Failed to fetch existing ${level} officials: ${existingError.message}`);
 
   const existing = new Map<string, Official>(
     (existingRows ?? []).map((r: Official) => [r.official_name, r]),
@@ -233,7 +235,7 @@ async function syncOfficials(
     const dbRow = existing.get(name);
 
     if (!dbRow) {
-      await supabase.from("officials").insert({
+      const { error: insertError } = await supabase.from("officials").insert({
         state_id:        waId,
         level,
         is_active:       true,
@@ -248,7 +250,11 @@ async function syncOfficials(
         email:           apiRow.email ?? null,
         official_website: apiRow.official_website ?? null,
       });
-      inserted++;
+      if (insertError) {
+        console.error(`sync: insert failed for "${name}":`, insertError.message);
+      } else {
+        inserted++;
+      }
       continue;
     }
 
@@ -261,16 +267,24 @@ async function syncOfficials(
     if (!dbRow.is_active) changes.is_active = true;
 
     if (Object.keys(changes).length > 0) {
-      await supabase.from("officials").update(changes).eq("id", dbRow.id);
-      updated++;
+      const { error: updateError } = await supabase.from("officials").update(changes).eq("id", dbRow.id);
+      if (updateError) {
+        console.error(`sync: update failed for "${name}":`, updateError.message);
+      } else {
+        updated++;
+      }
     }
   }
 
   // FLAG INACTIVE
   for (const [name, dbRow] of existing) {
     if (!incomingByName.has(name) && dbRow.is_active) {
-      await supabase.from("officials").update({ is_active: false }).eq("id", dbRow.id);
-      flagged_inactive++;
+      const { error: deactivateError } = await supabase.from("officials").update({ is_active: false }).eq("id", dbRow.id);
+      if (deactivateError) {
+        console.error(`sync: deactivate failed for "${name}":`, deactivateError.message);
+      } else {
+        flagged_inactive++;
+      }
     }
   }
 
@@ -313,12 +327,13 @@ export async function GET(req: NextRequest) {
   const supabase = createClient(supabaseUrl!, supabaseKey!);
 
   try {
-    const { data: waState } = await supabase
+    const { data: waState, error: waStateError } = await supabase
       .from("states")
       .select("id")
       .eq("abbreviation", "WA")
       .single();
 
+    if (waStateError) console.error("sync: WA state lookup error:", waStateError.message);
     if (!waState) {
       return NextResponse.json({ error: "WA state row not found" }, { status: 500 });
     }

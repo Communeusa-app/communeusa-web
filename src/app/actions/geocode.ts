@@ -12,7 +12,12 @@ export async function geocodeAddress(address: string): Promise<GeoResult | null>
     `https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress` +
     `?address=${encodeURIComponent(address)}&benchmark=Public_AR_Current&vintage=Current_Current&layers=Counties%2CStates&format=json`;
 
-  const res = await fetch(url);
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch {
+    return null;
+  }
   if (!res.ok) return null;
 
   const data = await res.json();
@@ -20,8 +25,10 @@ export async function geocodeAddress(address: string): Promise<GeoResult | null>
   const match = data?.result?.addressMatches?.[0];
   if (!match) return null;
 
-  const lat = match.coordinates?.y as number;
-  const lng = match.coordinates?.x as number;
+  // coordinates is always present on a successful match, but guard defensively
+  if (!match.coordinates) return null;
+  const lat = match.coordinates.y as number;
+  const lng = match.coordinates.x as number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const county = (match.geographies?.["Counties"]?.[0] as any)?.NAME ?? null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
