@@ -1,8 +1,14 @@
+import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { USMapSection } from "@/components/Map/USMapSection";
 import { AddressLookup } from "@/components/AddressLookup";
 
-const NAV_LINKS = ["Representatives", "Elections", "Finance", "About"] as const;
+const NAV_LINKS = [
+  { label: "Representatives", href: "/#representatives" },
+  { label: "Elections",       href: "/elections" },
+  { label: "Finance",         href: "/#finance" },
+  { label: "About",           href: "/about" },
+] as const;
 
 const FEATURES = [
   {
@@ -46,14 +52,14 @@ export default async function Home({
 
           {/* Nav links */}
           <div className="hidden md:flex items-center gap-0.5 ml-2">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link}
-                href="#"
+            {NAV_LINKS.map(({ label, href }) => (
+              <Link
+                key={label}
+                href={href}
                 className="px-3 py-1.5 rounded-md text-sm text-brand-navy/60 dark:text-brand-off-white/60 hover:text-brand-primary dark:hover:text-brand-red hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10 transition-colors"
               >
-                {link}
-              </a>
+                {label}
+              </Link>
             ))}
           </div>
 
@@ -65,7 +71,7 @@ export default async function Home({
 
       <main className="flex-1">
         {/* ── Hero ──────────────────────────────────────────────── */}
-        <section className="flex flex-col items-center text-center px-6 pt-24 pb-20">
+        <section id="representatives" className="flex flex-col items-center text-center px-6 pt-24 pb-20">
           {/* Eyebrow badge */}
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-4 py-1.5 text-xs font-medium tracking-widest uppercase text-brand-navy/55 dark:text-brand-off-white/50">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-primary dark:bg-brand-red shrink-0" />
@@ -98,7 +104,7 @@ export default async function Home({
         <USMapSection initialState={initialState} />
 
         {/* ── Feature Cards ─────────────────────────────────────── */}
-        <section className="px-6 pb-28">
+        <section id="finance" className="px-6 pb-28">
           <div className="mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-5">
             {FEATURES.map(({ title, description, Icon }) => (
               <div
@@ -138,14 +144,14 @@ export default async function Home({
 
           {/* Footer links */}
           <div className="flex flex-wrap justify-center sm:justify-end gap-x-6 gap-y-2 text-sm text-brand-navy/55 dark:text-brand-off-white/55">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link}
-                href="#"
+            {NAV_LINKS.map(({ label, href }) => (
+              <Link
+                key={label}
+                href={href}
                 className="hover:text-brand-primary dark:hover:text-brand-red transition-colors"
               >
-                {link}
-              </a>
+                {label}
+              </Link>
             ))}
             <a href="/privacy" className="hover:text-brand-primary dark:hover:text-brand-red transition-colors">Privacy</a>
             <a href="/terms" className="hover:text-brand-primary dark:hover:text-brand-red transition-colors">Terms</a>
