@@ -74,6 +74,7 @@ async function attachCandidates(elections: ElectionRow[]): Promise<Election[]> {
     )
     .in("election_id", ids);
   if (error) console.error("attachCandidates:", error.message);
+  console.log("[elections] attachCandidates: %d elections, %d candidates fetched", elections.length, (data ?? []).length);
   const byElection = new Map<string, ElectionCandidate[]>();
   for (const c of (data ?? []) as (ElectionCandidate & { election_id: string })[]) {
     const list = byElection.get(c.election_id) ?? [];
@@ -156,6 +157,7 @@ export async function getElectionsByLocation(
 
   let municipalityId: string | null = null;
   if (rawCity) {
+    console.log("[elections] resolving city:", rawCity);
     const { data } = await supabase
       .from("municipalities")
       .select("id")
@@ -163,6 +165,7 @@ export async function getElectionsByLocation(
       .ilike("name", rawCity)
       .maybeSingle();
     municipalityId = (data?.id as string) ?? null;
+    console.log("[elections] municipality_id:", municipalityId ?? "NOT FOUND");
   }
 
   const queries: PromiseLike<ElectionRow[]>[] = [

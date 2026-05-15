@@ -261,6 +261,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
 }
 
 function ElectionCard({ election }: { election: Election }) {
+  const candidates = election.candidates ?? [];
   return (
     <Link
       href={`/elections/${election.id}`}
@@ -281,14 +282,13 @@ function ElectionCard({ election }: { election: Election }) {
           </span>
         )}
       </div>
-      {election.candidates.length > 0 && (
+      {candidates.length > 0 ? (
         <div className="flex flex-wrap gap-1.5 mt-2">
-          {election.candidates.map((c) => (
+          {candidates.map((c) => (
             <CandidateChip key={c.id} candidate={c} />
           ))}
         </div>
-      )}
-      {election.candidates.length === 0 && (
+      ) : (
         <p className="text-xs text-brand-navy/35 dark:text-brand-off-white/30 mt-1">
           No candidates on file yet
         </p>
