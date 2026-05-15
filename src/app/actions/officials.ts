@@ -99,6 +99,18 @@ export interface VotingRecord {
   source_url: string | null;
 }
 
+export interface CampaignFinanceRecord {
+  id: string;
+  donor_name: string | null;
+  donor_type: string | null;
+  amount: number | null;
+  election_cycle: string | null;
+  donation_date: string | null;
+  industry_sector: string | null;
+  source_url: string | null;
+  filing_source: string | null;
+}
+
 export interface OfficialProfile {
   id: string;
   official_name: string;
@@ -164,6 +176,25 @@ export async function getVotingRecords(
   );
 
   return enriched;
+}
+
+export async function getCampaignFinance(
+  officialId: string,
+): Promise<CampaignFinanceRecord[]> {
+  const { data, error } = await supabase
+    .from("campaign_finance")
+    .select(
+      "id, donor_name, donor_type, amount, election_cycle, donation_date, industry_sector, source_url, filing_source",
+    )
+    .eq("official_id", officialId)
+    .order("amount", { ascending: false, nullsFirst: false })
+    .limit(50);
+
+  if (error) {
+    console.error("getCampaignFinance:", error.message);
+    return [];
+  }
+  return (data ?? []) as CampaignFinanceRecord[];
 }
 
 export async function getFederalOfficials(stateAbbr: string): Promise<Official[]> {

@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { getOfficialById, getVotingRecords } from "@/app/actions/officials";
+import { getOfficialById, getVotingRecords, getCampaignFinance } from "@/app/actions/officials";
 import type { OfficialProfile } from "@/app/actions/officials";
 import { VotingRecordsList } from "./VotingRecordsList";
+import { CampaignFinanceList } from "./CampaignFinanceList";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -9,9 +10,10 @@ interface Props {
 
 export default async function OfficialPage({ params }: Props) {
   const { id } = await params;
-  const [official, votingRecords] = await Promise.all([
+  const [official, votingRecords, campaignFinance] = await Promise.all([
     getOfficialById(id),
     getVotingRecords(id),
+    getCampaignFinance(id),
   ]);
 
   if (!official) {
@@ -109,9 +111,9 @@ export default async function OfficialPage({ params }: Props) {
           <VotingRecordsList records={votingRecords} />
         </Section>
 
-        {/* ── Campaign finance placeholder ─────────────────────────── */}
+        {/* ── Campaign finance ─────────────────────────────────────── */}
         <Section title="Campaign Finance">
-          <Placeholder message="Campaign finance coming soon" />
+          <CampaignFinanceList records={campaignFinance} />
         </Section>
       </div>
     </main>
