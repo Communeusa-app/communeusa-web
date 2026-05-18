@@ -3,22 +3,44 @@
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import * as topojson from "topojson-client";
+import type { DistrictType, DistrictOfficialMap, DistrictRep, RecentlyRedrawn } from "@/app/actions/districts";
 
 const STATES_URL   = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const COUNTIES_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json";
 
-const FILL                = "#B5D4F4"; // brand-light-blue
-const FILL_HOVER          = "#185FA5"; // brand-primary
-const FILL_MUTED          = "#D3D1C7"; // brand-light-gray — non-WA states when zoomed
-const FILL_HIGHLIGHT_LIGHT = "#E24B4A"; // brand-red  (light mode)
-const FILL_HIGHLIGHT_DARK  = "#185FA5"; // brand-primary (dark mode)
-const STROKE              = "#ffffff";
-const WIDTH               = 960;
-const HEIGHT              = 600;
-const WA_FIPS             = "53";
-const ZOOM_DURATION       = 750;
+const DISTRICT_URLS: Record<DistrictType, string> = {
+  congressional: "/districts/congressional.geojson",
+  house:         "/districts/house_districts_wa.geojson",
+  senate:        "/districts/senate_districts_wa.geojson",
+};
 
-// Full FIPS → name lookup for all 39 WA counties
+// GeoJSON property key that holds the (zero-padded) district number
+const DISTRICT_NUM_KEY: Record<DistrictType, string> = {
+  congressional: "CD119FP",
+  house:         "SLDLST",
+  senate:        "SLDUST",
+};
+
+// Module-level fallback — replaced at runtime by prop from Supabase
+const EMPTY_REDRAWN: Record<DistrictType, Set<string>> = {
+  congressional: new Set(),
+  house:         new Set(),
+  senate:        new Set(),
+};
+
+const FILL                 = "#B5D4F4";
+const FILL_HOVER           = "#185FA5";
+const FILL_MUTED           = "#D3D1C7";
+const FILL_HIGHLIGHT_LIGHT = "#E24B4A";
+const FILL_HIGHLIGHT_DARK  = "#185FA5";
+const DISTRICT_FILL        = "rgba(24,95,165,0.14)";
+const DISTRICT_FILL_HOVER  = "rgba(24,95,165,0.38)";
+const STROKE               = "#ffffff";
+const WIDTH                = 960;
+const HEIGHT               = 600;
+const WA_FIPS              = "53";
+const ZOOM_DURATION        = 750;
+
 const WA_COUNTY_NAMES: Record<string, string> = {
   "53001": "Adams",        "53003": "Asotin",       "53005": "Benton",
   "53007": "Chelan",       "53009": "Clallam",      "53011": "Clark",
@@ -35,60 +57,93 @@ const WA_COUNTY_NAMES: Record<string, string> = {
   "53073": "Whatcom",      "53075": "Whitman",       "53077": "Yakima",
 };
 
-// Module-level cache so remounting doesn't re-fetch the county file
 let waCountiesCache: GeoJSON.Feature[] | null = null;
+const geoJsonCache = new Map<string, GeoJSON.FeatureCollection>();
 
-interface Props {
-  initialState?:  string;
-  onStateClick?:  (fipsId: string) => void;
-  onCountyClick?: (countyName: string) => void;
+interface DistrictTooltip {
+  x: number;
+  y: number;
+  title: string;
+  reps: string[];
 }
 
-interface Tooltip { x: number; y: number }
+interface Props {
+  initialState?:      string;
+  onStateClick?:      (fipsId: string) => void;
+  onCountyClick?:     (countyName: string) => void;
+  districtType?:      DistrictType | null;
+  districtOfficials?: DistrictOfficialMap;
+  recentlyRedrawn?:   RecentlyRedrawn;
+}
 
-export function USMap({ initialState, onStateClick, onCountyClick }: Props) {
-  const containerRef       = useRef<HTMLDivElement>(null);
-  const svgRef             = useRef<SVGSVGElement>(null);
-  const onClickRef         = useRef(onStateClick);
-  const onCountyClickRef   = useRef(onCountyClick);
-  const resetRef           = useRef<(() => void) | null>(null);
-  const initialStateRef    = useRef(initialState);
-  // Ref so D3 handlers can read current zoom state without going stale
-  const inStateViewRef     = useRef(false);
-  // County highlight state shared across D3 closures
-  const waFeatureRef       = useRef<GeoJSON.Feature | null>(null);
-  const highlightedCountyRef = useRef<string | null>(null);
-  const pendingHighlightRef  = useRef<string | null>(null);
+interface SimpleTooltip { x: number; y: number }
 
-  const [inStateView, setInStateView] = useState(false);
-  const [tooltip, setTooltip]         = useState<Tooltip | null>(null);
-  const [mapLoading, setMapLoading]   = useState(true);
-  const [mapError, setMapError]       = useState<string | null>(null);
+export function USMap({
+  initialState,
+  onStateClick,
+  onCountyClick,
+  districtType,
+  districtOfficials,
+  recentlyRedrawn,
+}: Props) {
+  const containerRef          = useRef<HTMLDivElement>(null);
+  const svgRef                = useRef<SVGSVGElement>(null);
+  const onClickRef            = useRef(onStateClick);
+  const onCountyClickRef      = useRef(onCountyClick);
+  const resetRef              = useRef<(() => void) | null>(null);
+  const initialStateRef       = useRef(initialState);
+  const inStateViewRef        = useRef(false);
+  const waFeatureRef          = useRef<GeoJSON.Feature | null>(null);
+  const highlightedCountyRef  = useRef<string | null>(null);
+  const pendingHighlightRef   = useRef<string | null>(null);
+  const districtTypeRef       = useRef(districtType ?? null);
+  const districtOfficialsRef  = useRef(districtOfficials ?? null);
+  const recentlyRedrawnRef    = useRef<Record<DistrictType, Set<string>>>(EMPTY_REDRAWN);
+  const updateDistrictRef     = useRef<((type: DistrictType | null) => Promise<void>) | null>(null);
+
+  const [inStateView,     setInStateView]     = useState(false);
+  const [simpleTooltip,   setSimpleTooltip]   = useState<SimpleTooltip | null>(null);
+  const [districtTooltip, setDistrictTooltip] = useState<DistrictTooltip | null>(null);
+  const [mapLoading,      setMapLoading]      = useState(true);
+  const [mapError,        setMapError]        = useState<string | null>(null);
 
   useEffect(() => { onClickRef.current = onStateClick; });
   useEffect(() => { onCountyClickRef.current = onCountyClick; });
+  useEffect(() => { districtTypeRef.current = districtType ?? null; }, [districtType]);
+  useEffect(() => { districtOfficialsRef.current = districtOfficials ?? null; }, [districtOfficials]);
+  useEffect(() => {
+    recentlyRedrawnRef.current = recentlyRedrawn
+      ? {
+          congressional: new Set(recentlyRedrawn.congressional),
+          house:         new Set(recentlyRedrawn.house),
+          senate:        new Set(recentlyRedrawn.senate),
+        }
+      : EMPTY_REDRAWN;
+  }, [recentlyRedrawn]);
+
+  // React to districtType prop changes — delegate to the D3-managed update function
+  useEffect(() => {
+    updateDistrictRef.current?.(districtType ?? null);
+    if (districtType) setDistrictTooltip(null);
+  }, [districtType]);
 
   useEffect(() => {
     const svgEl       = svgRef.current;
     const containerEl = containerRef.current;
     if (!svgEl || !containerEl) return;
 
-    let cancelled    = false;
-    let countyDrawn  = false; // true once county paths are in the DOM
+    let cancelled   = false;
+    let countyDrawn = false;
 
     const svg        = d3.select(svgEl);
     const projection = d3.geoAlbersUsa().scale(1300).translate([WIDTH / 2, HEIGHT / 2]);
     const pathGen    = d3.geoPath().projection(projection);
 
-    // ── Layer order: states below counties ───────────────────────────────
-    const zoomGroup     = svg.append("g");
-    const statesLayer   = zoomGroup.append("g");
-    const countiesLayer = zoomGroup.append("g");
+    const zoomGroup      = svg.append("g");
+    const statesLayer    = zoomGroup.append("g");
+    const countiesLayer  = zoomGroup.append("g");
+    const districtsLayer = zoomGroup.append("g");
 
-    // ── Zoom behaviour ────────────────────────────────────────────────────
-    // translateExtent is intentionally omitted: it reads the SVG's rendered
-    // pixel size, which differs from the viewBox when the element scales
-    // responsively. Instead, we clamp x/y manually in viewBox coordinates.
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 8])
       .on("zoom", (ev) => {
@@ -99,33 +154,20 @@ export function USMap({ initialState, onStateClick, onCountyClick }: Props) {
       });
     svg.call(zoom);
 
-    // Prevent the browser from scrolling the page when the wheel is used over
-    // the map. Must be a non-passive native listener — D3's own handler alone
-    // is not sufficient in all browsers.
     function onWheel(e: WheelEvent) { e.preventDefault(); }
     svgEl.addEventListener("wheel", onWheel, { passive: false });
 
     function zoomToFeature(feature: GeoJSON.Feature) {
       const [[x0, y0], [x1, y1]] = pathGen.bounds(feature);
-      const scale = Math.min(
-        8,
-        0.85 / Math.max((x1 - x0) / WIDTH, (y1 - y0) / HEIGHT),
-      );
-      // Named transition "zoom" so the reset can cancel it if triggered early
+      const scale = Math.min(8, 0.85 / Math.max((x1 - x0) / WIDTH, (y1 - y0) / HEIGHT));
       svg.transition("zoom").duration(ZOOM_DURATION).call(
         zoom.transform,
-        d3.zoomIdentity
-          .translate(WIDTH / 2, HEIGHT / 2)
-          .scale(scale)
-          .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
+        d3.zoomIdentity.translate(WIDTH / 2, HEIGHT / 2).scale(scale).translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
       );
     }
 
-    // ── County highlight helpers ──────────────────────────────────────────
     function highlightFill() {
-      return document.documentElement.classList.contains("dark")
-        ? FILL_HIGHLIGHT_DARK
-        : FILL_HIGHLIGHT_LIGHT;
+      return document.documentElement.classList.contains("dark") ? FILL_HIGHLIGHT_DARK : FILL_HIGHLIGHT_LIGHT;
     }
 
     function applyCountyHighlight(countyName: string | null) {
@@ -134,65 +176,131 @@ export function USMap({ initialState, onStateClick, onCountyClick }: Props) {
       countiesLayer
         .selectAll<SVGPathElement, GeoJSON.Feature>("path")
         .transition("highlight").duration(200)
-        .attr("fill", (d) => {
-          const name = WA_COUNTY_NAMES[String(d.id ?? "")];
-          return name === countyName ? hFill : FILL;
-        });
+        .attr("fill", (d) => WA_COUNTY_NAMES[String(d.id ?? "")] === countyName ? hFill : FILL);
     }
 
-    // ── County layer ──────────────────────────────────────────────────────
+    // ── District helpers ──────────────────────────────────────────────────────
+
+    function getDistrictNum(feature: GeoJSON.Feature, type: DistrictType): string {
+      const raw = (feature.properties ?? {})[DISTRICT_NUM_KEY[type]] as string ?? "0";
+      return String(parseInt(raw, 10)); // strip leading zeros
+    }
+
+    function getDistrictReps(feature: GeoJSON.Feature, type: DistrictType): DistrictRep[] {
+      const officials = districtOfficialsRef.current;
+      if (!officials) return [];
+      const num = getDistrictNum(feature, type);
+      if (type === "congressional") return officials.congressional[num] ? [officials.congressional[num]] : [];
+      if (type === "senate")        return officials.senate[num]        ? [officials.senate[num]]        : [];
+      return officials.house[num] ?? [];
+    }
+
+    function relPos(ev: MouseEvent) {
+      const r = containerEl!.getBoundingClientRect();
+      return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+    }
+
+    // ── District layer ────────────────────────────────────────────────────────
+
+    updateDistrictRef.current = async (type: DistrictType | null) => {
+      if (!inStateViewRef.current) return;
+      districtsLayer.selectAll("path").remove();
+      setDistrictTooltip(null);
+
+      if (!type) {
+        countiesLayer.selectAll<SVGPathElement, GeoJSON.Feature>("path")
+          .attr("pointer-events", "all")
+          .transition().duration(300).attr("opacity", 1);
+        return;
+      }
+
+      // Hide counties while districts are shown
+      countiesLayer.selectAll<SVGPathElement, GeoJSON.Feature>("path")
+        .attr("pointer-events", "none")
+        .transition().duration(200).attr("opacity", 0);
+
+      const url = DISTRICT_URLS[type];
+      let geoData = geoJsonCache.get(url);
+      if (!geoData) {
+        try {
+          geoData = await d3.json(url) as GeoJSON.FeatureCollection;
+          geoJsonCache.set(url, geoData);
+        } catch { return; }
+      }
+      if (!inStateViewRef.current || cancelled) return;
+
+      const redrawn = recentlyRedrawnRef.current[type];
+
+      districtsLayer
+        .selectAll<SVGPathElement, GeoJSON.Feature>("path")
+        .data(geoData.features)
+        .join("path")
+        .attr("fill", DISTRICT_FILL)
+        .attr("stroke", STROKE)
+        .attr("stroke-width", 1.5)
+        .attr("stroke-linejoin", "round")
+        .attr("vector-effect", "non-scaling-stroke")
+        .attr("stroke-dasharray", (d) => redrawn.has(getDistrictNum(d, type)) ? "6 3" : "none")
+        .attr("cursor", "pointer")
+        .attr("pointer-events", "all")
+        .attr("opacity", 0)
+        .attr("d", (d) => pathGen(d) ?? "")
+        .on("mouseenter", function (ev, d) {
+          d3.select(this).transition().duration(120).attr("fill", DISTRICT_FILL_HOVER);
+          const props   = d.properties ?? {};
+          const title   = (props.NAMELSAD as string) ?? getDistrictNum(d, type);
+          const reps    = getDistrictReps(d, type);
+          const repNames = reps.length ? reps.map((r) => r.name) : ["No representative on file"];
+          setDistrictTooltip({ ...relPos(ev), title, reps: repNames });
+        })
+        .on("mousemove", (ev) => {
+          setDistrictTooltip((prev) => prev ? { ...prev, ...relPos(ev) } : null);
+        })
+        .on("mouseleave", function () {
+          d3.select(this).transition().duration(120).attr("fill", DISTRICT_FILL);
+          setDistrictTooltip(null);
+        })
+        .on("click", (_, d) => {
+          const reps = getDistrictReps(d, type);
+          if (reps.length > 0) window.location.href = `/officials/${reps[0].id}`;
+        })
+        .transition("fade").duration(400).attr("opacity", 1);
+    };
+
+    // ── County layer ──────────────────────────────────────────────────────────
+
     async function loadCounties() {
       if (countyDrawn) return;
 
-      // Populate cache on first load
       if (!waCountiesCache) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let topo: any;
-        try {
-          topo = await d3.json(COUNTIES_URL);
-        } catch {
-          if (!cancelled) setMapError("Failed to load county data. Please refresh.");
-          return;
-        }
-        // Abort if unmounted or user already navigated back
+        try { topo = await d3.json(COUNTIES_URL); }
+        catch { if (!cancelled) setMapError("Failed to load county data. Please refresh."); return; }
         if (cancelled || !inStateViewRef.current) return;
-        const { features } = topojson.feature(
-          topo,
-          topo.objects.counties,
-        ) as unknown as GeoJSON.FeatureCollection;
-        waCountiesCache = features.filter((f) =>
-          String(f.id ?? "").startsWith(WA_FIPS),
-        );
+        const { features } = topojson.feature(topo, topo.objects.counties) as unknown as GeoJSON.FeatureCollection;
+        waCountiesCache = features.filter((f) => String(f.id ?? "").startsWith(WA_FIPS));
       }
 
       if (!inStateViewRef.current) return;
       countyDrawn = true;
 
-      // Consume any pending highlight set before counties finished loading
       const pending = pendingHighlightRef.current;
-      if (pending) {
-        highlightedCountyRef.current = pending;
-        pendingHighlightRef.current = null;
-      }
+      if (pending) { highlightedCountyRef.current = pending; pendingHighlightRef.current = null; }
       const hFill = highlightFill();
+      const inDistrictMode = !!districtTypeRef.current;
 
       countiesLayer
         .selectAll<SVGPathElement, GeoJSON.Feature>("path")
         .data(waCountiesCache!)
         .join("path")
-        .attr("fill", (d) => {
-          const name = WA_COUNTY_NAMES[String(d.id ?? "")];
-          return name === highlightedCountyRef.current ? hFill : FILL;
-        })
+        .attr("fill", (d) => WA_COUNTY_NAMES[String(d.id ?? "")] === highlightedCountyRef.current ? hFill : FILL)
         .attr("stroke", STROKE)
         .attr("stroke-width", 0.5)
         .attr("stroke-linejoin", "round")
-        // Keeps stroke visually thin regardless of zoom scale
         .attr("vector-effect", "non-scaling-stroke")
         .attr("cursor", "pointer")
-        // "all" ensures hover fires even before the opacity fade-in completes.
-        // The SVG default "visiblePainted" suppresses events on opacity-0 elements.
-        .attr("pointer-events", "all")
+        .attr("pointer-events", inDistrictMode ? "none" : "all")
         .attr("d", (d) => pathGen(d) ?? "")
         .attr("opacity", 0)
         .on("mouseenter", function (_, d) {
@@ -202,100 +310,82 @@ export function USMap({ initialState, onStateClick, onCountyClick }: Props) {
         })
         .on("mouseleave", function (_, d) {
           const name = WA_COUNTY_NAMES[String(d.id ?? "")];
-          const restoreFill = name === highlightedCountyRef.current ? highlightFill() : FILL;
-          d3.select(this).transition().duration(120).attr("fill", restoreFill);
+          d3.select(this).transition().duration(120)
+            .attr("fill", name === highlightedCountyRef.current ? highlightFill() : FILL);
         })
         .on("click", (_, d) => {
           const fipsId     = String(d.id ?? "");
           const countyName = WA_COUNTY_NAMES[fipsId];
-          // Clicking a county clears any address-lookup highlight
           if (highlightedCountyRef.current) applyCountyHighlight(null);
           onClickRef.current?.(fipsId);
           if (countyName) onCountyClickRef.current?.(countyName);
         })
-        .transition("fade")
-        .duration(400)
-        .attr("opacity", 1);
+        .transition("fade").duration(400).attr("opacity", inDistrictMode ? 0 : 1);
+
+      // If district mode was already active when counties loaded, apply it now
+      if (inDistrictMode) {
+        updateDistrictRef.current?.(districtTypeRef.current);
+      }
     }
 
-    // ── Reset to full-US view (called by back button) ─────────────────────
+    // ── Reset ─────────────────────────────────────────────────────────────────
+
     resetRef.current = () => {
       inStateViewRef.current = false;
       countyDrawn = false;
       highlightedCountyRef.current = null;
       pendingHighlightRef.current = null;
       setInStateView(false);
-      setTooltip(null);
+      setSimpleTooltip(null);
+      setDistrictTooltip(null);
 
-      // Named "zoom" cancels any in-progress zoom-in. Restore layers only after
-      // the transition fully completes so the viewport is settled first.
       svg.transition("zoom").duration(400)
         .call(zoom.transform, d3.zoomIdentity)
         .on("end", () => {
           countiesLayer.selectAll("path").remove();
-
+          districtsLayer.selectAll("path").remove();
           statesLayer
             .selectAll<SVGPathElement, GeoJSON.Feature>("path")
-            .attr("fill", FILL)
-            .attr("pointer-events", "auto")
-            .attr("cursor", "pointer");
+            .attr("fill", FILL).attr("pointer-events", "auto").attr("cursor", "pointer");
         });
     };
 
-    // ── Helper: cursor-relative tooltip position ──────────────────────────
-    function relPos(ev: MouseEvent) {
-      const r = containerEl!.getBoundingClientRect();
-      return { x: ev.clientX - r.left, y: ev.clientY - r.top };
-    }
+    // ── county-highlight event (address lookup) ───────────────────────────────
 
-    // ── county-highlight event from address lookup ────────────────────────
     function handleCountyHighlight(e: Event) {
       const county = (e as CustomEvent<{ county: string | null }>).detail?.county;
       if (county === undefined) return;
 
       if (!inStateViewRef.current) {
-        // Zoom into WA first, then load counties with the highlight pending
         const waFeature = waFeatureRef.current;
         if (!waFeature) return;
-
         pendingHighlightRef.current = county;
         inStateViewRef.current = true;
         setInStateView(true);
-        setTooltip(null);
-
-        statesLayer
-          .selectAll<SVGPathElement, GeoJSON.Feature>("path")
+        setSimpleTooltip(null);
+        statesLayer.selectAll<SVGPathElement, GeoJSON.Feature>("path")
           .filter((f) => String(f.id ?? "") !== WA_FIPS)
           .transition().duration(ZOOM_DURATION)
-          .attr("fill", FILL_MUTED)
-          .attr("pointer-events", "none")
-          .attr("cursor", "default");
-
+          .attr("fill", FILL_MUTED).attr("pointer-events", "none").attr("cursor", "default");
         zoomToFeature(waFeature);
         loadCounties();
       } else if (countyDrawn) {
-        // Counties already on screen — apply immediately
         applyCountyHighlight(county);
       } else {
-        // loadCounties() is in-flight; it will pick up pendingHighlightRef
         pendingHighlightRef.current = county;
       }
     }
 
     window.addEventListener("communeusa:county-highlight", handleCountyHighlight);
 
-    // ── State layer ───────────────────────────────────────────────────────
+    // ── State layer ───────────────────────────────────────────────────────────
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     d3.json(STATES_URL).then((topo: any) => {
       if (cancelled || !topo) return;
       setMapLoading(false);
 
-      const { features } = topojson.feature(
-        topo,
-        topo.objects.states,
-      ) as unknown as GeoJSON.FeatureCollection;
-
-      // Store WA feature so the county-highlight handler can zoom to it
+      const { features } = topojson.feature(topo, topo.objects.states) as unknown as GeoJSON.FeatureCollection;
       waFeatureRef.current = features.find((f) => String(f.id ?? "") === WA_FIPS) ?? null;
 
       statesLayer
@@ -312,64 +402,46 @@ export function USMap({ initialState, onStateClick, onCountyClick }: Props) {
         .on("mouseenter", function (ev, d) {
           if (inStateViewRef.current) return;
           d3.select(this).transition().duration(120).attr("fill", FILL_HOVER);
-          if (String(d.id ?? "") !== WA_FIPS) setTooltip(relPos(ev));
+          if (String(d.id ?? "") !== WA_FIPS) setSimpleTooltip(relPos(ev));
         })
         .on("mousemove", (ev, d) => {
           if (inStateViewRef.current || String(d.id ?? "") === WA_FIPS) return;
-          setTooltip(relPos(ev));
+          setSimpleTooltip(relPos(ev));
         })
         .on("mouseleave", function () {
           d3.select(this).transition().duration(120).attr("fill", FILL);
-          setTooltip(null);
+          setSimpleTooltip(null);
         })
         .on("click", (_, d) => {
           if (inStateViewRef.current) return;
           const fipsId = String(d.id ?? "");
-
-          // Non-WA states: no action (tooltip already signals "coming soon")
           if (fipsId !== WA_FIPS) return;
-
           onClickRef.current?.(fipsId);
           inStateViewRef.current = true;
           setInStateView(true);
-          setTooltip(null);
-
-          // Mute all other states and disable their pointer events
-          statesLayer
-            .selectAll<SVGPathElement, GeoJSON.Feature>("path")
+          setSimpleTooltip(null);
+          statesLayer.selectAll<SVGPathElement, GeoJSON.Feature>("path")
             .filter((f) => String(f.id ?? "") !== WA_FIPS)
             .transition().duration(ZOOM_DURATION)
-            .attr("fill", FILL_MUTED)
-            .attr("pointer-events", "none")
-            .attr("cursor", "default");
-
+            .attr("fill", FILL_MUTED).attr("pointer-events", "none").attr("cursor", "default");
           zoomToFeature(d);
           loadCounties();
         });
 
-      // ── Auto-zoom if returning from an official's profile page ─────────
       if (initialStateRef.current === WA_FIPS) {
         const waFeature = waFeatureRef.current;
         if (waFeature) {
           inStateViewRef.current = true;
           setInStateView(true);
-
-          statesLayer
-            .selectAll<SVGPathElement, GeoJSON.Feature>("path")
+          statesLayer.selectAll<SVGPathElement, GeoJSON.Feature>("path")
             .filter((f) => String(f.id ?? "") !== WA_FIPS)
-            .attr("fill", FILL_MUTED)
-            .attr("pointer-events", "none")
-            .attr("cursor", "default");
-
+            .attr("fill", FILL_MUTED).attr("pointer-events", "none").attr("cursor", "default");
           zoomToFeature(waFeature);
           loadCounties();
         }
       }
     }).catch(() => {
-      if (!cancelled) {
-        setMapLoading(false);
-        setMapError("Failed to load map data. Please refresh.");
-      }
+      if (!cancelled) { setMapLoading(false); setMapError("Failed to load map data. Please refresh."); }
     });
 
     return () => {
@@ -378,12 +450,11 @@ export function USMap({ initialState, onStateClick, onCountyClick }: Props) {
       window.removeEventListener("communeusa:county-highlight", handleCountyHighlight);
       svg.on(".zoom", null);
       svg.selectAll("*").remove();
+      updateDistrictRef.current = null;
     };
   }, []);
 
   return (
-    // pointer-events-none on the container so the positioned div itself is
-    // never the hit target — only the SVG and the overlay buttons inside it are.
     <div ref={containerRef} className="relative w-full pointer-events-none">
       {mapLoading && !mapError && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -401,10 +472,9 @@ export function USMap({ initialState, onStateClick, onCountyClick }: Props) {
         width="100%"
         style={{ display: "block", touchAction: "none", pointerEvents: "auto" }}
         role="img"
-        aria-label="Interactive map of the United States"
+        aria-label="Interactive map of Washington State"
       />
 
-      {/* Back button — visible only when zoomed into a state */}
       {inStateView && (
         <button
           onClick={() => resetRef.current?.()}
@@ -416,12 +486,29 @@ export function USMap({ initialState, onStateClick, onCountyClick }: Props) {
       )}
 
       {/* "Coming soon" tooltip for non-WA states */}
-      {tooltip && !inStateView && (
+      {simpleTooltip && !inStateView && (
         <div
           className="pointer-events-none absolute rounded-md bg-brand-navy dark:bg-brand-charcoal px-2.5 py-1 text-xs font-medium text-white dark:text-brand-off-white shadow-md whitespace-nowrap"
-          style={{ left: tooltip.x, top: tooltip.y - 36, transform: "translateX(-50%)" }}
+          style={{ left: simpleTooltip.x, top: simpleTooltip.y - 36, transform: "translateX(-50%)" }}
         >
           Coming soon
+        </div>
+      )}
+
+      {/* District hover tooltip */}
+      {districtTooltip && (
+        <div
+          className="pointer-events-none absolute rounded-lg border border-brand-light-gray/60 dark:border-brand-dark-gray bg-white dark:bg-brand-charcoal px-3 py-2 shadow-lg whitespace-nowrap"
+          style={{ left: districtTooltip.x, top: districtTooltip.y - 64, transform: "translateX(-50%)" }}
+        >
+          <p className="text-xs font-semibold text-brand-navy dark:text-brand-off-white">
+            {districtTooltip.title}
+          </p>
+          {districtTooltip.reps.map((name, i) => (
+            <p key={i} className="text-xs text-brand-navy/60 dark:text-brand-off-white/55 mt-0.5">
+              {name}
+            </p>
+          ))}
         </div>
       )}
     </div>
