@@ -100,14 +100,22 @@ function isWARelevantElection(election: ElectionRow): boolean {
   if (/\belections? in (?!washington\b)/i.test(name)) return false;
   // National category pages with no specific seat
   if (/^united states (senate|house|congress) (elections?|primaries?)$/i.test(name)) return false;
+  if (/^united states house of representatives elections$/i.test(name)) return false;
   if (/party (battleground )?primaries$/i.test(name)) return false;
   if (/^special elections to the \d+/i.test(name)) return false;
+  if (/^list of (congressional|u\.s\.)/i.test(name)) return false;
+  if (/^washington elections$/i.test(name)) return false;
+  if (/^west virginia\b/i.test(name)) return false;
   // WA bundle/category pages (list many seats, no specific candidates)
   if (/^wa state legislature\b/i.test(name)) return false;
   if (/^multiple wa\b/i.test(name)) return false;
   if (/^u\.s\. house.+\ball wa\b/i.test(name)) return false;
   if (/\bstate (senate|house) elections$/i.test(name)) return false;
   if (/^united states (senate|house).+elections in washington$/i.test(name)) return false;
+  // National multi-state category pages that leaked into the WA dataset
+  if (/^state (executive|judicial|supreme court|appellate|legislative)/i.test(name)) return false;
+  if (/^local (trial court|ballot measure) (judicial )?elections/i.test(name)) return false;
+  if (/^(alabama|alaska|arizona|arkansas|california|colorado|connecticut|delaware|florida|georgia|hawaii|idaho|illinois|indiana|iowa|kansas|kentucky|louisiana|maine|maryland|massachusetts|michigan|minnesota|mississippi|missouri|montana|nebraska|nevada|new hampshire|new jersey|new mexico|new york|north carolina|north dakota|ohio|oklahoma|oregon|pennsylvania|rhode island|south carolina|south dakota|tennessee|texas|utah|vermont|virginia|west virginia|wisconsin|wyoming)\b/i.test(name)) return false;
   return true;
 }
 
