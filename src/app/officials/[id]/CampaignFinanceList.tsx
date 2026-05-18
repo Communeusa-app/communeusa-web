@@ -18,9 +18,19 @@ export function CampaignFinanceList({ records }: { records: CampaignFinanceRecor
 
   if (records.length === 0) {
     return (
-      <p className="text-sm text-brand-navy/40 dark:text-brand-off-white/35 text-center py-4">
-        No campaign finance data on file
-      </p>
+      <div className="rounded-lg border border-brand-light-gray/60 dark:border-brand-dark-gray/60 bg-brand-light-gray/20 dark:bg-brand-dark-gray/30 px-4 py-5 space-y-1.5">
+        <p className="text-sm font-medium text-brand-navy/60 dark:text-brand-off-white/50">
+          No campaign finance records on file for this official.
+        </p>
+        <p className="text-xs text-brand-navy/40 dark:text-brand-off-white/35 leading-relaxed">
+          Finance data is available for officials who have filed with the Washington PDC or federal FEC.
+          Many local officials run unopposed or in races below disclosure thresholds and will not have
+          records on file. Data is sourced directly from{" "}
+          <a href="https://www.pdc.wa.gov" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-primary dark:hover:text-brand-red transition-colors">PDC.wa.gov</a>
+          {" "}and{" "}
+          <a href="https://www.fec.gov" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-primary dark:hover:text-brand-red transition-colors">FEC.gov</a>.
+        </p>
+      </div>
     );
   }
 

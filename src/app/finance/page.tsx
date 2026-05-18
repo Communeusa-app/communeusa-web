@@ -75,6 +75,33 @@ export default async function FinancePage() {
             </p>
           </div>
 
+          {/* Coverage note */}
+          <div className="mb-10 rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-brand-light-gray/20 dark:bg-brand-dark-gray/30 px-5 py-4">
+            <p className="text-sm text-brand-navy/65 dark:text-brand-off-white/55 leading-relaxed">
+              Campaign finance data is available for officials who have filed with the Washington PDC
+              or federal FEC. Many local officials run unopposed or in races below disclosure
+              thresholds and will not have finance records on file. Data is sourced directly from{" "}
+              <a
+                href="https://www.pdc.wa.gov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-brand-primary dark:hover:text-brand-red transition-colors"
+              >
+                PDC.wa.gov
+              </a>
+              {" "}and{" "}
+              <a
+                href="https://www.fec.gov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-brand-primary dark:hover:text-brand-red transition-colors"
+              >
+                FEC.gov
+              </a>
+              .
+            </p>
+          </div>
+
           <FinanceBrowser
             allSummaries={allSummaries}
             pacDonors={pacDonors}
