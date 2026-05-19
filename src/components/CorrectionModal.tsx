@@ -150,11 +150,12 @@ export function CorrectionModal({
       {/* ── Trigger ──────────────────────────────────────────────────────── */}
       {variant === "button" ? (
         <button
+          type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-1.5 text-xs text-brand-navy/45 dark:text-brand-off-white/40 hover:text-brand-primary dark:hover:text-brand-red transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg border border-brand-primary dark:border-brand-red px-4 py-2 text-sm font-medium text-brand-primary dark:text-brand-red bg-transparent hover:bg-brand-light-blue/20 dark:hover:bg-brand-red/10 transition-colors"
         >
           <FlagIcon />
-          Suggest a correction
+          Suggest a Correction
         </button>
       ) : (
         <button

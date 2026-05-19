@@ -118,16 +118,13 @@ export default async function OfficialPage({ params }: Props) {
         </Section>
 
         {/* ── Suggest a correction ─────────────────────────────────── */}
-        <div className="flex justify-end">
+        <div className="flex justify-center">
           <CorrectionModal
             entityType="official"
             entityId={official.id}
             entityName={official.official_name}
           />
         </div>
-      </div>
-      <div className="mx-auto max-w-3xl pb-6 flex justify-center">
-        <CorrectionModal entityType="general" variant="footer-link" />
       </div>
     </main>
   );
