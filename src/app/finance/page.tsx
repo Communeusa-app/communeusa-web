@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { label: "Elections",       href: "/elections" },
   { label: "Finance",         href: "/finance" },
   { label: "Directory",       href: "/directory" },
+  { label: "Rights",          href: "/rights" },
   { label: "About",           href: "/about" },
 ] as const;
 
