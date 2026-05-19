@@ -1,12 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import {
-  getAllFinanceOfficials,
-  getTopPACDonors,
-  getTopIndividualDonors,
-  getTopIndustries,
-} from "@/app/actions/finance";
-import { FinanceBrowser } from "./FinanceBrowser";
+import { getEntitiesByCategory, getDirectoryCounties } from "@/app/actions/directory";
+import { DirectoryBrowser } from "./DirectoryBrowser";
 
 const NAV_LINKS = [
   { label: "Representatives", href: "/#representatives" },
@@ -17,19 +12,16 @@ const NAV_LINKS = [
 ] as const;
 
 export const metadata = {
-  title: "Finance — CommuneUSA",
+  title: "Directory — CommuneUSA",
   description:
-    "Campaign finance data for every Washington official, sourced from the Washington PDC and FEC.",
+    "Every public institution, agency, and entity serving Washington residents.",
 };
 
-export default async function FinancePage() {
-  const [allSummaries, pacDonors, individualDonors, industries] =
-    await Promise.all([
-      getAllFinanceOfficials(),
-      getTopPACDonors(25),
-      getTopIndividualDonors(25),
-      getTopIndustries(15),
-    ]);
+export default async function DirectoryPage() {
+  const [initialEntities, counties] = await Promise.all([
+    getEntitiesByCategory("school-districts"),
+    getDirectoryCounties(),
+  ]);
 
   return (
     <>
@@ -48,7 +40,7 @@ export default async function FinancePage() {
                 key={label}
                 href={href}
                 className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
-                  href === "/finance"
+                  href === "/directory"
                     ? "text-brand-primary dark:text-brand-red font-medium bg-brand-light-blue/20 dark:bg-brand-red/10"
                     : "text-brand-navy/60 dark:text-brand-off-white/60 hover:text-brand-primary dark:hover:text-brand-red hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10"
                 }`}
@@ -66,58 +58,20 @@ export default async function FinancePage() {
       <main className="flex-1 px-6 py-12">
         <div className="mx-auto max-w-5xl">
           {/* Hero */}
-          <div className="mb-12">
+          <div className="mb-10">
             <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
-              Follow the Money
+              Washington Directory
             </h1>
             <p className="mt-2 text-brand-navy/60 dark:text-brand-off-white/55 max-w-2xl">
-              Campaign finance data for every Washington official, sourced from
-              the Washington PDC and FEC.
+              Every public institution, agency, and entity serving Washington residents.
             </p>
           </div>
 
-          {/* Coverage note */}
-          <div className="mb-10 rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-brand-light-gray/20 dark:bg-brand-dark-gray/30 px-5 py-4">
-            <p className="text-sm text-brand-navy/65 dark:text-brand-off-white/55 leading-relaxed">
-              Campaign finance data is available for officials who have filed with the Washington PDC
-              or federal FEC. Many local officials run unopposed or in races below disclosure
-              thresholds and will not have finance records on file. Data is sourced directly from{" "}
-              <a
-                href="https://www.pdc.wa.gov"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-brand-primary dark:hover:text-brand-red transition-colors"
-              >
-                PDC.wa.gov
-              </a>
-              {" "}and{" "}
-              <a
-                href="https://www.fec.gov"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-brand-primary dark:hover:text-brand-red transition-colors"
-              >
-                FEC.gov
-              </a>
-              .
-            </p>
-          </div>
-
-          <FinanceBrowser
-            allSummaries={allSummaries}
-            pacDonors={pacDonors}
-            individualDonors={individualDonors}
-            industries={industries}
+          <DirectoryBrowser
+            initialCategory="school-districts"
+            initialEntities={initialEntities}
+            counties={counties}
           />
-
-          {/* Disclosure */}
-          <p className="mt-16 text-xs text-brand-navy/40 dark:text-brand-off-white/35 leading-relaxed border-t border-brand-light-gray/50 dark:border-brand-dark-gray pt-6">
-            Federal contributions under $200 and Washington State contributions
-            under $25 are not required to be publicly disclosed and are not
-            reflected in this data. Data is sourced from the Washington Public
-            Disclosure Commission (PDC) and the Federal Election Commission
-            (FEC). Last updated during each sync cycle.
-          </p>
         </div>
       </main>
 

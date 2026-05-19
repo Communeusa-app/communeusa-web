@@ -5,9 +5,10 @@ import { ElectionsBrowser } from "./ElectionsBrowser";
 
 const NAV_LINKS = [
   { label: "Representatives", href: "/#representatives" },
-  { label: "Elections", href: "/elections" },
-  { label: "Finance", href: "/#finance" },
-  { label: "About", href: "/about" },
+  { label: "Elections",       href: "/elections" },
+  { label: "Finance",         href: "/finance" },
+  { label: "Directory",       href: "/directory" },
+  { label: "About",           href: "/about" },
 ] as const;
 
 export const metadata = {

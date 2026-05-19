@@ -6,7 +6,8 @@ import { AddressLookup } from "@/components/AddressLookup";
 const NAV_LINKS = [
   { label: "Representatives", href: "/#representatives" },
   { label: "Elections",       href: "/elections" },
-  { label: "Finance",         href: "/#finance" },
+  { label: "Finance",         href: "/finance" },
+  { label: "Directory",       href: "/directory" },
   { label: "About",           href: "/about" },
 ] as const;
 
