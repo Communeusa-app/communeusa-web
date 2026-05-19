@@ -12,6 +12,37 @@ import type {
   DirectoryCounty,
 } from "@/app/actions/directory";
 
+// ── US states ──────────────────────────────────────────────────────────────────
+
+const US_STATES = [
+  { abbr: "AL", name: "Alabama" }, { abbr: "AK", name: "Alaska" },
+  { abbr: "AZ", name: "Arizona" }, { abbr: "AR", name: "Arkansas" },
+  { abbr: "CA", name: "California" }, { abbr: "CO", name: "Colorado" },
+  { abbr: "CT", name: "Connecticut" }, { abbr: "DE", name: "Delaware" },
+  { abbr: "FL", name: "Florida" }, { abbr: "GA", name: "Georgia" },
+  { abbr: "HI", name: "Hawaii" }, { abbr: "ID", name: "Idaho" },
+  { abbr: "IL", name: "Illinois" }, { abbr: "IN", name: "Indiana" },
+  { abbr: "IA", name: "Iowa" }, { abbr: "KS", name: "Kansas" },
+  { abbr: "KY", name: "Kentucky" }, { abbr: "LA", name: "Louisiana" },
+  { abbr: "ME", name: "Maine" }, { abbr: "MD", name: "Maryland" },
+  { abbr: "MA", name: "Massachusetts" }, { abbr: "MI", name: "Michigan" },
+  { abbr: "MN", name: "Minnesota" }, { abbr: "MS", name: "Mississippi" },
+  { abbr: "MO", name: "Missouri" }, { abbr: "MT", name: "Montana" },
+  { abbr: "NE", name: "Nebraska" }, { abbr: "NV", name: "Nevada" },
+  { abbr: "NH", name: "New Hampshire" }, { abbr: "NJ", name: "New Jersey" },
+  { abbr: "NM", name: "New Mexico" }, { abbr: "NY", name: "New York" },
+  { abbr: "NC", name: "North Carolina" }, { abbr: "ND", name: "North Dakota" },
+  { abbr: "OH", name: "Ohio" }, { abbr: "OK", name: "Oklahoma" },
+  { abbr: "OR", name: "Oregon" }, { abbr: "PA", name: "Pennsylvania" },
+  { abbr: "RI", name: "Rhode Island" }, { abbr: "SC", name: "South Carolina" },
+  { abbr: "SD", name: "South Dakota" }, { abbr: "TN", name: "Tennessee" },
+  { abbr: "TX", name: "Texas" }, { abbr: "UT", name: "Utah" },
+  { abbr: "VT", name: "Vermont" }, { abbr: "VA", name: "Virginia" },
+  { abbr: "WA", name: "Washington" }, { abbr: "WV", name: "West Virginia" },
+  { abbr: "WI", name: "Wisconsin" }, { abbr: "WY", name: "Wyoming" },
+  { abbr: "DC", name: "District of Columbia" },
+] as const;
+
 // ── Tab config ─────────────────────────────────────────────────────────────────
 
 const TABS: { id: DirectoryCategory; label: string }[] = [
@@ -120,6 +151,7 @@ function EntityCard({ entity }: { entity: DirectoryEntity }) {
 // ── Main browser ───────────────────────────────────────────────────────────────
 
 export function DirectoryBrowser({ initialCategory, initialEntities, counties }: Props) {
+  const [selectedState, setSelectedState]   = useState("WA");
   const [activeCategory, setActiveCategory] = useState<DirectoryCategory>(initialCategory);
   const [entities, setEntities]             = useState<DirectoryEntity[]>(initialEntities);
   const [loading, setLoading]               = useState(false);
@@ -185,8 +217,49 @@ export function DirectoryBrowser({ initialCategory, initialEntities, counties }:
   const displayEntities = searchQuery.trim() ? (searchResults ?? []) : entities;
   const isSearchMode    = searchQuery.trim().length > 0;
 
+  const selectedStateName = US_STATES.find((s) => s.abbr === selectedState)?.name ?? selectedState;
+
   return (
     <div className="space-y-6">
+
+      {/* State selector */}
+      <div className="flex items-center gap-2.5">
+        <span className="text-sm text-brand-navy/55 dark:text-brand-off-white/50">
+          Showing data for
+        </span>
+        <div className="inline-flex items-center p-1 rounded-lg bg-brand-light-gray/30 dark:bg-brand-dark-gray/50">
+          <select
+            value={selectedState}
+            onChange={(e) => setSelectedState(e.target.value)}
+            className="px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer focus:outline-none bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm transition-colors"
+          >
+            {US_STATES.map(({ abbr, name }) => (
+              <option key={abbr} value={abbr}>{name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Coming soon (non-WA) */}
+      {selectedState !== "WA" && (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-brand-light-gray/40 dark:bg-brand-dark-gray flex items-center justify-center mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-navy/30 dark:text-brand-off-white/30">
+              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-brand-navy dark:text-brand-off-white mb-2">
+            {selectedStateName} directory coming soon
+          </h3>
+          <p className="max-w-sm text-sm text-brand-navy/55 dark:text-brand-off-white/50 leading-relaxed">
+            CommuneUSA is expanding to all 50 states. The {selectedStateName} public
+            institution directory will be available once we complete data collection for
+            that state.
+          </p>
+        </div>
+      )}
+
+      {selectedState === "WA" && <>
       {/* Search + county filter row */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -277,6 +350,7 @@ export function DirectoryBrowser({ initialCategory, initialEntities, counties }:
           </div>
         )}
       </div>
+      </>}
     </div>
   );
 }

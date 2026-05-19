@@ -15,7 +15,7 @@ const NAV_LINKS = [
 export const metadata = {
   title: "Directory — CommuneUSA",
   description:
-    "Every public institution, agency, and entity serving Washington residents.",
+    "Every public institution, agency, and entity serving American residents, starting with Washington State.",
 };
 
 export default async function DirectoryPage() {
@@ -61,10 +61,10 @@ export default async function DirectoryPage() {
           {/* Hero */}
           <div className="mb-10">
             <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
-              Washington Directory
+              Government Directory
             </h1>
             <p className="mt-2 text-brand-navy/60 dark:text-brand-off-white/55 max-w-2xl">
-              Every public institution, agency, and entity serving Washington residents.
+              Every public institution, agency, and entity serving American residents.
             </p>
           </div>
 
