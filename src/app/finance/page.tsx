@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { CorrectionModal } from "@/components/CorrectionModal";
 import {
   getAllFinanceOfficials,
   getTopPACDonors,
@@ -142,7 +143,10 @@ export default async function FinancePage() {
             ))}
           </div>
         </div>
-        <p className="mt-6 text-center text-xs text-brand-navy/35 dark:text-brand-off-white/35">
+        <div className="mt-5 flex justify-center">
+          <CorrectionModal entityType="general" variant="footer-link" />
+        </div>
+        <p className="mt-2 text-center text-xs text-brand-navy/35 dark:text-brand-off-white/35">
           © {new Date().getFullYear()} CommuneUSA. All rights reserved.
         </p>
       </footer>

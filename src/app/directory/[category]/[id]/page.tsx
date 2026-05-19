@@ -3,12 +3,14 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { getEntityById } from "@/app/actions/directory";
 import type { DirectoryCategory } from "@/app/actions/directory";
 import { notFound } from "next/navigation";
+import { CorrectionModal } from "@/components/CorrectionModal";
 
 const NAV_LINKS = [
   { label: "Representatives", href: "/#representatives" },
   { label: "Elections",       href: "/elections" },
   { label: "Finance",         href: "/finance" },
   { label: "Directory",       href: "/directory" },
+  { label: "Rights",          href: "/rights" },
   { label: "About",           href: "/about" },
 ] as const;
 
@@ -118,6 +120,14 @@ export default async function EntityDetailPage({ params }: Props) {
                 </a>
               )}
             </div>
+
+            <div className="flex justify-end pt-2">
+              <CorrectionModal
+                entityType={category.replace(/-/g, "_")}
+                entityId={entity.id}
+                entityName={entity.name}
+              />
+            </div>
           </div>
         </div>
       </main>
@@ -136,7 +146,10 @@ export default async function EntityDetailPage({ params }: Props) {
             ))}
           </div>
         </div>
-        <p className="mt-6 text-center text-xs text-brand-navy/35 dark:text-brand-off-white/35">
+        <div className="mt-5 flex justify-center">
+          <CorrectionModal entityType="general" variant="footer-link" />
+        </div>
+        <p className="mt-2 text-center text-xs text-brand-navy/35 dark:text-brand-off-white/35">
           © {new Date().getFullYear()} CommuneUSA. All rights reserved.
         </p>
       </footer>

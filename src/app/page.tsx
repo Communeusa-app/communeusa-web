@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { CorrectionModal } from "@/components/CorrectionModal";
 import { USMapSection } from "@/components/Map/USMapSection";
 import { AddressLookup } from "@/components/AddressLookup";
 
@@ -160,7 +161,10 @@ export default async function Home({
           </div>
         </div>
 
-        <p className="mt-8 text-center text-xs text-brand-navy/35 dark:text-brand-off-white/35">
+        <div className="mt-6 flex justify-center">
+          <CorrectionModal entityType="general" variant="footer-link" />
+        </div>
+        <p className="mt-2 text-center text-xs text-brand-navy/35 dark:text-brand-off-white/35">
           © {new Date().getFullYear()} CommuneUSA. All rights reserved.
         </p>
       </footer>

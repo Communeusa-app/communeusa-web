@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CorrectionModal } from "@/components/CorrectionModal";
 import {
   getCandidateById,
   getCandidatePositions,
@@ -172,6 +173,18 @@ export default async function CandidatePage({ params }: Props) {
             <VotingRecordsList records={votingRecords} />
           </Section>
         )}
+
+        {/* ── Suggest a correction ─────────────────────────────────── */}
+        <div className="flex justify-end">
+          <CorrectionModal
+            entityType="candidate"
+            entityId={candidate.id}
+            entityName={candidate.name}
+          />
+        </div>
+      </div>
+      <div className="mx-auto max-w-3xl pb-6 flex justify-center">
+        <CorrectionModal entityType="general" variant="footer-link" />
       </div>
     </main>
   );

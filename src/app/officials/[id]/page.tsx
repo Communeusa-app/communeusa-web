@@ -3,6 +3,7 @@ import { getOfficialById, getVotingRecords, getCampaignFinance } from "@/app/act
 import type { OfficialProfile } from "@/app/actions/officials";
 import { VotingRecordsList } from "./VotingRecordsList";
 import { CampaignFinanceList } from "./CampaignFinanceList";
+import { CorrectionModal } from "@/components/CorrectionModal";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -115,6 +116,18 @@ export default async function OfficialPage({ params }: Props) {
         <Section title="Campaign Finance">
           <CampaignFinanceList records={campaignFinance} />
         </Section>
+
+        {/* ── Suggest a correction ─────────────────────────────────── */}
+        <div className="flex justify-end">
+          <CorrectionModal
+            entityType="official"
+            entityId={official.id}
+            entityName={official.official_name}
+          />
+        </div>
+      </div>
+      <div className="mx-auto max-w-3xl pb-6 flex justify-center">
+        <CorrectionModal entityType="general" variant="footer-link" />
       </div>
     </main>
   );
