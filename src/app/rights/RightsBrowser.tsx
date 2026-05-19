@@ -809,34 +809,152 @@ function LocalRightsPanel() {
   );
 }
 
-// ── main browser component ────────────────────────────────────────────────────
+// ── US states list ────────────────────────────────────────────────────────────
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "federal", label: "Federal Rights" },
-  { id: "state", label: "Washington State Rights" },
-  { id: "local", label: "Local Rights" },
-];
+const US_STATES = [
+  { abbr: "AL", name: "Alabama" },
+  { abbr: "AK", name: "Alaska" },
+  { abbr: "AZ", name: "Arizona" },
+  { abbr: "AR", name: "Arkansas" },
+  { abbr: "CA", name: "California" },
+  { abbr: "CO", name: "Colorado" },
+  { abbr: "CT", name: "Connecticut" },
+  { abbr: "DE", name: "Delaware" },
+  { abbr: "FL", name: "Florida" },
+  { abbr: "GA", name: "Georgia" },
+  { abbr: "HI", name: "Hawaii" },
+  { abbr: "ID", name: "Idaho" },
+  { abbr: "IL", name: "Illinois" },
+  { abbr: "IN", name: "Indiana" },
+  { abbr: "IA", name: "Iowa" },
+  { abbr: "KS", name: "Kansas" },
+  { abbr: "KY", name: "Kentucky" },
+  { abbr: "LA", name: "Louisiana" },
+  { abbr: "ME", name: "Maine" },
+  { abbr: "MD", name: "Maryland" },
+  { abbr: "MA", name: "Massachusetts" },
+  { abbr: "MI", name: "Michigan" },
+  { abbr: "MN", name: "Minnesota" },
+  { abbr: "MS", name: "Mississippi" },
+  { abbr: "MO", name: "Missouri" },
+  { abbr: "MT", name: "Montana" },
+  { abbr: "NE", name: "Nebraska" },
+  { abbr: "NV", name: "Nevada" },
+  { abbr: "NH", name: "New Hampshire" },
+  { abbr: "NJ", name: "New Jersey" },
+  { abbr: "NM", name: "New Mexico" },
+  { abbr: "NY", name: "New York" },
+  { abbr: "NC", name: "North Carolina" },
+  { abbr: "ND", name: "North Dakota" },
+  { abbr: "OH", name: "Ohio" },
+  { abbr: "OK", name: "Oklahoma" },
+  { abbr: "OR", name: "Oregon" },
+  { abbr: "PA", name: "Pennsylvania" },
+  { abbr: "RI", name: "Rhode Island" },
+  { abbr: "SC", name: "South Carolina" },
+  { abbr: "SD", name: "South Dakota" },
+  { abbr: "TN", name: "Tennessee" },
+  { abbr: "TX", name: "Texas" },
+  { abbr: "UT", name: "Utah" },
+  { abbr: "VT", name: "Vermont" },
+  { abbr: "VA", name: "Virginia" },
+  { abbr: "WA", name: "Washington" },
+  { abbr: "WV", name: "West Virginia" },
+  { abbr: "WI", name: "Wisconsin" },
+  { abbr: "WY", name: "Wyoming" },
+  { abbr: "DC", name: "District of Columbia" },
+] as const;
+
+// ── coming soon panel ─────────────────────────────────────────────────────────
+
+function ComingSoonPanel({ stateName }: { stateName: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="w-14 h-14 rounded-2xl bg-brand-light-gray/40 dark:bg-brand-dark-gray flex items-center justify-center mb-5">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-navy/30 dark:text-brand-off-white/30">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+      <h3 className="text-lg font-semibold text-brand-navy dark:text-brand-off-white mb-2">
+        {stateName} rights coming soon
+      </h3>
+      <p className="max-w-sm text-sm text-brand-navy/55 dark:text-brand-off-white/50 leading-relaxed">
+        We&apos;re working on plain-language explanations sourced to {stateName} statutes and
+        rulings. In the meantime, your federal rights above apply in every state.
+      </p>
+      <a
+        href={`https://www.aclu.org/know-your-rights`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-6 inline-flex items-center gap-1.5 text-sm text-brand-primary dark:text-brand-red font-medium hover:underline"
+      >
+        ACLU Know Your Rights
+        <ExternalLinkIcon />
+      </a>
+    </div>
+  );
+}
+
+// ── main browser component ────────────────────────────────────────────────────
 
 export function RightsBrowser() {
   const [activeTab, setActiveTab] = useState<Tab>("federal");
+  const [selectedState, setSelectedState] = useState("WA");
+
+  const selectedStateName =
+    US_STATES.find((s) => s.abbr === selectedState)?.name ?? selectedState;
+
+  function handleStateChange(abbr: string) {
+    setSelectedState(abbr);
+    setActiveTab("state");
+  }
 
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex gap-1 mb-8 p-1 rounded-lg bg-brand-light-gray/30 dark:bg-brand-dark-gray/50 w-fit">
-        {TABS.map(({ id, label }) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeTab === id
-                ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
-                : "text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="flex items-center gap-1 mb-8 p-1 rounded-lg bg-brand-light-gray/30 dark:bg-brand-dark-gray/50 w-fit flex-wrap">
+        {/* Federal tab */}
+        <button
+          onClick={() => setActiveTab("federal")}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            activeTab === "federal"
+              ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
+              : "text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
+          }`}
+        >
+          Federal Rights
+        </button>
+
+        {/* State selector — acts as the state tab */}
+        <select
+          value={selectedState}
+          onChange={(e) => handleStateChange(e.target.value)}
+          onClick={() => setActiveTab("state")}
+          className={`px-3 py-2 rounded-md text-sm font-medium transition-all cursor-pointer focus:outline-none ${
+            activeTab === "state"
+              ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
+              : "bg-transparent text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
+          }`}
+        >
+          {US_STATES.map(({ abbr, name }) => (
+            <option key={abbr} value={abbr}>
+              {name} Rights
+            </option>
+          ))}
+        </select>
+
+        {/* Local tab */}
+        <button
+          onClick={() => setActiveTab("local")}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            activeTab === "local"
+              ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
+              : "text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
+          }`}
+        >
+          Local Rights
+        </button>
       </div>
 
       {/* Federal */}
@@ -850,11 +968,15 @@ export function RightsBrowser() {
 
       {/* State */}
       {activeTab === "state" && (
-        <div className="space-y-10">
-          {STATE_CATEGORIES.map((cat) => (
-            <CategorySection key={cat.id} category={cat} />
-          ))}
-        </div>
+        selectedState === "WA"
+          ? (
+            <div className="space-y-10">
+              {STATE_CATEGORIES.map((cat) => (
+                <CategorySection key={cat.id} category={cat} />
+              ))}
+            </div>
+          )
+          : <ComingSoonPanel stateName={selectedStateName} />
       )}
 
       {/* Local */}
