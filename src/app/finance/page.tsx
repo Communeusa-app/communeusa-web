@@ -11,6 +11,7 @@ import { FinanceBrowser } from "./FinanceBrowser";
 
 const NAV_LINKS = [
   { label: "Representatives", href: "/#representatives" },
+  { label: "Officials",       href: "/officials" },
   { label: "Elections",       href: "/elections" },
   { label: "Finance",         href: "/finance" },
   { label: "Directory",       href: "/directory" },

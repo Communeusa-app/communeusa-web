@@ -237,6 +237,50 @@ export async function getFederalOfficials(stateAbbr: string): Promise<Official[]
   return (data ?? []) as Official[];
 }
 
+export interface OfficialSearchResult {
+  id: string;
+  official_name: string;
+  office_title: string | null;
+  level: string;
+  party: string | null;
+  jurisdiction_name: string | null;
+}
+
+export async function searchOfficialsByName(
+  query: string,
+): Promise<OfficialSearchResult[]> {
+  if (query.trim().length < 2) return [];
+
+  const { data, error } = await supabase
+    .from("officials")
+    .select("id, official_name, office_title, level, party, municipalities(name), counties(name)")
+    .eq("is_active", true)
+    .ilike("official_name", `%${query.trim()}%`)
+    .order("official_name")
+    .limit(30);
+
+  if (error || !data) return [];
+
+  return (
+    data as unknown as Array<{
+      id: string;
+      official_name: string;
+      office_title: string | null;
+      level: string;
+      party: string | null;
+      municipalities: { name: string } | null;
+      counties: { name: string } | null;
+    }>
+  ).map((row) => ({
+    id: row.id,
+    official_name: row.official_name,
+    office_title: row.office_title,
+    level: row.level,
+    party: row.party,
+    jurisdiction_name: row.municipalities?.name ?? row.counties?.name ?? null,
+  }));
+}
+
 export async function getUpcomingElectionForOfficial(
   officialId: string,
 ): Promise<string | null> {

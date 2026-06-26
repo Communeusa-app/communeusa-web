@@ -54,10 +54,11 @@ export default async function OfficialPage({ params }: Props) {
 
         {/* ── Profile header ──────────────────────────────────────── */}
         <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-6">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <PartyBadge party={official.party} />
-            <LevelBadge level={official.level} />
-          </div>
+          {official.party?.trim() && (
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <PartyBadge party={official.party} />
+            </div>
+          )}
 
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
             {official.official_name}
@@ -68,6 +69,10 @@ export default async function OfficialPage({ params }: Props) {
               {official.office_title}
             </p>
           )}
+
+          <p className="mt-1 text-sm text-brand-navy/50 dark:text-brand-off-white/40">
+            <LocationLine level={official.level} jurisdictionName={official.jurisdiction_name} />
+          </p>
         </div>
 
         {/* ── Key details ─────────────────────────────────────────── */}
@@ -177,30 +182,26 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
 }
 
 function PartyBadge({ party }: { party: OfficialProfile["party"] }) {
+  if (!party?.trim()) return null;
+  const normalized = party === "Democrat" ? "Democratic" : party;
   const styles: Record<string, string> = {
-    Democrat:    "bg-brand-light-blue/50 text-brand-navy dark:bg-brand-primary/25 dark:text-brand-light-blue",
-    Republican:  "bg-brand-red/15 text-brand-red dark:bg-brand-red/20 dark:text-brand-red",
+    Democratic: "bg-brand-light-blue/50 text-brand-navy dark:bg-brand-primary/25 dark:text-brand-light-blue",
+    Republican: "bg-brand-red/15 text-brand-red dark:bg-brand-red/20 dark:text-brand-red",
   };
-  const cls = (party && styles[party]) ?? "bg-brand-light-gray/50 text-brand-navy/60 dark:bg-brand-dark-gray dark:text-brand-off-white/50";
+  const cls = styles[normalized] ?? "bg-brand-light-gray/50 text-brand-navy/60 dark:bg-brand-dark-gray dark:text-brand-off-white/50";
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${cls}`}>
-      {party ?? "No party"}
+      {normalized}
     </span>
   );
 }
 
-function LevelBadge({ level }: { level: string }) {
-  const labels: Record<string, string> = {
-    federal: "Federal",
-    state:   "State",
-    county:  "County",
-    city:    "City",
-  };
-  return (
-    <span className="inline-flex items-center rounded-full border border-brand-light-gray dark:border-brand-dark-gray px-2.5 py-0.5 text-xs font-medium text-brand-navy/60 dark:text-brand-off-white/50">
-      {labels[level] ?? level}
-    </span>
-  );
+function LocationLine({ level, jurisdictionName }: { level: string; jurisdictionName: string | null }) {
+  const levelLabel: Record<string, string> = { federal: "Federal", state: "State", county: "County", city: "City" };
+  const label = levelLabel[level] ?? level;
+  if (!jurisdictionName?.trim()) return <>{label}</>;
+  if (jurisdictionName.toLowerCase().includes(label.toLowerCase())) return <>{jurisdictionName}</>;
+  return <>{jurisdictionName} · {label}</>;
 }
 
 function ArrowUpRightIcon() {

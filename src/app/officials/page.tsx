@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CorrectionModal } from "@/components/CorrectionModal";
-import { RightsBrowser } from "./RightsBrowser";
+import { OfficialSearch } from "./OfficialSearch";
 
 const NAV_LINKS = [
   { label: "Representatives", href: "/#representatives" },
@@ -14,12 +14,12 @@ const NAV_LINKS = [
 ] as const;
 
 export const metadata = {
-  title: "Know Your Rights — CommuneUSA",
+  title: "Officials Search — CommuneUSA",
   description:
-    "Plain language explanations of your rights as an American citizen at the federal, state, and local level. Every entry is sourced to the actual statute, ruling, or regulation.",
+    "Search every elected and appointed official in Washington by name.",
 };
 
-export default function RightsPage() {
+export default function OfficialsPage() {
   return (
     <>
       {/* Navbar */}
@@ -37,7 +37,7 @@ export default function RightsPage() {
                 key={label}
                 href={href}
                 className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
-                  href === "/rights"
+                  href === "/officials"
                     ? "text-brand-primary dark:text-brand-red font-medium bg-brand-light-blue/20 dark:bg-brand-red/10"
                     : "text-brand-navy/60 dark:text-brand-off-white/60 hover:text-brand-primary dark:hover:text-brand-red hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10"
                 }`}
@@ -53,65 +53,18 @@ export default function RightsPage() {
       </header>
 
       <main className="flex-1 px-6 py-12">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-3xl">
           {/* Hero */}
-          <div className="mb-12">
+          <div className="mb-10">
             <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
-              Know Your Rights
+              Officials Search
             </h1>
-            <p className="mt-3 max-w-2xl text-brand-navy/60 dark:text-brand-off-white/55 leading-relaxed">
-              Plain language explanations of your rights as an American citizen at the
-              federal, state, and local level. Every entry is sourced to the actual
-              statute, ruling, or regulation.
+            <p className="mt-2 text-brand-navy/60 dark:text-brand-off-white/55">
+              Find any elected or appointed official in Washington by name.
             </p>
           </div>
 
-          {/* Disclaimer */}
-          <div className="mb-10 flex gap-3 rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-brand-light-gray/20 dark:bg-brand-dark-gray/30 px-5 py-4">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="shrink-0 mt-0.5 text-brand-navy/40 dark:text-brand-off-white/35"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <p className="text-sm text-brand-navy/60 dark:text-brand-off-white/50 leading-relaxed">
-              <strong className="font-semibold text-brand-navy/75 dark:text-brand-off-white/70">
-                Educational purposes only.
-              </strong>{" "}
-              This information does not constitute legal advice. Laws change — always
-              verify current law with an attorney or official government source. If you
-              need legal help,{" "}
-              <a
-                href="https://www.aclu.org/know-your-rights"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand-primary dark:text-brand-red hover:underline"
-              >
-                ACLU Know Your Rights
-              </a>
-              {" "}and{" "}
-              <a
-                href="https://www.lawhelp.org/wa"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-brand-primary dark:text-brand-red hover:underline"
-              >
-                LawHelp WA
-              </a>
-              {" "}offer free resources.
-            </p>
-          </div>
-
-          <RightsBrowser />
+          <OfficialSearch />
         </div>
       </main>
 
