@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { getOfficialById, getVotingRecords, getCampaignFinance } from "@/app/actions/officials";
+import { getOfficialById, getVotingRecords, getCampaignFinance, getUpcomingElectionForOfficial } from "@/app/actions/officials";
 import type { OfficialProfile } from "@/app/actions/officials";
 import { VotingRecordsList } from "./VotingRecordsList";
 import { CampaignFinanceList } from "./CampaignFinanceList";
 import { CorrectionModal } from "@/components/CorrectionModal";
+import { TakeActionCenter } from "@/components/TakeActionCenter";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -11,10 +12,11 @@ interface Props {
 
 export default async function OfficialPage({ params }: Props) {
   const { id } = await params;
-  const [official, votingRecords, campaignFinance] = await Promise.all([
+  const [official, votingRecords, campaignFinance, upcomingElectionDate] = await Promise.all([
     getOfficialById(id),
     getVotingRecords(id),
     getCampaignFinance(id),
+    getUpcomingElectionForOfficial(id),
   ]);
 
   if (!official) {
@@ -116,6 +118,9 @@ export default async function OfficialPage({ params }: Props) {
         <Section title="Campaign Finance">
           <CampaignFinanceList records={campaignFinance} />
         </Section>
+
+        {/* ── Take Action center ───────────────────────────────────── */}
+        <TakeActionCenter official={official} upcomingElectionDate={upcomingElectionDate} />
 
         {/* ── Suggest a correction ─────────────────────────────────── */}
         <div className="flex justify-center">

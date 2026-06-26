@@ -128,6 +128,7 @@ export interface OfficialProfile {
   ballotpedia_url: string | null;
   key_committees: string | null;
   notes: string | null;
+  jurisdiction_name: string | null;
 }
 
 export async function getOfficialById(
@@ -136,15 +137,27 @@ export async function getOfficialById(
   const { data, error } = await supabase
     .from("officials")
     .select(
-      "id, official_name, office_title, office_category, level, party, district, term_start, term_end, appointed_or_elected, phone, email, official_website, ballotpedia_url, key_committees, notes, is_active",
+      "id, official_name, office_title, office_category, level, party, district, term_start, term_end, appointed_or_elected, phone, email, official_website, ballotpedia_url, key_committees, notes, is_active, municipalities(name), counties(name)",
     )
     .eq("id", id)
     .single();
 
   if (error || !data) return null;
+  // Supabase returns a many-to-one FK join as a plain object, not an array.
+  const raw = data as unknown as Omit<OfficialProfile, "jurisdiction_name"> & {
+    is_active: boolean;
+    municipalities: { name: string } | null;
+    counties: { name: string } | null;
+  };
+  // TEMP DEBUG — remove after verifying jurisdiction_name and official_website
+  console.log("[getOfficialById] raw municipalities:", raw.municipalities);
+  console.log("[getOfficialById] raw counties:", raw.counties);
+  console.log("[getOfficialById] official_website:", raw.official_website);
   // Stale duplicate rows remain in the DB but are inactive — treat them as not found.
-  if (!(data as OfficialProfile & { is_active: boolean }).is_active) return null;
-  return data as OfficialProfile;
+  if (!raw.is_active) return null;
+  const jurisdiction_name = raw.municipalities?.name ?? raw.counties?.name ?? null;
+  console.log("[getOfficialById] jurisdiction_name:", jurisdiction_name);
+  return { ...raw, jurisdiction_name } as OfficialProfile;
 }
 
 export async function getVotingRecords(
@@ -222,6 +235,36 @@ export async function getFederalOfficials(stateAbbr: string): Promise<Official[]
   }
 
   return (data ?? []) as Official[];
+}
+
+export async function getUpcomingElectionForOfficial(
+  officialId: string,
+): Promise<string | null> {
+  const today = new Date().toISOString().split("T")[0];
+
+  const { data: candidateRows, error: candError } = await supabase
+    .from("candidates")
+    .select("election_id")
+    .eq("official_id", officialId);
+
+  if (candError || !candidateRows?.length) return null;
+
+  const electionIds = (candidateRows as { election_id: string }[])
+    .map((c) => c.election_id)
+    .filter(Boolean);
+  if (!electionIds.length) return null;
+
+  const { data, error } = await supabase
+    .from("elections")
+    .select("election_date")
+    .in("id", electionIds)
+    .gte("election_date", today)
+    .order("election_date", { ascending: true })
+    .limit(1)
+    .single();
+
+  if (error || !data) return null;
+  return (data as { election_date: string }).election_date;
 }
 
 export async function findOfficialIdsByNames(
