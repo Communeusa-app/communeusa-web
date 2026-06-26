@@ -170,6 +170,25 @@ const SELECT_MAP: Record<Exclude<DirectoryCategory, "courts">, string> = {
   "judiciary":         "id,judge_name,position,court_name,court_level,selection_method,jurisdiction,official_website,counties(name)",
 };
 
+// ── Name quality guards ────────────────────────────────────────────────────────
+
+const JUNK_SUBSTRINGS = ["total", "all other", "see official"];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyNameFilters(q: any, nameCol = "name"): any {
+  q = q.not(nameCol, "is", null).neq(nameCol, "");
+  for (const s of JUNK_SUBSTRINGS) {
+    q = q.not(nameCol, "ilike", `%${s}%`);
+  }
+  return q;
+}
+
+function isJunkName(name: string | null | undefined): boolean {
+  if (!name || name.trim() === "") return true;
+  const lower = name.toLowerCase();
+  return JUNK_SUBSTRINGS.some((s) => lower.includes(s));
+}
+
 // ── Public actions ─────────────────────────────────────────────────────────────
 
 export async function getWAStateId(): Promise<string | null> {
@@ -201,9 +220,9 @@ export async function getEntitiesByCategory(
       .from("judiciary")
       .select("id,court_name,court_level,jurisdiction,official_website,counties(name)")
       .eq("state_id", stateId)
-      .not("court_name", "is", null)
       .order("court_level")
       .order("court_name");
+    q = applyNameFilters(q, "court_name");
     if (countyId) q = q.eq("county_id", countyId);
     const { data } = await q.limit(300);
     if (!data) return [];
@@ -217,10 +236,12 @@ export async function getEntitiesByCategory(
     });
   }
 
-  const table  = TABLE_MAP[category];
-  const select = SELECT_MAP[category];
+  const table   = TABLE_MAP[category];
+  const select  = SELECT_MAP[category];
+  const nameCol = category === "judiciary" ? "judge_name" : "name";
 
   let q = supabase.from(table).select(select).eq("state_id", stateId);
+  q = applyNameFilters(q, nameCol);
   if (countyId) q = q.eq("county_id", countyId);
 
   // Meaningful default sort per category
@@ -255,12 +276,13 @@ export async function searchDirectory(
       const table  = TABLE_MAP[cat];
       const select = SELECT_MAP[cat];
       const nameCol = cat === "judiciary" ? "judge_name" : "name";
-      const { data } = await supabase
+      let sq = supabase
         .from(table)
         .select(select)
         .eq("state_id", stateId)
-        .ilike(nameCol, `%${q}%`)
-        .limit(20);
+        .ilike(nameCol, `%${q}%`);
+      sq = applyNameFilters(sq, nameCol);
+      const { data } = await sq.limit(20);
       return (data ?? []).map((row) => normalize(cat, row));
     }),
   );
@@ -278,11 +300,76 @@ export async function getEntityById(
       .select("id,court_name,court_level,jurisdiction,official_website,counties(name)")
       .eq("id", id)
       .single();
-    return data ? normalize("courts", data) : null;
+    if (!data || isJunkName(data.court_name)) return null;
+    return normalize("courts", data);
   }
 
-  const table  = TABLE_MAP[category];
-  const select = SELECT_MAP[category];
+  const table    = TABLE_MAP[category];
+  const select   = SELECT_MAP[category];
   const { data } = await supabase.from(table).select(select).eq("id", id).single();
-  return data ? normalize(category, data) : null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawName  = category === "judiciary" ? (data as any)?.judge_name : (data as any)?.name;
+  if (!data || isJunkName(rawName)) return null;
+  return normalize(category, data);
+}
+
+// ── Detail selects (full columns for profile pages) ───────────────────────────
+
+const DETAIL_SELECT_MAP: Partial<Record<Exclude<DirectoryCategory, "courts">, string>> = {
+  "school-districts":  "id,name,enrollment,official_website,phone,superintendent,counties(name)",
+  "law-enforcement":   "id,name,agency_type,jurisdiction,chief_name,sworn_officers,phone,website,headquarters,counties(name)",
+  "fire-ems":          "id,name,agency_type,jurisdiction,fire_chief,stations,personnel,headquarters,service_type,phone,website,counties(name)",
+  "hospitals":         "id,name,ownership_type,beds,trauma_level,health_system,ceo,phone,website,counties(name)",
+  "utilities-transit": "id,name,category,county_region,service_type,customers_riders,ceo,phone,website,governing_board,counties(name)",
+  "state-agencies":    "id,name,category,abbreviation,director,headquarters,phone,website,mission,budget,employees,selection_method",
+  "judiciary":         "id,judge_name,position,court_name,court_level,selection_method,jurisdiction,official_website,appointed_by,term_start,term_end,counties(name)",
+};
+
+export interface SchoolBoardMember {
+  id: string;
+  name: string;
+  position: string | null;
+  party: string | null;
+  term_start: string | null;
+  term_end: string | null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getEntityDetailRaw(category: DirectoryCategory, id: string): Promise<any | null> {
+  if (category === "courts") {
+    const { data, error } = await supabase
+      .from("judiciary")
+      .select("id,court_name,court_level,jurisdiction,official_website,counties(name)")
+      .eq("id", id)
+      .single();
+    if (error) console.error(`[getEntityDetailRaw] courts id=${id}:`, error.message);
+    if (!data || isJunkName(data.court_name)) return null;
+    return data;
+  }
+  const table  = TABLE_MAP[category];
+  const select = DETAIL_SELECT_MAP[category] ?? SELECT_MAP[category];
+  const { data, error } = await supabase.from(table).select(select).eq("id", id).single();
+  if (error) console.error(`[getEntityDetailRaw] ${category} id=${id} table=${table}:`, error.message);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawName = category === "judiciary" ? (data as any)?.judge_name : (data as any)?.name;
+  if (!data || isJunkName(rawName)) return null;
+  return data;
+}
+
+export async function getSchoolBoardMembers(districtId: string): Promise<SchoolBoardMember[]> {
+  const { data } = await supabase
+    .from("school_board_members")
+    .select("id,name,position,party,term_start,term_end")
+    .eq("district_id", districtId)
+    .order("name");
+  return (data ?? []) as SchoolBoardMember[];
+}
+
+export async function getSchoolBoardMemberDistrictId(memberId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("school_board_members")
+    .select("district_id")
+    .eq("id", memberId)
+    .single();
+  return (data as { district_id: string } | null)?.district_id ?? null;
 }
