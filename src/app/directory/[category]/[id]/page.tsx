@@ -174,20 +174,54 @@ export default async function EntityDetailPage({ params }: Props) {
             <>
               <Section title="Agency Details">
                 <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                  <Detail label="Jurisdiction"   value={raw.jurisdiction} />
+                  <Detail label="Jurisdiction"    value={raw.jurisdiction} />
                   <Detail label="Chief / Sheriff" value={raw.chief_name} />
-                  <Detail label="Sworn Officers" value={raw.sworn_officers != null ? String(raw.sworn_officers) : null} />
-                  <Detail label="Headquarters"   value={raw.headquarters} />
+                  <Detail label="Sworn Officers"  value={raw.sworn_officers != null ? String(raw.sworn_officers) : null} />
+                  <Detail label="Headquarters"    value={raw.headquarters} />
                 </dl>
+                {!raw.chief_name?.trim() && (
+                  <div className="mt-4 flex items-center justify-between gap-4">
+                    <p className="text-sm text-brand-navy/55 dark:text-brand-off-white/45">
+                      The current chief or sheriff for this agency isn&apos;t on file yet.
+                    </p>
+                    <CorrectionModal
+                      entityType="law_enforcement"
+                      entityId={id}
+                      entityName={entityName}
+                      variant="footer-link"
+                    />
+                  </div>
+                )}
               </Section>
               <Section title="Contact">
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                  <Detail label="Phone" value={raw.phone} />
-                </dl>
-                {website && (
-                  <div className="mt-4">
-                    <ExternalLink href={normalizeUrl(website)} label="Official website" />
+                {!raw.phone?.trim() && !website ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-brand-navy/55 dark:text-brand-off-white/45">
+                      Direct contact details for this agency aren&apos;t on file yet.
+                    </p>
+                    {countyName && (
+                      <p className="text-sm text-brand-navy/50 dark:text-brand-off-white/40">
+                        You can reach this agency through{" "}
+                        <span className="font-medium text-brand-navy/70 dark:text-brand-off-white/60">
+                          {countyName} County
+                        </span>{" "}
+                        government.
+                      </p>
+                    )}
                   </div>
+                ) : (
+                  <>
+                    {raw.phone?.trim() && (
+                      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                        <Detail label="Phone" value={raw.phone} />
+                      </dl>
+                    )}
+                    {website && (
+                      <div className={raw.phone?.trim() ? "mt-4" : ""}>
+                        <ExternalLink href={normalizeUrl(website)} label="Official website" />
+                      </div>
+                    )}
+                  </>
                 )}
               </Section>
             </>
