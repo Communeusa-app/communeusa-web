@@ -7,7 +7,8 @@ export const maxDuration = 300;
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const FEC_BASE          = "https://api.fec.gov/v1";
-const CYCLE             = 2026;
+const DEFAULT_CYCLE     = 2026;
+const FALLBACK_CYCLE    = 2024;
 const IE_MAX_PAGES      = 30;   // ≤ 3 000 IE records per run
 const DONORS_PAGES      = 2;    // top ~200 donors per PAC
 const PER_PAGE          = 100;
@@ -99,20 +100,37 @@ interface FecIE {
   expenditureDate: string | null;
 }
 
-async function fetchAllIEs(apiKey: string): Promise<FecIE[]> {
+interface IEFetchResult {
+  ies: FecIE[];
+  cycle: number;
+  firstPageUrl: string;
+  firstPagePagination: Record<string, unknown>;
+}
+
+async function fetchAllIEs(apiKey: string, cycle: number): Promise<IEFetchResult> {
   const ies: FecIE[] = [];
   let lastIndex: string | null = null;
   let lastDate: string | null = null;
+  let firstPageUrl = "";
+  let firstPagePagination: Record<string, unknown> = {};
 
   for (let page = 0; page < IE_MAX_PAGES; page++) {
     const params: Record<string, string> = {
-      two_year_transaction_period: String(CYCLE),
+      two_year_transaction_period: String(cycle),
       per_page: String(PER_PAGE),
       sort: "expenditure_date",
       sort_hide_null: "true",
     };
     if (lastIndex) params.last_index = lastIndex;
     if (lastDate)  params.last_expenditure_date = lastDate;
+
+    // Capture the first-page URL for diagnostics
+    if (page === 0) {
+      const debugUrl = new URL(`${FEC_BASE}/schedules/schedule_e/`);
+      for (const [k, v] of Object.entries(params)) debugUrl.searchParams.set(k, v);
+      debugUrl.searchParams.set("api_key", "REDACTED");
+      firstPageUrl = debugUrl.toString();
+    }
 
     let data: Record<string, unknown>;
     try {
@@ -122,6 +140,9 @@ async function fetchAllIEs(apiKey: string): Promise<FecIE[]> {
       break;
     }
     await sleep(REQUEST_DELAY);
+
+    const pagination = (data.pagination as Record<string, unknown>) ?? {};
+    if (page === 0) firstPagePagination = pagination;
 
     const results = (data.results as Array<Record<string, unknown>>) ?? [];
 
@@ -145,7 +166,6 @@ async function fetchAllIEs(apiKey: string): Promise<FecIE[]> {
       });
     }
 
-    const pagination  = (data.pagination as Record<string, unknown>) ?? {};
     const lastIndexes = (pagination.last_indexes as Record<string, unknown>) ?? {};
     const nextIndex   = str(lastIndexes.last_index);
     const nextDate    = str(lastIndexes.last_expenditure_date);
@@ -155,7 +175,7 @@ async function fetchAllIEs(apiKey: string): Promise<FecIE[]> {
     lastDate  = nextDate;
   }
 
-  return ies;
+  return { ies, cycle, firstPageUrl, firstPagePagination };
 }
 
 // ── Phase 2: Candidate-to-official resolution ──────────────────────────────
@@ -239,6 +259,7 @@ interface PacUpsertRow {
 async function fetchPacRow(
   committeeId: string,
   apiKey: string,
+  cycle: number,
 ): Promise<PacUpsertRow | null> {
   let detail: Record<string, unknown> = {};
   try {
@@ -255,7 +276,7 @@ async function fetchPacRow(
   try {
     const totalsData = await fecGet(
       `/committee/${committeeId}/totals/`,
-      { cycle: String(CYCLE) },
+      { cycle: String(cycle) },
       apiKey,
     );
     const totals = (totalsData.results as Array<Record<string, unknown>>)?.[0] ?? {};
@@ -273,7 +294,7 @@ async function fetchPacRow(
     designation:      str(detail.designation),
     total_raised:     totalRaised,
     total_spent:      totalSpent,
-    cycle:            CYCLE,
+    cycle,
     treasurer:        str(detail.treasurer_name),
     state:            str(detail.state),
     website:          str(detail.website),
@@ -298,12 +319,13 @@ async function fetchDirectContributions(
   committeeId: string,
   apiKey: string,
   officialLookup: Map<string, string>,
+  cycle: number,
 ): Promise<ContribRow[]> {
   let data: Record<string, unknown>;
   try {
     data = await fecGet("/schedules/schedule_b/", {
       committee_id: committeeId,
-      two_year_transaction_period: String(CYCLE),
+      two_year_transaction_period: String(cycle),
       line_number: "24K",
       per_page: String(PER_PAGE),
     }, apiKey);
@@ -328,7 +350,7 @@ async function fetchDirectContributions(
       fec_candidate_id:  candidateId,
       amount,
       contribution_date: str(r.disbursement_date),
-      cycle:             CYCLE,
+      cycle,
     });
   }
   return rows;
@@ -350,6 +372,7 @@ async function fetchTopDonors(
   pacId: string,
   committeeId: string,
   apiKey: string,
+  cycle: number,
 ): Promise<DonorRow[]> {
   const rows: DonorRow[]       = [];
   let lastIndex: string | null = null;
@@ -357,7 +380,7 @@ async function fetchTopDonors(
   for (let page = 0; page < DONORS_PAGES; page++) {
     const params: Record<string, string> = {
       committee_id: committeeId,
-      two_year_transaction_period: String(CYCLE),
+      two_year_transaction_period: String(cycle),
       per_page: String(PER_PAGE),
       sort: "-contribution_receipt_amount",
       sort_hide_null: "true",
@@ -383,7 +406,7 @@ async function fetchTopDonors(
         donor_employer:    str(r.contributor_employer),
         amount,
         contribution_date: str(r.contribution_receipt_date),
-        cycle:             CYCLE,
+        cycle,
       });
     }
 
@@ -453,6 +476,8 @@ export async function GET(req: NextRequest) {
   const url              = new URL(req.url);
   const limit            = Math.min(Number(url.searchParams.get("limit") ?? DEFAULT_LIMIT), HARD_LIMIT);
   const committeeOffset  = Math.max(Number(url.searchParams.get("committee_offset") ?? 0), 0);
+  const cycleOverride    = url.searchParams.get("cycle");
+  const requestedCycle   = cycleOverride ? Number(cycleOverride) : DEFAULT_CYCLE;
 
   const supabase = createClient(supabaseUrl!, supabaseKey!);
 
@@ -462,9 +487,19 @@ export async function GET(req: NextRequest) {
     console.log(`sync-pacs: ${officialLookup.size} federal officials loaded`);
 
     // ── Phase 1: Fetch all independent expenditures ───────────────────────
-    console.log("sync-pacs: fetching IEs...");
-    const allIEs = await fetchAllIEs(fecKey!);
-    console.log(`sync-pacs: fetched ${allIEs.length} IE records`);
+    console.log(`sync-pacs: fetching IEs for cycle ${requestedCycle}...`);
+    let ieResult = await fetchAllIEs(fecKey!, requestedCycle);
+    console.log(`sync-pacs: fetched ${ieResult.ies.length} IE records (cycle ${ieResult.cycle})`);
+
+    // Fallback: if the requested cycle has no data and we weren't explicitly
+    // overriding, retry with the most recent cycle that definitely has data.
+    if (ieResult.ies.length === 0 && !cycleOverride && requestedCycle !== FALLBACK_CYCLE) {
+      console.log(`sync-pacs: 0 IEs for cycle ${requestedCycle}; retrying with ${FALLBACK_CYCLE}`);
+      ieResult = await fetchAllIEs(fecKey!, FALLBACK_CYCLE);
+      console.log(`sync-pacs: fallback fetched ${ieResult.ies.length} IE records (cycle ${ieResult.cycle})`);
+    }
+
+    const allIEs = ieResult.ies;
 
     // Group by committee
     const iesByCommittee = new Map<string, FecIE[]>();
@@ -494,9 +529,11 @@ export async function GET(req: NextRequest) {
     let donorsInserted         = 0;
     let committeeErrors        = 0;
 
+    const effectiveCycle = ieResult.cycle;
+
     for (const committeeId of slice) {
       // 3a. Fetch committee detail + totals → upsert pacs
-      const pacRow = await fetchPacRow(committeeId, fecKey!);
+      const pacRow = await fetchPacRow(committeeId, fecKey!, effectiveCycle);
       if (!pacRow) { committeeErrors++; continue; }
 
       const { data: upserted, error: upsertErr } = await supabase
@@ -519,7 +556,7 @@ export async function GET(req: NextRequest) {
         .from("pac_independent_expenditures")
         .delete()
         .eq("pac_id", pacId)
-        .eq("cycle", CYCLE);
+        .eq("cycle", effectiveCycle);
 
       const committeeIEs = iesByCommittee.get(committeeId) ?? [];
       if (committeeIEs.length) {
@@ -531,44 +568,49 @@ export async function GET(req: NextRequest) {
           amount:           ie.amount,
           support_oppose:   ie.supportOppose,
           expenditure_date: ie.expenditureDate,
-          cycle:            CYCLE,
+          cycle:            effectiveCycle,
         }));
         const { inserted } = await batchInsert(supabase, "pac_independent_expenditures", ieRows);
         ieInserted += inserted;
       }
 
       // 3c. Direct contributions — schedule B / 24K
-      const contributions = await fetchDirectContributions(pacId, committeeId, fecKey!, officialLookup);
+      const contributions = await fetchDirectContributions(pacId, committeeId, fecKey!, officialLookup, effectiveCycle);
       if (contributions.length) {
         await supabase
           .from("pac_contributions")
           .delete()
           .eq("pac_id", pacId)
-          .eq("cycle", CYCLE);
+          .eq("cycle", effectiveCycle);
         const { inserted } = await batchInsert(supabase, "pac_contributions", contributions);
         contributionsInserted += inserted;
       }
 
       // 3d. Top donors — schedule A
-      const donors = await fetchTopDonors(pacId, committeeId, fecKey!);
+      const donors = await fetchTopDonors(pacId, committeeId, fecKey!, effectiveCycle);
       if (donors.length) {
         await supabase
           .from("pac_donors")
           .delete()
           .eq("pac_id", pacId)
-          .eq("cycle", CYCLE);
+          .eq("cycle", effectiveCycle);
         const { inserted } = await batchInsert(supabase, "pac_donors", donors);
         donorsInserted += inserted;
       }
     }
 
-    const hasMore           = committeeOffset + limit < allCommitteeIds.length;
+    const hasMore             = committeeOffset + limit < allCommitteeIds.length;
     const nextCommitteeOffset = hasMore ? committeeOffset + limit : null;
 
     return NextResponse.json({
       ok:                      true,
       synced_at:               new Date().toISOString(),
-      cycle:                   CYCLE,
+      cycle_requested:         requestedCycle,
+      cycle_used:              effectiveCycle,
+      ie_debug: {
+        first_page_url:        ieResult.firstPageUrl,
+        first_page_pagination: ieResult.firstPagePagination,
+      },
       ie_records_fetched:      allIEs.length,
       committees_total:        allCommitteeIds.length,
       committee_offset:        committeeOffset,
