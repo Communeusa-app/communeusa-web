@@ -8,8 +8,7 @@ export const maxDuration = 300;
 
 const FEC_BASE          = "https://api.fec.gov/v1";
 const DEFAULT_CYCLE     = 2026;
-const FALLBACK_CYCLE    = 2024;
-const IE_MAX_PAGES      = 30;   // ≤ 3 000 IE records per run
+const IE_PAGE_CAP       = 20;   // ≤ 2 000 aggregate rows per run
 const DONORS_PAGES      = 2;    // top ~200 donors per PAC
 const PER_PAGE          = 100;
 const REQUEST_DELAY     = 300;  // ms between FEC calls → ~3 req/s, safe for 1 000/hr keys
@@ -105,52 +104,59 @@ interface IEFetchResult {
   cycle: number;
   firstPageUrl: string;
   firstPagePagination: Record<string, unknown>;
+  fecError: { status: number; message: string } | null;
 }
 
+// Uses the by_candidate aggregate endpoint which supports plain page-number
+// pagination and returns one row per committee × candidate × support/oppose.
 async function fetchAllIEs(apiKey: string, cycle: number): Promise<IEFetchResult> {
   const ies: FecIE[] = [];
-  let lastIndex: string | null = null;
-  let lastDate: string | null = null;
-  let firstPageUrl = "";
+  let firstPageUrl             = "";
   let firstPagePagination: Record<string, unknown> = {};
+  let fecError: IEFetchResult["fecError"]          = null;
 
-  for (let page = 0; page < IE_MAX_PAGES; page++) {
+  for (let page = 1; page <= IE_PAGE_CAP; page++) {
     const params: Record<string, string> = {
-      two_year_transaction_period: String(cycle),
-      per_page: String(PER_PAGE),
-      sort: "expenditure_date",
-      sort_hide_null: "true",
+      cycle:         String(cycle),
+      election_full: "false",
+      per_page:      String(PER_PAGE),
+      page:          String(page),
     };
-    if (lastIndex) params.last_index = lastIndex;
-    if (lastDate)  params.last_expenditure_date = lastDate;
 
-    // Capture the first-page URL for diagnostics
-    if (page === 0) {
-      const debugUrl = new URL(`${FEC_BASE}/schedules/schedule_e/`);
-      for (const [k, v] of Object.entries(params)) debugUrl.searchParams.set(k, v);
+    const fetchUrl = new URL(`${FEC_BASE}/schedules/schedule_e/by_candidate/`);
+    for (const [k, v] of Object.entries(params)) fetchUrl.searchParams.set(k, v);
+    fetchUrl.searchParams.set("api_key", apiKey);
+
+    if (page === 1) {
+      const debugUrl = new URL(fetchUrl.toString());
       debugUrl.searchParams.set("api_key", "REDACTED");
       firstPageUrl = debugUrl.toString();
     }
 
-    let data: Record<string, unknown>;
+    let res: Response;
     try {
-      data = await fecGet("/schedules/schedule_e/", params, apiKey);
+      res = await fetch(fetchUrl.toString(), { cache: "no-store" });
     } catch (err) {
-      console.error("sync-pacs: IE page", page, "error:", err);
+      fecError = { status: 0, message: String(err) };
       break;
     }
     await sleep(REQUEST_DELAY);
 
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      fecError = { status: res.status, message: body.slice(0, 500) };
+      break;
+    }
+
+    const data       = await res.json() as Record<string, unknown>;
     const pagination = (data.pagination as Record<string, unknown>) ?? {};
-    if (page === 0) firstPagePagination = pagination;
+    if (page === 1) firstPagePagination = pagination;
 
     const results = (data.results as Array<Record<string, unknown>>) ?? [];
+    if (!results.length) break;
 
     for (const r of results) {
-      // committee_id may be nested under a "committee" object or flat
-      const committeeId =
-        str((r.committee as Record<string, unknown>)?.committee_id) ??
-        str(r.committee_id);
+      const committeeId = str(r.committee_id);
       if (!committeeId) continue;
 
       const so = str(r.support_oppose_indicator);
@@ -158,24 +164,16 @@ async function fetchAllIEs(apiKey: string, cycle: number): Promise<IEFetchResult
 
       ies.push({
         committeeId,
-        candidateId:    str(r.candidate_id),
-        candidateName:  str(r.candidate_name) ?? "Unknown",
-        supportOppose:  so === "S" ? "support" : "oppose",
-        amount:         Number(r.expenditure_amount ?? 0),
-        expenditureDate: str(r.expenditure_date),
+        candidateId:     str(r.candidate_id),
+        candidateName:   str(r.candidate_name) ?? "Unknown",
+        supportOppose:   so === "S" ? "support" : "oppose",
+        amount:          Number(r.total ?? 0),
+        expenditureDate: null, // aggregate — no single date
       });
     }
-
-    const lastIndexes = (pagination.last_indexes as Record<string, unknown>) ?? {};
-    const nextIndex   = str(lastIndexes.last_index);
-    const nextDate    = str(lastIndexes.last_expenditure_date);
-
-    if (!results.length || !nextIndex) break;
-    lastIndex = nextIndex;
-    lastDate  = nextDate;
   }
 
-  return { ies, cycle, firstPageUrl, firstPagePagination };
+  return { ies, cycle, firstPageUrl, firstPagePagination, fecError };
 }
 
 // ── Phase 2: Candidate-to-official resolution ──────────────────────────────
@@ -488,15 +486,20 @@ export async function GET(req: NextRequest) {
 
     // ── Phase 1: Fetch all independent expenditures ───────────────────────
     console.log(`sync-pacs: fetching IEs for cycle ${requestedCycle}...`);
-    let ieResult = await fetchAllIEs(fecKey!, requestedCycle);
+    const ieResult = await fetchAllIEs(fecKey!, requestedCycle);
     console.log(`sync-pacs: fetched ${ieResult.ies.length} IE records (cycle ${ieResult.cycle})`);
 
-    // Fallback: if the requested cycle has no data and we weren't explicitly
-    // overriding, retry with the most recent cycle that definitely has data.
-    if (ieResult.ies.length === 0 && !cycleOverride && requestedCycle !== FALLBACK_CYCLE) {
-      console.log(`sync-pacs: 0 IEs for cycle ${requestedCycle}; retrying with ${FALLBACK_CYCLE}`);
-      ieResult = await fetchAllIEs(fecKey!, FALLBACK_CYCLE);
-      console.log(`sync-pacs: fallback fetched ${ieResult.ies.length} IE records (cycle ${ieResult.cycle})`);
+    if (ieResult.fecError) {
+      console.error("sync-pacs: FEC IE fetch failed:", ieResult.fecError);
+      return NextResponse.json({
+        ok:            false,
+        cycle_requested: requestedCycle,
+        ie_debug: {
+          first_page_url: ieResult.firstPageUrl,
+          fec_status:     ieResult.fecError.status,
+          fec_error:      ieResult.fecError.message,
+        },
+      }, { status: 502 });
     }
 
     const allIEs = ieResult.ies;
@@ -610,6 +613,8 @@ export async function GET(req: NextRequest) {
       ie_debug: {
         first_page_url:        ieResult.firstPageUrl,
         first_page_pagination: ieResult.firstPagePagination,
+        fec_status:            200,
+        fec_error:             null,
       },
       ie_records_fetched:      allIEs.length,
       committees_total:        allCommitteeIds.length,
