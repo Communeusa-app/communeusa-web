@@ -12,6 +12,9 @@ const IE_PAGE_CAP       = 20;   // ≤ 2 000 aggregate rows per run
 const DONORS_PAGES      = 2;    // top ~200 donors per PAC
 const PER_PAGE          = 100;
 const REQUEST_DELAY     = 300;  // ms between FEC calls → ~3 req/s, safe for 1 000/hr keys
+const FEC_TIMEOUT_MS    = 25_000; // abort if FEC hasn't responded in 25 s
+const FEC_MAX_RETRIES   = 3;      // total attempts (1 initial + 2 retries)
+const FEC_USER_AGENT    = "CommuneUSA/1.0";
 const DEFAULT_LIMIT     = 100;  // committees per invocation
 const HARD_LIMIT        = 200;
 const CANDIDATE_API_CAP = 50;   // max /candidate/{id}/ fallback calls per run
@@ -72,6 +75,43 @@ function sleep(ms: number): Promise<void> {
 
 // ── FEC fetch helper ───────────────────────────────────────────────────────
 
+// Single fetch attempt with a hard timeout via AbortController.
+async function fecFetchOnce(url: string): Promise<Response> {
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), FEC_TIMEOUT_MS);
+  try {
+    return await fetch(url, {
+      cache:   "no-store",
+      signal:  ac.signal,
+      headers: { "User-Agent": FEC_USER_AGENT },
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Wraps fecFetchOnce with up to FEC_MAX_RETRIES attempts.
+// Retries on network errors or 5xx; throws on final failure.
+async function fecFetchWithRetry(url: string): Promise<Response> {
+  let lastErr: unknown;
+  const backoffs = [1000, 2000]; // ms to wait before retry 2, retry 3
+  for (let attempt = 1; attempt <= FEC_MAX_RETRIES; attempt++) {
+    try {
+      const res = await fecFetchOnce(url);
+      if (res.ok || res.status < 500) return res; // success or 4xx — don't retry
+      lastErr = new Error(`FEC ${res.status}`);
+    } catch (err) {
+      lastErr = err;
+    }
+    if (attempt < FEC_MAX_RETRIES) {
+      await sleep(backoffs[attempt - 1]);
+    }
+  }
+  throw lastErr;
+}
+
+// High-level helper used by committee detail, totals, donor, and contribution
+// fetches. Throws on non-OK or network failure (after retries).
 async function fecGet(
   path: string,
   params: Record<string, string>,
@@ -80,7 +120,7 @@ async function fecGet(
   const url = new URL(`${FEC_BASE}${path}`);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   url.searchParams.set("api_key", apiKey);
-  const res = await fetch(url.toString(), { cache: "no-store" });
+  const res = await fecFetchWithRetry(url.toString());
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`FEC ${res.status} ${path}: ${body.slice(0, 200)}`);
@@ -104,7 +144,7 @@ interface IEFetchResult {
   cycle: number;
   firstPageUrl: string;
   firstPagePagination: Record<string, unknown>;
-  fecError: { status: number; message: string } | null;
+  fecError: { status: number; message: string; attempts: number } | null;
 }
 
 // Uses the by_candidate aggregate endpoint which supports plain page-number
@@ -135,16 +175,16 @@ async function fetchAllIEs(apiKey: string, cycle: number): Promise<IEFetchResult
 
     let res: Response;
     try {
-      res = await fetch(fetchUrl.toString(), { cache: "no-store" });
+      res = await fecFetchWithRetry(fetchUrl.toString());
     } catch (err) {
-      fecError = { status: 0, message: String(err) };
+      fecError = { status: 0, message: String(err), attempts: FEC_MAX_RETRIES };
       break;
     }
     await sleep(REQUEST_DELAY);
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      fecError = { status: res.status, message: body.slice(0, 500) };
+      fecError = { status: res.status, message: body.slice(0, 500), attempts: FEC_MAX_RETRIES };
       break;
     }
 
@@ -498,6 +538,7 @@ export async function GET(req: NextRequest) {
           first_page_url: ieResult.firstPageUrl,
           fec_status:     ieResult.fecError.status,
           fec_error:      ieResult.fecError.message,
+          attempts:       ieResult.fecError.attempts,
         },
       }, { status: 502 });
     }
@@ -615,6 +656,7 @@ export async function GET(req: NextRequest) {
         first_page_pagination: ieResult.firstPagePagination,
         fec_status:            200,
         fec_error:             null,
+        attempts:              1,
       },
       ie_records_fetched:      allIEs.length,
       committees_total:        allCommitteeIds.length,
