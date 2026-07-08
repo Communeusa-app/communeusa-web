@@ -311,6 +311,76 @@ export async function getUpcomingElectionForOfficial(
   return (data as { election_date: string }).election_date;
 }
 
+export interface OutsideMoneyGroup {
+  pac_id: string;
+  pac_name: string;
+  committee_type: string;
+  support_oppose: "support" | "oppose";
+  total_amount: number;
+  expenditure_count: number;
+}
+
+export interface OutsideMoneySummary {
+  total_supporting: number;
+  total_opposing: number;
+  by_pac: OutsideMoneyGroup[];
+}
+
+export async function getOutsideMoneyForOfficial(
+  officialId: string,
+): Promise<OutsideMoneySummary> {
+  const { data, error } = await supabase
+    .from("pac_independent_expenditures")
+    .select("pac_id, amount, support_oppose, pacs(name, committee_type)")
+    .eq("official_id", officialId)
+    .order("amount", { ascending: false });
+
+  if (error) {
+    console.error("getOutsideMoneyForOfficial:", error.message);
+    return { total_supporting: 0, total_opposing: 0, by_pac: [] };
+  }
+
+  type RawRow = {
+    pac_id: string;
+    amount: number | null;
+    support_oppose: "support" | "oppose";
+    pacs: { name: string; committee_type: string } | null;
+  };
+
+  const rows = (data ?? []) as unknown as RawRow[];
+  const groups = new Map<string, OutsideMoneyGroup>();
+  let total_supporting = 0;
+  let total_opposing = 0;
+
+  for (const row of rows) {
+    const amount = row.amount ?? 0;
+    const key = `${row.pac_id}::${row.support_oppose}`;
+
+    if (row.support_oppose === "support") total_supporting += amount;
+    else total_opposing += amount;
+
+    const existing = groups.get(key);
+    if (existing) {
+      existing.total_amount += amount;
+      existing.expenditure_count += 1;
+    } else {
+      groups.set(key, {
+        pac_id: row.pac_id,
+        pac_name: row.pacs?.name ?? "Unknown PAC",
+        committee_type: row.pacs?.committee_type ?? "other",
+        support_oppose: row.support_oppose,
+        total_amount: amount,
+        expenditure_count: 1,
+      });
+    }
+  }
+
+  const by_pac = Array.from(groups.values()).sort(
+    (a, b) => b.total_amount - a.total_amount,
+  );
+  return { total_supporting, total_opposing, by_pac };
+}
+
 export async function findOfficialIdsByNames(
   names: string[],
 ): Promise<Record<string, string>> {

@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { getOfficialById, getVotingRecords, getCampaignFinance, getUpcomingElectionForOfficial } from "@/app/actions/officials";
+import { getOfficialById, getVotingRecords, getCampaignFinance, getUpcomingElectionForOfficial, getOutsideMoneyForOfficial } from "@/app/actions/officials";
 import type { OfficialProfile } from "@/app/actions/officials";
 import { VotingRecordsList } from "./VotingRecordsList";
 import { CampaignFinanceList } from "./CampaignFinanceList";
+import { OutsideMoney } from "@/components/OutsideMoney";
 import { CorrectionModal } from "@/components/CorrectionModal";
 import { TakeActionCenter } from "@/components/TakeActionCenter";
 
@@ -12,11 +13,12 @@ interface Props {
 
 export default async function OfficialPage({ params }: Props) {
   const { id } = await params;
-  const [official, votingRecords, campaignFinance, upcomingElectionDate] = await Promise.all([
+  const [official, votingRecords, campaignFinance, upcomingElectionDate, outsideMoney] = await Promise.all([
     getOfficialById(id),
     getVotingRecords(id),
     getCampaignFinance(id),
     getUpcomingElectionForOfficial(id),
+    getOutsideMoneyForOfficial(id),
   ]);
 
   if (!official) {
@@ -122,6 +124,11 @@ export default async function OfficialPage({ params }: Props) {
         {/* ── Campaign finance ─────────────────────────────────────── */}
         <Section title="Campaign Finance">
           <CampaignFinanceList records={campaignFinance} />
+        </Section>
+
+        {/* ── Outside money ─────────────────────────────────────────── */}
+        <Section title="Outside Money">
+          <OutsideMoney data={outsideMoney} />
         </Section>
 
         {/* ── Take Action center ───────────────────────────────────── */}
