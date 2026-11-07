@@ -221,9 +221,12 @@ export function AddressLookup() {
     : null;
 
   return (
-    <div ref={containerRef} className="mt-10 w-full max-w-md">
+    <div ref={containerRef} className="mx-auto w-full max-w-2xl">
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-wrap items-center gap-2 rounded-[28px] border border-brand-off-white/20 bg-surface p-2 sm:flex-nowrap sm:rounded-full sm:pl-6 focus-within:border-brand-light-blue/60 transition-colors"
+      >
         <input
           type="text"
           value={address}
@@ -235,24 +238,25 @@ export function AddressLookup() {
               window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: null } }));
             }
           }}
-          placeholder="Enter your address…"
+          placeholder="Street address, city, ZIP"
+          aria-label="Street address"
           ref={inputRef}
-          className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white placeholder:text-brand-mid-gray px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 focus:border-transparent transition"
+          className="min-w-0 flex-1 basis-full bg-transparent px-4 py-3 text-base text-brand-off-white placeholder:text-muted focus:outline-none sm:basis-0 sm:px-0 sm:text-[17px]"
         />
         <button
           type="submit"
           disabled={loading || !address.trim()}
-          className="w-full rounded-xl bg-brand-primary hover:bg-brand-navy disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-red text-white font-semibold px-6 py-3.5 text-base transition-colors"
+          className="w-full flex-none rounded-full bg-brand-off-white px-7 py-3.5 text-base font-semibold text-ink transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
-          {loading ? "Looking up…" : "Find my representatives"}
+          {loading ? "Looking up…" : "Find my officials"}
         </button>
-        <a
-          href="#map"
-          className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-transparent hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10 text-brand-navy dark:text-brand-off-white font-medium px-6 py-3.5 text-base transition-colors text-center"
-        >
-          Explore the map ↓
-        </a>
       </form>
+      <a
+        href="#map"
+        className="mt-5 inline-block font-mono text-[13px] text-brand-light-blue hover:text-white transition-colors"
+      >
+        or explore the map ↓
+      </a>
 
       {/* Error */}
       {error && (

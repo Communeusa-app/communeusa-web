@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CorrectionModal } from "@/components/CorrectionModal";
 import { USMapSection } from "@/components/Map/USMapSection";
 import { AddressLookup } from "@/components/AddressLookup";
+import { HowTabs, type HowTab } from "@/components/HowTabs";
 
 const NAV_LINKS = [
   { label: "Representatives", href: "/#representatives" },
@@ -65,6 +66,58 @@ const ACTIONS = [
   { label: "recall",  text: "how it works, educational" },
 ] as const;
 
+const HOW_TABS: HowTab[] = [
+  {
+    label: "Look up",
+    step: "Step 1",
+    title: "Start with an address.",
+    body: "One street address finds your congressional, legislative and county districts, then lists every official who represents you.",
+    content: (
+      <>
+        <div className="rounded-full border border-line bg-surface px-5 py-3.5 text-base text-muted">Street address, city, ZIP</div>
+        <dl className="mt-5 flex flex-col gap-3 font-mono text-[13px]">
+          <Row k="congressional district" v="from your address" />
+          <Row k="legislative district" v="from your address" />
+          <Row k="county" v="from your address" />
+        </dl>
+      </>
+    ),
+  },
+  {
+    label: "Understand",
+    step: "Step 2",
+    title: "See the record behind each name.",
+    body: "Each profile shows how the official voted and who paid to support or oppose them, taken from public filings.",
+    content: (
+      <>
+        <div className="text-xl font-semibold">Every official has a profile</div>
+        <div className="mt-1 text-[15px] text-muted">Federal, state, county and city</div>
+        <dl className="mt-5 flex flex-col gap-3 border-t border-line pt-4 font-mono text-[13px]">
+          <Row k="votes" v="official roll calls" />
+          <Row k="campaign funding" v="public filings" />
+          <Row k="outside spending" v="spent supporting / opposing" />
+        </dl>
+      </>
+    ),
+  },
+  {
+    label: "Act",
+    step: "Step 3",
+    title: "Do something with it.",
+    body: "Contact an official, check your next election, find where to testify, or learn how recall works in Washington.",
+    content: (
+      <ul className="flex flex-col font-mono text-sm">
+        {ACTIONS.map((a, i) => (
+          <li key={a.label} className={`flex gap-5 py-3.5 ${i < ACTIONS.length - 1 ? "border-b border-line" : ""}`}>
+            <span className="w-20 flex-none text-brand-light-blue">{a.label}</span>
+            <span>{a.text}</span>
+          </li>
+        ))}
+      </ul>
+    ),
+  },
+];
+
 const MONO = "font-mono tracking-[0.12em] uppercase";
 
 export default async function Home({
@@ -122,7 +175,8 @@ export default async function Home({
           </div>
 
           <h1 className="mt-10 text-[clamp(44px,7vw,92px)] font-bold leading-[1.04] tracking-[-0.04em]">
-            <span className="block">Your representatives. Your votes.</span>
+            <span className="block">Your representatives.</span>
+            <span className="block">Your votes.</span>
             <span className="block bg-gradient-to-r from-brand-off-white to-brand-red/90 bg-clip-text text-transparent">
               Your government.
             </span>
@@ -143,60 +197,7 @@ export default async function Home({
 
         {/* ── Look up / Understand / Act ───────────────────────── */}
         <section id="how" className="mx-auto max-w-6xl px-6 pb-24">
-          <div className="relative">
-            <input type="radio" name="how" id="how-1" defaultChecked aria-label="Look up" className="peer/t1 sr-only" />
-            <input type="radio" name="how" id="how-2" aria-label="Understand" className="peer/t2 sr-only" />
-            <input type="radio" name="how" id="how-3" aria-label="Act" className="peer/t3 sr-only" />
-
-            <div className="flex flex-wrap gap-x-3.5 gap-y-3">
-              {[
-                { id: "how-1", label: "Look up", on: "peer-checked/t1:border-brand-off-white peer-checked/t1:text-brand-off-white peer-focus-visible/t1:outline" },
-                { id: "how-2", label: "Understand", on: "peer-checked/t2:border-brand-off-white peer-checked/t2:text-brand-off-white peer-focus-visible/t2:outline" },
-                { id: "how-3", label: "Act", on: "peer-checked/t3:border-brand-off-white peer-checked/t3:text-brand-off-white peer-focus-visible/t3:outline" },
-              ].map((t) => (
-                <label
-                  key={t.id}
-                  htmlFor={t.id}
-                  className={`flex-1 basis-40 cursor-pointer border-t-[3px] border-line pt-4 text-center text-lg font-semibold text-muted transition-colors hover:text-brand-off-white outline-2 outline-offset-4 outline-brand-light-blue ${t.on}`}
-                >
-                  {t.label}
-                </label>
-              ))}
-            </div>
-
-            <div className="mt-7">
-              {/* Panel 1 */}
-              <Panel visible="peer-checked/t1:flex" step="Step 1" title="Start with an address." body="One street address finds your congressional, legislative and county districts, then lists every official who represents you.">
-                <div className="rounded-full border border-line bg-surface px-5 py-3.5 text-base text-muted">Street address, city, ZIP</div>
-                <dl className="mt-5 flex flex-col gap-3 font-mono text-[13px]">
-                  <Row k="congressional district" v="from your address" />
-                  <Row k="legislative district" v="from your address" />
-                  <Row k="county" v="from your address" />
-                </dl>
-              </Panel>
-              {/* Panel 2 */}
-              <Panel visible="peer-checked/t2:flex" step="Step 2" title="See the record behind each name." body="Each profile shows how the official voted and who paid to support or oppose them, taken from public filings.">
-                <div className="text-xl font-semibold">Every official has a profile</div>
-                <div className="mt-1 text-[15px] text-muted">Federal, state, county and city</div>
-                <dl className="mt-5 flex flex-col gap-3 border-t border-line pt-4 font-mono text-[13px]">
-                  <Row k="votes" v="official roll calls" />
-                  <Row k="campaign funding" v="public filings" />
-                  <Row k="outside spending" v="spent supporting / opposing" />
-                </dl>
-              </Panel>
-              {/* Panel 3 */}
-              <Panel visible="peer-checked/t3:flex" step="Step 3" title="Do something with it." body="Contact an official, check your next election, find where to testify, or learn how recall works in Washington.">
-                <ul className="flex flex-col font-mono text-sm">
-                  {ACTIONS.map((a, i) => (
-                    <li key={a.label} className={`flex gap-5 py-3.5 ${i < ACTIONS.length - 1 ? "border-b border-line" : ""}`}>
-                      <span className="w-20 flex-none text-brand-light-blue">{a.label}</span>
-                      <span>{a.text}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Panel>
-            </div>
-          </div>
+          <HowTabs tabs={HOW_TABS} />
         </section>
 
         {/* ── Map (focal point) ────────────────────────────────── */}
@@ -333,33 +334,6 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
     <div className={`inline-flex items-center gap-2 rounded-full border border-brand-off-white/15 px-3.5 py-2 text-xs ${MONO}`}>
       <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-red" />
       {children}
-    </div>
-  );
-}
-
-function Panel({
-  visible,
-  step,
-  title,
-  body,
-  children,
-}: {
-  visible: string;
-  step: string;
-  title: string;
-  body: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={`hidden ${visible} min-h-[420px] flex-wrap items-center gap-8 rounded-[32px] border border-line bg-gradient-to-br from-brand-navy via-brand-primary to-[#2C78C2] p-8 sm:p-12`}
-    >
-      <div className="min-w-0 flex-[1_1_320px]">
-        <span className={`text-[13px] text-brand-light-blue ${MONO}`}>{step}</span>
-        <h3 className="mb-3.5 mt-4 text-[clamp(28px,3.4vw,42px)] font-bold leading-[1.1] tracking-[-0.03em]">{title}</h3>
-        <p className="text-lg leading-relaxed text-[#DCE9F7]">{body}</p>
-      </div>
-      <div className="min-w-0 flex-[1_1_360px] rounded-[22px] border border-line bg-ink p-6">{children}</div>
     </div>
   );
 }
