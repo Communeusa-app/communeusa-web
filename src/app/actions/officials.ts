@@ -502,6 +502,12 @@ async function loadPlaces() {
 
 // Words in a query that name an office. `titles` are matched against office_title.
 const ROLES: { label: string; re: RegExp; titles: string[] }[] = [
+  // More specific offices first, so "insurance commissioner" is not read as plain "commissioner".
+  { label: "Secretary of State", re: /\bsecretary of state\b/,                       titles: ["secretary of state"] },
+  { label: "Lieutenant Governor", re: /\b(?:lieutenant|lt\.?) governors?\b/,            titles: ["lieutenant governor"] },
+  { label: "Commissioner of Public Lands", re: /\b(?:public lands|lands commissioner)\b/, titles: ["public lands"] },
+  { label: "Insurance Commissioner", re: /\binsurance commissioners?\b/,              titles: ["insurance commissioner"] },
+  { label: "Superintendent",   re: /\bsuperintendents?\b/,                          titles: ["superintendent"] },
   { label: "Mayor",            re: /\bmayors?\b/,                                     titles: ["mayor"] },
   { label: "Council",          re: /\bcouncil(?:\s?member|man|woman|lor)?s?\b/,       titles: ["council"] },
   { label: "Sheriff",          re: /\bsheriffs?\b/,                                   titles: ["sheriff"] },
@@ -561,7 +567,7 @@ async function runSmartSearch(rawQuery: string): Promise<SmartSearchResponse> {
 
   // Some offices cover the whole state, so a place in the query ("Seattle governor") should not
   // filter them out. Search statewide and say so.
-  const STATEWIDE = new Set(["Governor", "Attorney General"]);
+  const STATEWIDE = new Set(["Governor", "Lieutenant Governor", "Attorney General", "Secretary of State", "Commissioner of Public Lands", "Insurance Commissioner"]);
   let note: string | null = null;
   if (place && role && STATEWIDE.has(role.label)) {
     note = `${role.label} is a statewide office, so ${place.name}${place.kind === "county" ? " County" : ""} is not used to narrow the results.`;
@@ -687,6 +693,14 @@ async function correctTypos(rawQuery: string): Promise<string> {
     .join("");
 }
 
+function titleCase(s: string) {
+  const small = new Set(["of", "for", "the", "in", "and"]);
+  return s
+    .split(" ")
+    .map((w, i) => (i > 0 && small.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
 export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearchResponse> {
   const first = await runSmartSearch(rawQuery);
   if (first.results.length > 0) return first;
@@ -696,5 +710,5 @@ export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearc
   const original = rawQuery.toLowerCase().replace(/\s+/g, " ").trim();
   if (!fixed || fixed === original) return first;
   const second = await runSmartSearch(fixed);
-  return second.results.length > 0 ? { ...second, correctedQuery: fixed } : first;
+  return second.results.length > 0 ? { ...second, correctedQuery: titleCase(fixed) } : first;
 }
