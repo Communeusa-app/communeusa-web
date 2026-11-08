@@ -179,8 +179,7 @@ export default async function Home({
         {/* ── What is inside ───────────────────────────────────── */}
         <section id="finance" className="mx-auto flex max-w-6xl flex-wrap items-start gap-x-14 gap-y-12 px-6 pb-24">
           <div className="min-w-0 flex-[1_1_360px]">
-            <Eyebrow>Washington</Eyebrow>
-            <h2 className="mt-7 text-[clamp(34px,4.2vw,52px)] font-bold leading-[1.08] tracking-[-0.035em]">
+            <h2 className="text-[clamp(34px,4.2vw,52px)] font-bold leading-[1.08] tracking-[-0.035em]">
               A public record of your government, in one place.
             </h2>
             <p className="mt-7 text-[19px] leading-[1.65] text-muted">
