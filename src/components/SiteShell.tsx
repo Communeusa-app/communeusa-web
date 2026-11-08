@@ -40,13 +40,13 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <header className="mx-auto max-w-6xl px-6 pt-6">
         <nav
           aria-label="Main"
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[28px] border border-line bg-surface/70 px-4 py-3 backdrop-blur sm:px-5 sm:py-3.5"
+          className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-[28px] border border-line bg-surface/70 px-4 py-3 backdrop-blur sm:px-5 sm:py-3.5"
         >
           <a href="/" className="flex min-w-0 items-center gap-2.5 text-lg font-semibold tracking-tight sm:gap-3 sm:text-2xl">
             <LogoMark />
             CommuneUSA
           </a>
-          <div className="hidden flex-1 items-center justify-center gap-7 text-[15px] lg:flex">
+          <div className="hidden flex-1 items-center justify-center gap-6 px-8 text-[15px] xl:flex">
             {NAV_LINKS.map(({ label, href }) => (
               <Link key={label} href={href} className="text-fg hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors">
                 {label}
@@ -55,7 +55,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           </div>
           <a
             href="#lookup"
-            className="hidden flex-none whitespace-nowrap sm:ml-auto sm:inline-block lg:ml-0 rounded-full bg-fg px-3.5 py-2.5 text-[13px] font-semibold text-on-fg hover:bg-fg/90 transition-colors sm:px-6 sm:py-3 sm:text-[15px]"
+            className="hidden flex-none whitespace-nowrap sm:ml-auto sm:inline-block xl:ml-0 rounded-full bg-fg px-3.5 py-2.5 text-[13px] font-semibold text-on-fg hover:bg-fg/90 transition-colors sm:px-6 sm:py-3 sm:text-[15px]"
           >
             Look up my reps
           </a>

@@ -4,9 +4,9 @@ import { SiteShell } from "@/components/SiteShell";
 
 
 export const metadata = {
-  title: "Officials Search — CommuneUSA",
+  title: "Find Officials — CommuneUSA",
   description:
-    "Search every elected and appointed official in Washington by name.",
+    "Find any elected or appointed official in Washington by name, office or place, like Seattle mayor or King County sheriff.",
 };
 
 export default function OfficialsPage() {
@@ -18,10 +18,10 @@ export default function OfficialsPage() {
           {/* Hero */}
           <div className="mb-10">
             <h1 className="text-4xl font-bold tracking-tight text-fg">
-              Officials Search
+              Find your officials
             </h1>
             <p className="mt-2 text-muted">
-              Find any elected or appointed official in Washington by name.
+              Search by name, office or place. No need to know who holds the seat.
             </p>
           </div>
 
