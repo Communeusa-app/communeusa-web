@@ -267,34 +267,48 @@ export function AddressLookup() {
 
       {/* Results */}
       {grouped && (
-        <div className="mt-8 text-left space-y-6 max-h-[60vh] overflow-y-auto pr-1">
+        <div className="mt-10 space-y-6 text-left">
+          <p className="font-mono text-[13px] text-muted">
+            {reps?.length ?? 0} officials represent this address
+          </p>
           {(Object.entries(grouped) as [Level, Rep[]][]).map(
             ([level, officials]) => (
-              <div key={level}>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted dark:text-fg/40 mb-2">
-                  {level}
-                </p>
-                <ul className="space-y-0.5">
+              <section
+                key={level}
+                className="overflow-hidden rounded-[28px] border border-line bg-surface"
+              >
+                <div className="flex items-center justify-between gap-4 border-b border-line px-6 py-4 font-mono text-xs uppercase tracking-[0.12em] text-muted">
+                  <span>{level}</span>
+                  <span>{officials.length}</span>
+                </div>
+                <ul className="divide-y divide-line">
                   {officials.map((rep, i) =>
                     rep.dbId ? (
                       <li key={i}>
                         <div
                           role="button"
+                          tabIndex={0}
                           onClick={() => navigateToProfile(rep.dbId!)}
-                          className="group flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 -mx-3 cursor-pointer hover:bg-fg/5 transition-colors"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              navigateToProfile(rep.dbId!);
+                            }
+                          }}
+                          className="group flex cursor-pointer items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-fg/5 focus-visible:bg-fg/5 focus-visible:outline-none"
                         >
                           <RepCard rep={rep} />
                           <ChevronRight />
                         </div>
                       </li>
                     ) : (
-                      <li key={i} className="px-3 py-2.5 -mx-3">
+                      <li key={i} className="px-6 py-4">
                         <RepCard rep={rep} />
                       </li>
                     )
                   )}
                 </ul>
-              </div>
+              </section>
             )
           )}
         </div>
@@ -305,15 +319,15 @@ export function AddressLookup() {
 
 function RepCard({ rep }: { rep: Rep }) {
   return (
-    <div className="min-w-0">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-muted dark:text-fg/45 leading-none mb-0.5">
-        {rep.officeName}
-      </p>
-      <p className="text-sm font-semibold text-fg dark:text-fg truncate">
-        {rep.name}
-      </p>
+    <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+      <div className="min-w-0">
+        <p className="truncate text-lg font-semibold tracking-tight text-fg">
+          {rep.name}
+        </p>
+        <p className="mt-0.5 text-sm text-muted">{rep.officeName}</p>
+      </div>
       {rep.party && (
-        <p className={`text-xs mt-0.5 ${partyClass(rep.party)}`}>
+        <p className={`font-mono text-[13px] ${partyClass(rep.party)}`}>
           {rep.party}
         </p>
       )}
@@ -324,10 +338,10 @@ function RepCard({ rep }: { rep: Rep }) {
 function ChevronRight() {
   return (
     <svg
-      width="14" height="14" viewBox="0 0 24 24"
+      width="16" height="16" viewBox="0 0 24 24"
       fill="none" stroke="currentColor" strokeWidth="2.5"
       strokeLinecap="round" strokeLinejoin="round"
-      className="shrink-0 text-brand-navy/25 dark:text-fg/25 group-hover:text-brand-primary dark:group-hover:text-brand-light-blue transition-colors"
+      className="shrink-0 text-muted group-hover:text-brand-primary dark:group-hover:text-brand-light-blue transition-colors"
     >
       <polyline points="9 18 15 12 9 6" />
     </svg>

@@ -70,6 +70,7 @@ interface DistrictTooltip {
 interface Props {
   initialState?:      string;
   onStateClick?:      (fipsId: string) => void;
+  onStateReset?:      () => void;
   onCountyClick?:     (countyName: string) => void;
   districtType?:      DistrictType | null;
   districtOfficials?: DistrictOfficialMap;
@@ -81,6 +82,7 @@ interface SimpleTooltip { x: number; y: number }
 export function USMap({
   initialState,
   onStateClick,
+  onStateReset,
   onCountyClick,
   districtType,
   districtOfficials,
@@ -89,6 +91,7 @@ export function USMap({
   const containerRef          = useRef<HTMLDivElement>(null);
   const svgRef                = useRef<SVGSVGElement>(null);
   const onClickRef            = useRef(onStateClick);
+  const onStateResetRef       = useRef(onStateReset);
   const onCountyClickRef      = useRef(onCountyClick);
   const resetRef              = useRef<(() => void) | null>(null);
   const initialStateRef       = useRef(initialState);
@@ -108,6 +111,7 @@ export function USMap({
   const [mapError,        setMapError]        = useState<string | null>(null);
 
   useEffect(() => { onClickRef.current = onStateClick; });
+  useEffect(() => { onStateResetRef.current = onStateReset; });
   useEffect(() => { onCountyClickRef.current = onCountyClick; });
   useEffect(() => { districtTypeRef.current = districtType ?? null; }, [districtType]);
   useEffect(() => { districtOfficialsRef.current = districtOfficials ?? null; }, [districtOfficials]);
@@ -136,7 +140,9 @@ export function USMap({
     let countyDrawn = false;
 
     const svg        = d3.select(svgEl);
-    const projection = d3.geoAlbersUsa().scale(1300).translate([WIDTH / 2, HEIGHT / 2]);
+    // Scale/offset chosen so Alaska and Hawaii keep a margin inside the frame
+    // (at 1300 the Aleutians were clipped at the left edge).
+    const projection = d3.geoAlbersUsa().scale(1150).translate([WIDTH / 2 + 33, HEIGHT / 2 - 5]);
     const pathGen    = d3.geoPath().projection(projection);
 
     const zoomGroup      = svg.append("g");
@@ -381,6 +387,30 @@ export function USMap({
 
     window.addEventListener("communeusa:county-highlight", handleCountyHighlight);
 
+    // ── state-select event (state dropdown on the Elections page) ─────────────
+    // detail.fips = "53" zooms into Washington; null zooms back out.
+    function handleStateSelect(e: Event) {
+      const fips = (e as CustomEvent<{ fips: string | null }>).detail?.fips;
+      if (fips === undefined) return;
+      if (fips === null) {
+        if (inStateViewRef.current) resetRef.current?.();
+        return;
+      }
+      if (fips !== WA_FIPS || inStateViewRef.current) return;
+      const waFeature = waFeatureRef.current;
+      if (!waFeature) return;
+      inStateViewRef.current = true;
+      setInStateView(true);
+      setSimpleTooltip(null);
+      statesLayer.selectAll<SVGPathElement, GeoJSON.Feature>("path")
+        .filter((f) => String(f.id ?? "") !== WA_FIPS)
+        .transition().duration(ZOOM_DURATION)
+        .attr("fill", FILL_MUTED).attr("pointer-events", "none").attr("cursor", "default");
+      zoomToFeature(waFeature);
+      loadCounties();
+    }
+    window.addEventListener("communeusa:state-select", handleStateSelect);
+
     // ── State layer ───────────────────────────────────────────────────────────
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -451,6 +481,7 @@ export function USMap({
       cancelled = true;
       svgEl.removeEventListener("wheel", onWheel);
       window.removeEventListener("communeusa:county-highlight", handleCountyHighlight);
+      window.removeEventListener("communeusa:state-select", handleStateSelect);
       svg.on(".zoom", null);
       svg.selectAll("*").remove();
       updateDistrictRef.current = null;
@@ -480,7 +511,7 @@ export function USMap({
 
       {inStateView && (
         <button
-          onClick={() => resetRef.current?.()}
+          onClick={() => { resetRef.current?.(); onStateResetRef.current?.(); }}
           style={{ pointerEvents: "auto" }}
           className="absolute top-3 left-3 flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-1.5 text-sm font-medium text-fg shadow-sm hover:bg-fg/5 hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors"
         >

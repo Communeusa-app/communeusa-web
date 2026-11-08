@@ -7,15 +7,15 @@ import type { DistrictType, DistrictOfficialMap, RecentlyRedrawn } from "@/app/a
 
 type LayerMode = "counties" | "districts";
 
-const WA_FIPS = "53";
-
 interface Props {
   selectedCounty: string | null;
   onCountySelect: (countyName: string) => void;
   onReset: () => void;
+  /** Called when the user picks (fips) or leaves (null) a state on the map itself. */
+  onStateChange?: (fips: string | null) => void;
 }
 
-export function ElectionsMap({ selectedCounty, onCountySelect, onReset }: Props) {
+export function ElectionsMap({ selectedCounty, onCountySelect, onReset, onStateChange }: Props) {
   const prevCounty = useRef<string | null>(undefined);
 
   const [layerMode,         setLayerMode]         = useState<LayerMode>("counties");
@@ -134,7 +134,8 @@ export function ElectionsMap({ selectedCounty, onCountySelect, onReset }: Props)
       </div>
 
       <USMap
-        initialState={WA_FIPS}
+        onStateClick={(fips) => onStateChange?.(fips)}
+        onStateReset={() => onStateChange?.(null)}
         onCountyClick={layerMode === "counties" ? onCountySelect : undefined}
         districtType={activeDistrictType}
         districtOfficials={districtOfficials ?? undefined}
