@@ -476,6 +476,8 @@ export interface SmartSearchResponse {
   role: string | null;
   /** True when the query named a county, so state/federal officials are not included. */
   countyOnly: boolean;
+  /** Plain-language explanation when we widened or changed the search, e.g. a statewide office. */
+  note: string | null;
 }
 
 interface PlaceRow { id: string; name: string }
@@ -528,7 +530,7 @@ function escapeLike(s: string) {
 }
 
 export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearchResponse> {
-  const empty: SmartSearchResponse = { results: [], place: null, role: null, countyOnly: false };
+  const empty: SmartSearchResponse = { results: [], place: null, role: null, countyOnly: false, note: null };
   const q = rawQuery.toLowerCase().replace(/[“”"']/g, "").replace(/\s+/g, " ").trim();
   if (q.length < 2) return empty;
 
@@ -554,6 +556,15 @@ export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearc
 
   // 2. Find an office named in the query.
   const role = ROLES.find((r) => r.re.test(q)) ?? null;
+
+  // Some offices cover the whole state, so a place in the query ("Seattle governor") should not
+  // filter them out. Search statewide and say so.
+  const STATEWIDE = new Set(["Governor", "Attorney General"]);
+  let note: string | null = null;
+  if (place && role && STATEWIDE.has(role.label)) {
+    note = `${role.label} is a statewide office, so ${place.name}${place.kind === "county" ? " County" : ""} is not used to narrow the results.`;
+    place = null;
+  }
 
   // 3. Text left over once place and office words are removed.
   let rest = q;
@@ -593,7 +604,7 @@ export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearc
 
   // "senator" / "governor" with no place: keep state and federal results.
   const { data, error } = await builder.order("official_name").limit(80);
-  if (error || !data) return { ...empty, place: place && { name: place.name, kind: place.kind }, role: role?.label ?? null };
+  if (error || !data) return { ...empty, place: place && { name: place.name, kind: place.kind }, role: role?.label ?? null, note };
 
   const results = (data as unknown as Array<{
     id: string;
@@ -617,5 +628,6 @@ export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearc
     place: place ? { name: place.name, kind: place.kind } : null,
     role: role?.label ?? null,
     countyOnly: place?.kind === "county",
+    note,
   };
 }
