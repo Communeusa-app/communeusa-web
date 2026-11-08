@@ -225,7 +225,7 @@ export function AddressLookup() {
       {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-wrap items-center gap-2 rounded-[28px] border border-brand-off-white/20 bg-surface p-2 sm:flex-nowrap sm:rounded-full sm:pl-6 focus-within:border-brand-light-blue/60 transition-colors"
+        className="flex flex-wrap items-center gap-2 rounded-[28px] border border-fg/20 bg-surface p-2 sm:flex-nowrap sm:rounded-full sm:pl-6 focus-within:border-brand-light-blue/60 transition-colors"
       >
         <input
           type="text"
@@ -241,19 +241,19 @@ export function AddressLookup() {
           placeholder="Street address, city, ZIP"
           aria-label="Street address"
           ref={inputRef}
-          className="min-w-0 flex-1 basis-full bg-transparent px-4 py-3 text-base text-brand-off-white placeholder:text-muted focus:outline-none sm:basis-0 sm:px-0 sm:text-[17px]"
+          className="min-w-0 flex-1 basis-full bg-transparent px-4 py-3 text-base text-fg placeholder:text-muted focus:outline-none sm:basis-0 sm:px-0 sm:text-[17px]"
         />
         <button
           type="submit"
           disabled={loading || !address.trim()}
-          className="w-full flex-none rounded-full bg-brand-off-white px-7 py-3.5 text-base font-semibold text-ink transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          className="w-full flex-none rounded-full bg-fg px-7 py-3.5 text-base font-semibold text-on-fg transition-colors hover:bg-fg/90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           {loading ? "Looking up…" : "Find my officials"}
         </button>
       </form>
       <a
         href="#map"
-        className="mt-5 inline-block font-mono text-[13px] text-brand-light-blue hover:text-white transition-colors"
+        className="mt-5 inline-block font-mono text-[13px] text-brand-primary hover:text-brand-navy dark:text-brand-light-blue dark:hover:text-white transition-colors"
       >
         or explore the map ↓
       </a>
@@ -271,7 +271,7 @@ export function AddressLookup() {
           {(Object.entries(grouped) as [Level, Rep[]][]).map(
             ([level, officials]) => (
               <div key={level}>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-brand-navy/45 dark:text-brand-off-white/40 mb-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-brand-navy/45 dark:text-fg/40 mb-2">
                   {level}
                 </p>
                 <ul className="space-y-0.5">
@@ -306,10 +306,10 @@ export function AddressLookup() {
 function RepCard({ rep }: { rep: Rep }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/50 dark:text-brand-off-white/45 leading-none mb-0.5">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/50 dark:text-fg/45 leading-none mb-0.5">
         {rep.officeName}
       </p>
-      <p className="text-sm font-semibold text-brand-navy dark:text-brand-off-white truncate">
+      <p className="text-sm font-semibold text-brand-navy dark:text-fg truncate">
         {rep.name}
       </p>
       {rep.party && (
@@ -327,7 +327,7 @@ function ChevronRight() {
       width="14" height="14" viewBox="0 0 24 24"
       fill="none" stroke="currentColor" strokeWidth="2.5"
       strokeLinecap="round" strokeLinejoin="round"
-      className="shrink-0 text-brand-navy/25 dark:text-brand-off-white/25 group-hover:text-brand-primary dark:group-hover:text-brand-red transition-colors"
+      className="shrink-0 text-brand-navy/25 dark:text-fg/25 group-hover:text-brand-primary dark:group-hover:text-brand-red transition-colors"
     >
       <polyline points="9 18 15 12 9 6" />
     </svg>

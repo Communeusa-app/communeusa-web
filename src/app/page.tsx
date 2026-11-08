@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CorrectionModal } from "@/components/CorrectionModal";
 import { USMapSection } from "@/components/Map/USMapSection";
 import { AddressLookup } from "@/components/AddressLookup";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { MobileNav } from "@/components/MobileNav";
 import { HowTabs, type HowTab } from "@/components/HowTabs";
 
@@ -110,7 +111,7 @@ const HOW_TABS: HowTab[] = [
       <ul className="flex flex-col font-mono text-sm">
         {ACTIONS.map((a, i) => (
           <li key={a.label} className={`flex gap-5 py-3.5 ${i < ACTIONS.length - 1 ? "border-b border-line" : ""}`}>
-            <span className="w-20 flex-none text-brand-light-blue">{a.label}</span>
+            <span className="w-20 flex-none text-brand-primary dark:text-brand-light-blue">{a.label}</span>
             <span>{a.text}</span>
           </li>
         ))}
@@ -128,16 +129,23 @@ export default async function Home({
 }) {
   const { state: initialState } = await searchParams;
   return (
-    // The homepage is always dark. `dark` on this wrapper turns on the dark:
-    // variants for everything inside it, including the map and address lookup.
-    <div className="dark relative isolate overflow-x-clip bg-ink text-brand-off-white">
-      {/* Background glow */}
+    <div className="relative isolate overflow-x-clip bg-ink text-fg">
+      {/* Background glow (dark) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
+        className="pointer-events-none absolute inset-0 -z-10 hidden dark:block"
         style={{
           background:
             "radial-gradient(1100px 520px at 50% -8%, rgba(24,95,165,.62), transparent 65%), radial-gradient(700px 420px at 0% 0%, rgba(226,75,74,.12), transparent 60%), radial-gradient(1000px 800px at 100% 30%, rgba(24,95,165,.28), transparent 60%), radial-gradient(900px 700px at 0% 100%, rgba(12,68,124,.28), transparent 60%)",
+        }}
+      />
+      {/* Background glow (light) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 dark:hidden"
+        style={{
+          background:
+            "radial-gradient(1100px 520px at 50% -8%, rgba(24,95,165,.22), transparent 65%), radial-gradient(700px 420px at 0% 0%, rgba(226,75,74,.08), transparent 60%), radial-gradient(1000px 800px at 100% 30%, rgba(181,212,244,.55), transparent 60%)",
         }}
       />
 
@@ -145,25 +153,28 @@ export default async function Home({
       <header className="mx-auto max-w-6xl px-6 pt-6">
         <nav
           aria-label="Main"
-          className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-[28px] border border-line bg-surface/70 px-4 py-3 backdrop-blur sm:px-5 sm:py-3.5"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[28px] border border-line bg-surface/70 px-4 py-3 backdrop-blur sm:px-5 sm:py-3.5"
         >
           <a href="/" className="flex min-w-0 items-center gap-2.5 text-lg font-semibold tracking-tight sm:gap-3 sm:text-2xl">
             <LogoMark />
             CommuneUSA
           </a>
-          <div className="hidden lg:flex items-center gap-7 text-[15px]">
+          <div className="hidden flex-1 items-center justify-center gap-7 text-[15px] lg:flex">
             {NAV_LINKS.map(({ label, href }) => (
-              <Link key={label} href={href} className="text-brand-off-white hover:text-brand-light-blue transition-colors">
+              <Link key={label} href={href} className="text-fg hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors">
                 {label}
               </Link>
             ))}
           </div>
           <a
             href="#lookup"
-            className="ml-auto hidden flex-none whitespace-nowrap sm:inline-block rounded-full bg-brand-off-white px-3.5 py-2.5 text-[13px] font-semibold text-ink hover:bg-white transition-colors sm:px-6 sm:py-3 sm:text-[15px]"
+            className="hidden flex-none whitespace-nowrap sm:ml-auto sm:inline-block lg:ml-0 rounded-full bg-fg px-3.5 py-2.5 text-[13px] font-semibold text-on-fg hover:bg-fg/90 transition-colors sm:px-6 sm:py-3 sm:text-[15px]"
           >
             Look up my reps
           </a>
+          <div className="ml-auto flex-none sm:ml-0">
+            <ThemeToggle />
+          </div>
           <MobileNav links={NAV_LINKS} />
         </nav>
       </header>
@@ -174,7 +185,7 @@ export default async function Home({
           <h1 className="text-[clamp(44px,7vw,92px)] font-bold leading-[1.04] tracking-[-0.04em]">
             <span className="block">Your representatives.</span>
             <span className="block">Your votes.</span>
-            <span className="block bg-gradient-to-r from-brand-off-white to-brand-red/90 bg-clip-text pb-[0.14em] text-transparent">
+            <span className="block bg-gradient-to-r from-fg to-brand-red/90 bg-clip-text pb-[0.14em] text-transparent">
               Your government.
             </span>
           </h1>
@@ -217,7 +228,7 @@ export default async function Home({
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {GAPS.map((g) => (
               <div key={g.n} className="rounded-[28px] border border-line bg-surface px-9 pb-11 pt-8">
-                <span className="font-mono text-sm text-[#EF6F6D]">{g.n}</span>
+                <span className="font-mono text-sm text-accent">{g.n}</span>
                 <h3 className="mb-3.5 mt-7 text-[26px] font-semibold leading-tight tracking-tight">{g.title}</h3>
                 <p className="text-lg leading-relaxed text-muted">{g.body}</p>
               </div>
@@ -246,10 +257,10 @@ export default async function Home({
                 href={c.href}
                 className="group rounded-[28px] border border-line bg-surface px-[30px] pb-8 pt-7 transition-colors hover:border-brand-light-blue/40"
               >
-                <span className="font-mono text-sm text-[#EF6F6D]">{c.n}</span>
+                <span className="font-mono text-sm text-accent">{c.n}</span>
                 <h3 className="mb-2.5 mt-5 text-2xl font-semibold tracking-tight">{c.title}</h3>
                 <p className="text-[17px] leading-relaxed text-muted">{c.body}</p>
-                <span className="mt-6 inline-block font-mono text-[13px] text-brand-light-blue">Open →</span>
+                <span className="mt-6 inline-block font-mono text-[13px] text-brand-primary dark:text-brand-light-blue">Open →</span>
               </Link>
             ))}
           </div>
@@ -258,10 +269,10 @@ export default async function Home({
         {/* ── CTA ──────────────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-6 pb-24">
           <div
-            className="rounded-[36px] border border-line px-8 py-20 text-center sm:py-24"
+            className="rounded-[36px] border border-line bg-surface px-8 py-20 text-center sm:py-24"
             style={{
-              background:
-                "radial-gradient(700px 400px at 20% 0%, rgba(226,75,74,.16), transparent 60%), radial-gradient(800px 500px at 100% 100%, rgba(24,95,165,.34), transparent 60%), #161B22",
+              backgroundImage:
+                "radial-gradient(700px 400px at 20% 0%, rgba(226,75,74,.12), transparent 60%), radial-gradient(800px 500px at 100% 100%, rgba(24,95,165,.30), transparent 60%)",
             }}
           >
             <h2 className="text-[clamp(34px,5vw,60px)] font-bold leading-[1.06] tracking-[-0.04em]">
@@ -271,10 +282,10 @@ export default async function Home({
               Start with an address. See every official, how they vote, and who funds them.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3.5">
-              <a href="#lookup" className="rounded-full bg-brand-off-white px-8 py-[18px] text-[17px] font-semibold text-ink hover:bg-white transition-colors">
+              <a href="#lookup" className="rounded-full bg-fg px-8 py-[18px] text-[17px] font-semibold text-on-fg hover:bg-fg/90 transition-colors">
                 Look up my address
               </a>
-              <Link href="/elections" className="rounded-full border border-brand-off-white/25 px-8 py-[17px] text-[17px] font-medium hover:border-brand-off-white/60 transition-colors">
+              <Link href="/elections" className="rounded-full border border-fg/25 px-8 py-[17px] text-[17px] font-medium hover:border-fg/60 transition-colors">
                 Browse elections
               </Link>
             </div>
@@ -328,7 +339,7 @@ export default async function Home({
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`inline-flex items-center gap-2 rounded-full border border-brand-off-white/15 px-3.5 py-2 text-xs ${MONO}`}>
+    <div className={`inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-2 text-xs ${MONO}`}>
       <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-red" />
       {children}
     </div>
@@ -346,7 +357,7 @@ function Row({ k, v }: { k: string; v: string }) {
 
 function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex min-w-0 flex-[1_1_160px] flex-col gap-[18px] text-base [&_a]:text-muted [&_a:hover]:text-brand-off-white [&_a]:transition-colors">
+    <div className="flex min-w-0 flex-[1_1_160px] flex-col gap-[18px] text-base [&_a]:text-muted [&_a:hover]:text-fg [&_a]:transition-colors">
       <span className="font-medium">{title}</span>
       {children}
     </div>
