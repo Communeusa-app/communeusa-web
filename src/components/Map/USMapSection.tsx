@@ -12,7 +12,7 @@ export function USMapSection({ initialState }: Props) {
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
 
   return (
-    <section id="map" className="px-6 py-16">
+    <section id="map" className="px-6 py-10">
       <div className="mx-auto max-w-5xl">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-3 text-center">
           Explore Your Government

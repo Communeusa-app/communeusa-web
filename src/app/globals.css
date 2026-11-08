@@ -16,10 +16,17 @@
   --color-brand-dark-gray: #444441;
   --color-brand-mid-gray: #888780;
   --color-brand-red: #E24B4A;
+
+  /* Homepage restyle tokens */
+  --color-ink: #0F1318;
+  --color-surface: #161B22;
+  --color-muted: #A8A7A2;
+  --color-line: rgba(241, 239, 232, 0.14);
 }
 
 @theme inline {
   --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 :root {

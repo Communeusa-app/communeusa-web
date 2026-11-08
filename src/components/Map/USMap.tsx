@@ -144,13 +144,16 @@ export function USMap({
     const countiesLayer  = zoomGroup.append("g");
     const districtsLayer = zoomGroup.append("g");
 
+    // Let d3 enforce the pan limits itself (extent + translateExtent). Clamping the
+    // transform by hand after d3 computed it made wheel zoom drift away from the
+    // cursor, because d3's internal state and the drawn state disagreed.
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 8])
+      .extent([[0, 0], [WIDTH, HEIGHT]])
+      .translateExtent([[0, 0], [WIDTH, HEIGHT]])
       .on("zoom", (ev) => {
         const { k, x, y } = ev.transform;
-        const clampedX = Math.min(0, Math.max(x, WIDTH  * (1 - k)));
-        const clampedY = Math.min(0, Math.max(y, HEIGHT * (1 - k)));
-        zoomGroup.attr("transform", `translate(${clampedX},${clampedY}) scale(${k})`);
+        zoomGroup.attr("transform", `translate(${x},${y}) scale(${k})`);
       });
     svg.call(zoom);
 
@@ -160,10 +163,10 @@ export function USMap({
     function zoomToFeature(feature: GeoJSON.Feature) {
       const [[x0, y0], [x1, y1]] = pathGen.bounds(feature);
       const scale = Math.min(8, 0.85 / Math.max((x1 - x0) / WIDTH, (y1 - y0) / HEIGHT));
-      svg.transition("zoom").duration(ZOOM_DURATION).call(
-        zoom.transform,
-        d3.zoomIdentity.translate(WIDTH / 2, HEIGHT / 2).scale(scale).translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
-      );
+      const target = d3.zoomIdentity.translate(WIDTH / 2, HEIGHT / 2).scale(scale).translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
+      // Keep the target inside the same pan limits the wheel/drag use.
+      const bounded = zoom.constrain()(target, [[0, 0], [WIDTH, HEIGHT]], [[0, 0], [WIDTH, HEIGHT]]);
+      svg.transition("zoom").duration(ZOOM_DURATION).call(zoom.transform, bounded);
     }
 
     function highlightFill() {
