@@ -14,7 +14,7 @@ export function MobileNav({ links }: { links: readonly { label: string; href: st
         aria-expanded={open}
         aria-controls="mobile-menu"
         aria-label={open ? "Close menu" : "Open menu"}
-        className="flex h-11 w-11 flex-none items-center justify-center rounded-full border border-line text-fg transition-colors hover:border-fg/40 lg:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary dark:focus-visible:outline-brand-light-blue"
+        className="ml-auto flex h-11 w-11 flex-none items-center justify-center rounded-full border border-line sm:ml-0 text-fg transition-colors hover:border-fg/40 lg:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary dark:focus-visible:outline-brand-light-blue"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           {open ? (

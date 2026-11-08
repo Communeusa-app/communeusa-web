@@ -172,9 +172,6 @@ export default async function Home({
           >
             Look up my reps
           </a>
-          <div className="ml-auto flex-none sm:ml-0">
-            <ThemeToggle />
-          </div>
           <MobileNav links={NAV_LINKS} />
         </nav>
       </header>
@@ -327,7 +324,10 @@ export default async function Home({
             <span className="font-mono text-[13px] text-muted">
               © {new Date().getFullYear()} CommuneUSA. Built from public records.
             </span>
-            <CorrectionModal entityType="general" variant="footer-link" />
+            <div className="flex items-center gap-3">
+              <CorrectionModal entityType="general" variant="footer-link" />
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </footer>
