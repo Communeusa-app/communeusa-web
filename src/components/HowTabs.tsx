@@ -25,10 +25,10 @@ export function HowTabs({ tabs }: { tabs: HowTab[] }) {
             aria-selected={i === active}
             aria-controls="how-panel"
             onClick={() => setActive(i)}
-            className={`flex-1 border-t-[3px] pt-4 text-center text-base font-semibold transition-colors sm:text-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-light-blue ${
+            className={`flex-1 border-t-[3px] pt-4 text-center text-base font-semibold transition-colors sm:text-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-primary dark:focus-visible:outline-brand-light-blue ${
               i === active
-                ? "border-brand-off-white text-brand-off-white"
-                : "border-line text-muted hover:text-brand-off-white"
+                ? "border-fg text-fg"
+                : "border-line text-muted hover:text-fg"
             }`}
           >
             {t.label}
@@ -40,7 +40,7 @@ export function HowTabs({ tabs }: { tabs: HowTab[] }) {
         role="tabpanel"
         id="how-panel"
         aria-labelledby={`how-tab-${active}`}
-        className="mt-7 flex min-h-[420px] flex-wrap items-center gap-8 rounded-[32px] border border-line bg-gradient-to-br from-brand-navy via-brand-primary to-[#2C78C2] p-8 sm:p-12"
+        className="mt-7 flex min-h-[420px] flex-wrap items-center gap-8 rounded-[32px] border border-line bg-gradient-to-br from-brand-navy via-brand-primary to-[#2C78C2] p-8 text-white sm:p-12"
       >
         <div className="min-w-0 flex-[1_1_320px]">
           <span className="font-mono text-[13px] uppercase tracking-[0.12em] text-brand-light-blue">
