@@ -76,7 +76,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               </a>
               <p className="mt-7 text-lg font-medium leading-snug">Your representatives. Your votes. Your government.</p>
               <p className="mt-3 text-[17px] leading-relaxed text-muted">
-                A nonpartisan civic utility for Washington State, built from public records.
+                A nonpartisan civic utility, built from public records.
               </p>
             </div>
             <FooterCol title="Product">
