@@ -144,9 +144,9 @@ export default async function Home({
       <header className="mx-auto max-w-6xl px-6 pt-6">
         <nav
           aria-label="Main"
-          className="flex flex-wrap items-center justify-between gap-x-7 gap-y-3 rounded-[28px] border border-line bg-surface/70 px-5 py-3.5 backdrop-blur"
+          className="flex items-center justify-between gap-x-7 gap-y-3 rounded-[28px] border border-line bg-surface/70 px-5 py-3.5 backdrop-blur"
         >
-          <a href="/" className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
+          <a href="/" className="flex items-center gap-3 text-xl font-semibold tracking-tight sm:text-2xl">
             <LogoMark />
             CommuneUSA
           </a>
@@ -159,7 +159,7 @@ export default async function Home({
           </div>
           <a
             href="#lookup"
-            className="rounded-full bg-brand-off-white px-6 py-3 text-[15px] font-semibold text-ink hover:bg-white transition-colors"
+            className="flex-none rounded-full bg-brand-off-white px-4 py-2.5 text-sm font-semibold text-ink hover:bg-white transition-colors sm:px-6 sm:py-3 sm:text-[15px]"
           >
             Look up my reps
           </a>
@@ -169,15 +169,10 @@ export default async function Home({
       <main>
         {/* ── Hero ──────────────────────────────────────────────── */}
         <section id="representatives" className="mx-auto flex max-w-6xl flex-col items-center px-6 pt-24 pb-16 text-center sm:pt-28">
-          <div className="inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-line py-1.5 pl-1.5 pr-5 text-[15px]">
-            <span className="rounded-full bg-brand-off-white px-3.5 py-1.5 text-sm font-medium text-ink">Washington</span>
-            <span>Federal, state, county and city officials</span>
-          </div>
-
-          <h1 className="mt-10 text-[clamp(44px,7vw,92px)] font-bold leading-[1.04] tracking-[-0.04em]">
+          <h1 className="text-[clamp(44px,7vw,92px)] font-bold leading-[1.04] tracking-[-0.04em]">
             <span className="block">Your representatives.</span>
             <span className="block">Your votes.</span>
-            <span className="block bg-gradient-to-r from-brand-off-white to-brand-red/90 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-brand-off-white to-brand-red/90 bg-clip-text pb-[0.14em] text-transparent">
               Your government.
             </span>
           </h1>
