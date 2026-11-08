@@ -9,6 +9,7 @@ import {
 import { getVotingRecords, getCampaignFinance } from "@/app/actions/officials";
 import { VotingRecordsList } from "@/app/officials/[id]/VotingRecordsList";
 import { CampaignFinanceList } from "@/app/officials/[id]/CampaignFinanceList";
+import { SiteShell } from "@/components/SiteShell";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -32,7 +33,8 @@ export default async function CandidatePage({ params }: Props) {
     ]);
 
   return (
-    <main className="flex-1 px-6 py-12">
+    <SiteShell>
+<main className="flex-1 px-6 py-12">
       <div className="mx-auto max-w-3xl space-y-8">
         {/* Back */}
         <Link
@@ -187,6 +189,7 @@ export default async function CandidatePage({ params }: Props) {
         <CorrectionModal entityType="general" variant="footer-link" />
       </div>
     </main>
+</SiteShell>
   );
 }
 

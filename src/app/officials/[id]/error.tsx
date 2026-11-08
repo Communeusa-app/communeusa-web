@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { SiteShell } from "@/components/SiteShell";
 
 export default function OfficialError({
   error,
@@ -15,7 +16,8 @@ export default function OfficialError({
   }, [error]);
 
   return (
-    <main className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center">
+    <SiteShell>
+<main className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center">
       <p className="text-5xl font-bold text-brand-light-gray dark:text-brand-dark-gray mb-4">
         Error
       </p>
@@ -40,5 +42,6 @@ export default function OfficialError({
         </Link>
       </div>
     </main>
+</SiteShell>
   );
 }

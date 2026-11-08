@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getElectionById } from "@/app/actions/elections";
 import type { ElectionCandidate } from "@/app/actions/elections";
+import { SiteShell } from "@/components/SiteShell";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -13,7 +14,8 @@ export default async function ElectionPage({ params }: Props) {
   if (!election) notFound();
 
   return (
-    <main className="flex-1 px-6 py-12">
+    <SiteShell>
+<main className="flex-1 px-6 py-12">
       <div className="mx-auto max-w-3xl space-y-8">
         {/* Back */}
         <Link
@@ -99,6 +101,7 @@ export default async function ElectionPage({ params }: Props) {
         )}
       </div>
     </main>
+</SiteShell>
   );
 }
 

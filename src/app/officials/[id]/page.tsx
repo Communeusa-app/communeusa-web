@@ -6,6 +6,7 @@ import { CampaignFinanceList } from "./CampaignFinanceList";
 import { OutsideMoney } from "@/components/OutsideMoney";
 import { CorrectionModal } from "@/components/CorrectionModal";
 import { TakeActionCenter } from "@/components/TakeActionCenter";
+import { SiteShell } from "@/components/SiteShell";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -23,7 +24,8 @@ export default async function OfficialPage({ params }: Props) {
 
   if (!official) {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center">
+      <SiteShell>
+<main className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center">
         <p className="text-5xl font-bold text-brand-light-gray dark:text-brand-dark-gray mb-4">
           404
         </p>
@@ -40,11 +42,13 @@ export default async function OfficialPage({ params }: Props) {
           ← Back to map
         </Link>
       </main>
+</SiteShell>
     );
   }
 
   return (
-    <main className="flex-1 px-6 py-12">
+    <SiteShell>
+<main className="flex-1 px-6 py-12">
       <div className="mx-auto max-w-3xl space-y-8">
         {/* Back button */}
         <Link
@@ -144,6 +148,7 @@ export default async function OfficialPage({ params }: Props) {
         </div>
       </div>
     </main>
+</SiteShell>
   );
 }
 
