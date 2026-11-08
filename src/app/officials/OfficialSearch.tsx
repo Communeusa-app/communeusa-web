@@ -17,11 +17,11 @@ const LEVEL_LABEL: Record<string, string> = {
 
 // Example searches shown under the box; tapping one runs it.
 const EXAMPLES = [
-  "Seattle mayor",
+  "Seattle Mayor",
   "Representatives for King County",
-  "Snohomish County sheriff",
-  "Washington governor",
-  "Tacoma city council",
+  "Snohomish County Sheriff",
+  "Washington Governor",
+  "Tacoma City Council",
 ];
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -129,7 +129,7 @@ export function OfficialSearch() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Try “Seattle mayor” or “Representatives for King County”"
+            placeholder="Try “Seattle Mayor” or “Representatives for King County”"
             autoFocus
             autoComplete="off"
             className="w-full rounded-full border border-line bg-surface py-4 pl-14 pr-5 text-base text-fg placeholder:text-muted transition focus:border-brand-primary/60 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 dark:focus:border-brand-light-blue/60 dark:focus:ring-brand-light-blue/30"
@@ -180,7 +180,7 @@ export function OfficialSearch() {
           <p className="text-sm leading-relaxed text-muted">
             No officials found for{" "}
             <span className="font-semibold text-fg">&ldquo;{query.trim()}&rdquo;</span>. Try a city or county name
-            with an office, like &ldquo;Everett mayor&rdquo;, or{" "}
+            with an office, like &ldquo;Everett Mayor&rdquo;, or{" "}
             <Link
               href="/"
               className="text-brand-primary underline underline-offset-2 transition-opacity hover:opacity-75 dark:text-brand-light-blue"

@@ -6,7 +6,7 @@ import { SiteShell } from "@/components/SiteShell";
 export const metadata = {
   title: "Find Officials — CommuneUSA",
   description:
-    "Find any elected or appointed official in Washington by name, office or place, like Seattle mayor or King County sheriff.",
+    "Find any elected or appointed official in Washington by name, office or place, like Seattle Mayor or King County sheriff.",
 };
 
 export default function OfficialsPage() {
