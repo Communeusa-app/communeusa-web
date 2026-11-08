@@ -208,6 +208,12 @@ export function OfficialSearch() {
 
           {response?.note && <p className="px-1 text-[13px] text-muted">{response.note}</p>}
 
+          {response?.correctedQuery && (
+            <p className="px-1 text-[13px] text-muted">
+              Showing results for <span className="font-semibold text-fg">&ldquo;{response.correctedQuery}&rdquo;</span>
+            </p>
+          )}
+
           {response?.countyOnly && (
             <p className="px-1 text-[13px] text-muted">
               Showing county officials only. State and federal officials are on the{" "}

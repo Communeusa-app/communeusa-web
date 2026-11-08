@@ -478,6 +478,8 @@ export interface SmartSearchResponse {
   countyOnly: boolean;
   /** Plain-language explanation when we widened or changed the search, e.g. a statewide office. */
   note: string | null;
+  /** Set when the query had typos and we searched a corrected version instead. */
+  correctedQuery?: string | null;
 }
 
 interface PlaceRow { id: string; name: string }
@@ -529,7 +531,7 @@ function escapeLike(s: string) {
   return s.replace(/[%,()*\\]/g, " ").replace(/\s+/g, " ").trim();
 }
 
-export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearchResponse> {
+async function runSmartSearch(rawQuery: string): Promise<SmartSearchResponse> {
   const empty: SmartSearchResponse = { results: [], place: null, role: null, countyOnly: false, note: null };
   const q = rawQuery.toLowerCase().replace(/[“”"']/g, "").replace(/\s+/g, " ").trim();
   if (q.length < 2) return empty;
@@ -630,4 +632,69 @@ export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearc
     countyOnly: place?.kind === "county",
     note,
   };
+}
+
+
+// ── Typo tolerance ─────────────────────────────────────────────────────────────
+
+// Edit distance that counts a swapped pair of letters ("washingotn") as one edit.
+function editDistance(a: string, b: string): number {
+  const d: number[][] = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 0; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+  }
+  return d[a.length][b.length];
+}
+
+const KNOWN_WORDS = [
+  "mayor", "council", "councilmember", "councilman", "councilwoman", "sheriff", "assessor", "auditor",
+  "treasurer", "prosecutor", "prosecuting", "attorney", "general", "clerk", "coroner", "commissioner",
+  "executive", "judge", "justice", "governor", "senator", "school", "board", "directors", "representatives",
+  "washington", "county", "officials",
+];
+
+/** Fix likely typos by snapping unknown words to the nearest place or office word. */
+async function correctTypos(rawQuery: string): Promise<string> {
+  const { counties, cities } = await loadPlaces();
+  const vocab = new Set<string>(KNOWN_WORDS);
+  for (const p of [...counties, ...cities]) {
+    for (const w of p.name.toLowerCase().split(/[^a-z]+/)) if (w.length >= 4) vocab.add(w);
+  }
+  const words = Array.from(vocab);
+  return rawQuery
+    .toLowerCase()
+    .split(/(\s+)/)
+    .map((tok) => {
+      const t = tok.replace(/[^a-z]/g, "");
+      if (t.length < 5 || vocab.has(t)) return tok;
+      const limit = t.length >= 8 ? 2 : 1;
+      let best: string | null = null;
+      let bestDist = limit + 1;
+      for (const w of words) {
+        if (Math.abs(w.length - t.length) > limit) continue;
+        const dist = editDistance(t, w);
+        if (dist < bestDist) { best = w; bestDist = dist; }
+      }
+      return best ?? tok;
+    })
+    .join("");
+}
+
+export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearchResponse> {
+  const first = await runSmartSearch(rawQuery);
+  if (first.results.length > 0) return first;
+
+  // Nothing found: try again with obvious typos fixed ("washingotn governor").
+  const fixed = (await correctTypos(rawQuery)).replace(/\s+/g, " ").trim();
+  const original = rawQuery.toLowerCase().replace(/\s+/g, " ").trim();
+  if (!fixed || fixed === original) return first;
+  const second = await runSmartSearch(fixed);
+  return second.results.length > 0 ? { ...second, correctedQuery: fixed } : first;
 }
