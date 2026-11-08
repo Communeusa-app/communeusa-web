@@ -304,3 +304,103 @@ export async function searchOfficialFinance(query: string): Promise<FinanceSumma
     .map((o) => buildSummary(o, rowsByOfficial.get(o.id) ?? []))
     .sort((a, b) => b.totalRaised - a.totalRaised);
 }
+
+// ── Where does a donor's money go? ─────────────────────────────────────────────
+
+export interface DonorRecipient {
+  officialId: string;
+  name: string;
+  officeTitle: string;
+  level: string;
+  party: string | null;
+  place: string | null;
+  amount: number;
+  /** Direct contribution, or independent spending that supports / opposes the official. */
+  kind: "contribution" | "support" | "oppose";
+}
+
+export interface DonorRecipients {
+  donorName: string;
+  recipients: DonorRecipient[];
+  totalContributed: number;
+  totalSupporting: number;
+  totalOpposing: number;
+}
+
+/**
+ * Everyone a donor gave to (matched on the donor name as filed), plus, for PACs and Super PACs,
+ * independent spending that supports or opposes an official.
+ */
+export async function getDonorRecipients(donorName: string): Promise<DonorRecipients> {
+  const empty: DonorRecipients = { donorName, recipients: [], totalContributed: 0, totalSupporting: 0, totalOpposing: 0 };
+  const name = donorName.trim();
+  if (!name) return empty;
+
+  // 1. Direct contributions recorded against officials.
+  const { data: gifts } = await supabase
+    .from("campaign_finance")
+    .select("official_id, amount")
+    .eq("donor_name", name);
+
+  // 2. Independent expenditures, if this donor is a registered PAC.
+  const { data: pacRows } = await supabase.from("pacs").select("id").ilike("name", name.replace(/[%_,()*\\]/g, " ").trim());
+  const pacIds = (pacRows ?? []).map((p) => p.id as string);
+  const { data: spending } = pacIds.length
+    ? await supabase
+        .from("pac_independent_expenditures")
+        .select("official_id, amount, support_oppose")
+        .in("pac_id", pacIds)
+    : { data: [] as { official_id: string; amount: number | null; support_oppose: "support" | "oppose" }[] };
+
+  // Total per official and kind.
+  const totals = new Map<string, { officialId: string; kind: DonorRecipient["kind"]; amount: number }>();
+  const add = (officialId: string | null, kind: DonorRecipient["kind"], amount: number | null) => {
+    if (!officialId) return;
+    const key = `${officialId}::${kind}`;
+    const cur = totals.get(key) ?? { officialId, kind, amount: 0 };
+    cur.amount += amount ?? 0;
+    totals.set(key, cur);
+  };
+  for (const g of gifts ?? []) add(g.official_id as string, "contribution", g.amount as number | null);
+  for (const s of spending ?? []) add(s.official_id as string, s.support_oppose, s.amount as number | null);
+  if (!totals.size) return empty;
+
+  const ids = [...new Set([...totals.values()].map((t) => t.officialId))];
+  const { data: officials } = await supabase
+    .from("officials")
+    .select("id, official_name, office_title, level, party, municipalities(name), counties(name)")
+    .in("id", ids);
+
+  const byId = new Map(
+    ((officials ?? []) as unknown as Array<{
+      id: string; official_name: string; office_title: string | null; level: string; party: string | null;
+      municipalities: { name: string } | null; counties: { name: string } | null;
+    }>).map((o) => [o.id, o]),
+  );
+
+  const recipients: DonorRecipient[] = [];
+  for (const t of totals.values()) {
+    const o = byId.get(t.officialId);
+    if (!o) continue;
+    recipients.push({
+      officialId: o.id,
+      name: o.official_name,
+      officeTitle: o.office_title ?? "",
+      level: o.level,
+      party: o.party,
+      place: o.municipalities?.name ?? o.counties?.name ?? null,
+      amount: t.amount,
+      kind: t.kind,
+    });
+  }
+  recipients.sort((a, b) => b.amount - a.amount);
+
+  const sum = (k: DonorRecipient["kind"]) => recipients.filter((r) => r.kind === k).reduce((s, r) => s + r.amount, 0);
+  return {
+    donorName: name,
+    recipients,
+    totalContributed: sum("contribution"),
+    totalSupporting: sum("support"),
+    totalOpposing: sum("oppose"),
+  };
+}
