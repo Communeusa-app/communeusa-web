@@ -144,9 +144,9 @@ export default async function Home({
       <header className="mx-auto max-w-6xl px-6 pt-6">
         <nav
           aria-label="Main"
-          className="flex items-center justify-between gap-x-7 gap-y-3 rounded-[28px] border border-line bg-surface/70 px-5 py-3.5 backdrop-blur"
+          className="flex items-center justify-between gap-x-7 gap-y-3 rounded-[28px] border border-line bg-surface/70 px-4 py-3 backdrop-blur sm:px-5 sm:py-3.5"
         >
-          <a href="/" className="flex items-center gap-3 text-xl font-semibold tracking-tight sm:text-2xl">
+          <a href="/" className="flex min-w-0 items-center gap-2.5 text-lg font-semibold tracking-tight sm:gap-3 sm:text-2xl">
             <LogoMark />
             CommuneUSA
           </a>
@@ -159,7 +159,7 @@ export default async function Home({
           </div>
           <a
             href="#lookup"
-            className="flex-none rounded-full bg-brand-off-white px-4 py-2.5 text-sm font-semibold text-ink hover:bg-white transition-colors sm:px-6 sm:py-3 sm:text-[15px]"
+            className="flex-none whitespace-nowrap rounded-full bg-brand-off-white px-3.5 py-2.5 text-[13px] font-semibold text-ink hover:bg-white transition-colors sm:px-6 sm:py-3 sm:text-[15px]"
           >
             Look up my reps
           </a>
@@ -351,11 +351,20 @@ function FooterCol({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
-/* ── Logo mark: rounded square with a red dot ─────────────────── */
+/* ── Logo mark: two rotated squares, outer outline / inner solid (original brand mark) ─ */
 function LogoMark() {
   return (
-    <span aria-hidden="true" className="relative inline-block h-[30px] w-[30px] rounded-[9px] border-2 border-brand-light-blue">
-      <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-brand-red" />
-    </span>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      width="30"
+      height="30"
+      aria-hidden="true"
+      className="flex-none"
+    >
+      <rect x="5.5" y="5.5" width="13" height="13" transform="rotate(45 12 12)" className="stroke-white fill-none" strokeWidth="1.5" />
+      <rect x="8.5" y="8.5" width="7" height="7" transform="rotate(45 12 12)" className="fill-brand-red" />
+    </svg>
   );
 }
