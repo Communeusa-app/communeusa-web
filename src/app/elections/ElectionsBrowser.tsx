@@ -174,23 +174,16 @@ export function ElectionsBrowser({ counties, cities }: Props) {
 
   return (
     <div>
-      {/* Interactive map — always visible above tabs */}
-      <ElectionsMap
-        selectedCounty={tab === "browse" ? selectedCountyName : null}
-        onCountySelect={handleMapCountySelect}
-        onReset={handleMapReset}
-      />
-
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-xl bg-brand-light-gray/30 dark:bg-brand-dark-gray/50 w-fit mb-8">
+      <div className="flex gap-1 p-1 rounded-2xl bg-fg/5 w-fit mb-8">
         {(["location", "browse"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => switchTab(t)}
             className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
               tab === t
-                ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
-                : "text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-navy dark:hover:text-brand-off-white"
+                ? "bg-surface text-fg shadow-sm"
+                : "text-muted hover:text-fg"
             }`}
           >
             {t === "location" ? "My Location" : "Browse"}
@@ -206,12 +199,12 @@ export function ElectionsBrowser({ counties, cities }: Props) {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Enter your address…"
-            className="flex-1 rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white placeholder:text-brand-mid-gray px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 focus:border-transparent transition"
+            className="flex-1 rounded-2xl border border-line bg-surface text-fg placeholder:text-muted px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 focus:border-transparent transition"
           />
           <button
             type="submit"
             disabled={loading || !address.trim()}
-            className="rounded-xl bg-brand-primary hover:bg-brand-navy disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-red text-white font-semibold px-5 py-3 text-sm transition-colors whitespace-nowrap"
+            className="rounded-2xl bg-fg hover:bg-fg/90 disabled:opacity-50 disabled:cursor-not-allowed text-on-fg font-semibold px-5 py-3 text-sm transition-colors whitespace-nowrap"
           >
             {loading ? "Searching…" : "Find elections"}
           </button>
@@ -222,7 +215,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
       {tab === "browse" && (
         <div className="flex flex-wrap gap-4 mb-8">
           <div className="flex-1 min-w-[180px] max-w-[260px]">
-            <label className="block text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-1.5">
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-muted mb-1.5">
               County
             </label>
             <select
@@ -231,7 +224,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
                 setSelectedCountyId(e.target.value);
                 setSelectedCityId("");
               }}
-              className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 transition"
+              className="w-full rounded-2xl border border-line bg-surface text-fg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 transition"
             >
               <option value="">All counties</option>
               {counties.map((c) => (
@@ -242,13 +235,13 @@ export function ElectionsBrowser({ counties, cities }: Props) {
             </select>
           </div>
           <div className="flex-1 min-w-[180px] max-w-[260px]">
-            <label className="block text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-1.5">
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-muted mb-1.5">
               City
             </label>
             <select
               value={selectedCityId}
               onChange={(e) => setSelectedCityId(e.target.value)}
-              className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 transition"
+              className="w-full rounded-2xl border border-line bg-surface text-fg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 transition"
             >
               <option value="">All cities</option>
               {cities.map((c) => (
@@ -261,9 +254,18 @@ export function ElectionsBrowser({ counties, cities }: Props) {
         </div>
       )}
 
+      {/* Interactive map — below the search controls */}
+      <div className="mb-8">
+        <ElectionsMap
+          selectedCounty={tab === "browse" ? selectedCountyName : null}
+          onCountySelect={handleMapCountySelect}
+          onReset={handleMapReset}
+        />
+      </div>
+
       {/* Error */}
       {error && (
-        <div className="rounded-xl border border-brand-red/30 bg-brand-red/10 px-4 py-3 text-sm text-brand-red mb-6">
+        <div className="rounded-2xl border border-brand-red/30 bg-brand-red/10 px-4 py-3 text-sm text-brand-red mb-6">
           {error}
         </div>
       )}
@@ -274,7 +276,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray h-24 animate-pulse"
+              className="rounded-2xl border border-line bg-surface h-24 animate-pulse"
             />
           ))}
         </div>
@@ -282,7 +284,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
 
       {/* Empty prompt for browse */}
       {tab === "browse" && !selectedCountyId && !selectedCityId && !loading && (
-        <p className="text-sm text-brand-navy/45 dark:text-brand-off-white/40">
+        <p className="text-sm text-muted">
           Select a county or city above, or click a county on the map.
         </p>
       )}
@@ -292,7 +294,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
         <div className="space-y-10">
           {LEVEL_ORDER.filter((lvl) => grouped[lvl]).map((lvl) => (
             <div key={lvl}>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-brand-navy/45 dark:text-brand-off-white/40 mb-4">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted mb-4">
                 {LEVEL_LABELS[lvl]}
               </p>
               <div className="space-y-3">
@@ -313,19 +315,19 @@ function ElectionCard({ election }: { election: Election }) {
   return (
     <Link
       href={`/elections/${election.id}`}
-      className="block rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray p-5 hover:border-brand-primary/40 dark:hover:border-brand-red/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
+      className="block rounded-2xl border border-line bg-surface p-5 hover:border-fg/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
     >
       <div className="flex flex-wrap items-center gap-3 mb-2">
-        <h3 className="text-base font-semibold text-brand-navy dark:text-brand-off-white group-hover:text-brand-primary dark:group-hover:text-brand-red transition-colors">
+        <h3 className="text-base font-semibold text-fg group-hover:text-brand-primary dark:group-hover:text-brand-light-blue transition-colors">
           {election.office_name}
         </h3>
         {election.election_date && (
-          <span className="text-xs font-medium text-brand-primary dark:text-brand-red shrink-0">
+          <span className="text-xs font-medium text-brand-primary dark:text-brand-light-blue shrink-0">
             {formatDate(election.election_date)}
           </span>
         )}
         {election.primary_date && (
-          <span className="text-xs text-brand-navy/40 dark:text-brand-off-white/35 shrink-0">
+          <span className="text-xs text-muted shrink-0">
             Primary: {formatDate(election.primary_date)}
           </span>
         )}
@@ -337,7 +339,7 @@ function ElectionCard({ election }: { election: Election }) {
           ))}
         </div>
       ) : (
-        <p className="text-xs text-brand-navy/35 dark:text-brand-off-white/30 mt-1">
+        <p className="text-xs text-muted mt-1">
           No candidates on file yet
         </p>
       )}
@@ -347,12 +349,12 @@ function ElectionCard({ election }: { election: Election }) {
 
 function CandidateChip({ candidate }: { candidate: ElectionCandidate }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-light-gray dark:border-brand-dark-gray bg-brand-off-white/60 dark:bg-brand-charcoal/40 px-3 py-1">
-      <span className="text-xs font-medium text-brand-navy dark:text-brand-off-white">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-brand-off-white/60 px-3 py-1">
+      <span className="text-xs font-medium text-fg">
         {candidate.name}
       </span>
       {candidate.is_incumbent && (
-        <span className="rounded-full bg-brand-light-blue/60 dark:bg-brand-primary/25 text-brand-primary dark:text-brand-light-blue px-1.5 text-[10px] font-semibold leading-5">
+        <span className="rounded-full bg-brand-primary/10 dark:bg-brand-primary/25 text-brand-primary dark:text-brand-light-blue px-1.5 text-[10px] font-semibold leading-5">
           Inc
         </span>
       )}
@@ -369,7 +371,7 @@ function partyColor(party: string): string {
   if (party === "Democrat" || party === "Democratic")
     return "text-brand-primary dark:text-brand-light-blue";
   if (party === "Republican") return "text-brand-red";
-  return "text-brand-mid-gray";
+  return "text-muted";
 }
 
 function partyShort(party: string): string {

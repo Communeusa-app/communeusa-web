@@ -27,25 +27,25 @@ export function OutsideMoney({ data }: { data: OutsideMoneySummary }) {
 
   return (
     <div>
-      <p className="text-xs text-brand-navy/55 dark:text-brand-off-white/45 leading-relaxed mb-5">
+      <p className="text-xs text-muted leading-relaxed mb-5">
         Independent expenditures are money spent by PACs and Super PACs to support or oppose this
         official, independently and without coordinating with their campaign. This is separate from
         direct contributions.
       </p>
 
       {!hasData ? (
-        <div className="rounded-lg border border-brand-light-gray/60 dark:border-brand-dark-gray/60 bg-brand-light-gray/20 dark:bg-brand-dark-gray/30 px-4 py-5 space-y-1.5">
-          <p className="text-sm font-medium text-brand-navy/60 dark:text-brand-off-white/50">
+        <div className="rounded-xl border border-line bg-fg/5 px-4 py-5 space-y-1.5">
+          <p className="text-sm font-medium text-muted">
             No significant independent expenditures on file for this official in the current cycle.
           </p>
-          <p className="text-xs text-brand-navy/40 dark:text-brand-off-white/35 leading-relaxed">
+          <p className="text-xs text-muted leading-relaxed">
             Outside spending tends to concentrate in competitive races.
           </p>
         </div>
       ) : (
         <div>
           {/* Summary totals */}
-          <div className="grid grid-cols-2 gap-3 mb-6 pb-5 border-b border-brand-light-gray/60 dark:border-brand-dark-gray/60">
+          <div className="grid grid-cols-2 gap-3 mb-6 pb-5 border-b border-line">
             <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/30 px-4 py-3">
               <p className="text-[11px] font-medium uppercase tracking-wider text-emerald-700/70 dark:text-emerald-400/60 mb-1">
                 Spent Supporting
@@ -65,7 +65,7 @@ export function OutsideMoney({ data }: { data: OutsideMoneySummary }) {
           </div>
 
           {/* PAC list — first DEFAULT_VISIBLE always visible */}
-          <div className="divide-y divide-brand-light-gray/60 dark:divide-brand-dark-gray/60">
+          <div className="divide-y divide-line">
             {by_pac.slice(0, DEFAULT_VISIBLE).map((group) => (
               <PACRow key={`${group.pac_id}-${group.support_oppose}`} group={group} />
             ))}
@@ -80,7 +80,7 @@ export function OutsideMoney({ data }: { data: OutsideMoneySummary }) {
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className="divide-y divide-brand-light-gray/60 dark:divide-brand-dark-gray/60">
+                  <div className="divide-y divide-line">
                     {by_pac.slice(DEFAULT_VISIBLE).map((group) => (
                       <PACRow key={`${group.pac_id}-${group.support_oppose}`} group={group} />
                     ))}
@@ -90,7 +90,7 @@ export function OutsideMoney({ data }: { data: OutsideMoneySummary }) {
 
               <button
                 onClick={() => setExpanded((e) => !e)}
-                className="mt-4 w-full flex items-center justify-center gap-1.5 rounded-lg border border-brand-light-gray dark:border-brand-dark-gray px-4 py-2.5 text-sm font-medium text-brand-navy/65 dark:text-brand-off-white/55 hover:text-brand-primary dark:hover:text-brand-red hover:border-brand-primary/40 dark:hover:border-brand-red/40 transition-all duration-150"
+                className="mt-4 w-full flex items-center justify-center gap-1.5 rounded-xl border border-line px-4 py-2.5 text-sm font-medium text-muted hover:text-brand-primary dark:hover:text-brand-light-blue hover:border-fg/30 transition-all duration-150"
                 aria-expanded={expanded}
               >
                 {expanded ? (
@@ -102,7 +102,7 @@ export function OutsideMoney({ data }: { data: OutsideMoneySummary }) {
             </>
           )}
 
-          <p className="mt-5 text-[11px] text-brand-navy/35 dark:text-brand-off-white/30 leading-relaxed">
+          <p className="mt-5 text-[11px] text-muted leading-relaxed">
             Source: FEC bulk data (2024 cycle). Independent expenditures are legally required to be
             made without coordination with the candidate or their campaign. Super PACs may raise and
             spend unlimited amounts from corporations, unions, and individuals.
@@ -122,14 +122,14 @@ function PACRow({ group }: { group: OutsideMoneyGroup }) {
     <div className="py-4 first:pt-0 last:pb-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-brand-navy dark:text-brand-off-white truncate">
+          <p className="text-sm font-semibold text-fg truncate">
             {group.pac_name}
           </p>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5">
             <CommitteeTypeBadge label={typeLabel} isSuperPac={isSuperPac} />
             <DirectionBadge support={isSupport} />
             {group.expenditure_count > 1 && (
-              <span className="text-xs text-brand-navy/40 dark:text-brand-off-white/35">
+              <span className="text-xs text-muted">
                 {group.expenditure_count} filings
               </span>
             )}
@@ -145,7 +145,7 @@ function PACRow({ group }: { group: OutsideMoneyGroup }) {
           >
             {fmt.format(group.total_amount)}
           </p>
-          <p className="text-xs text-brand-navy/40 dark:text-brand-off-white/35 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {isSupport ? "spent supporting" : "spent opposing"}
           </p>
         </div>
@@ -169,7 +169,7 @@ function CommitteeTypeBadge({
     );
   }
   return (
-    <span className="inline-flex items-center rounded-full border border-brand-light-gray dark:border-brand-dark-gray px-2 py-0.5 text-[11px] font-medium text-brand-navy/55 dark:text-brand-off-white/45">
+    <span className="inline-flex items-center rounded-full border border-line px-2 py-0.5 text-[11px] font-medium text-muted">
       {label}
     </span>
   );

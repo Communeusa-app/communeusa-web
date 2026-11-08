@@ -6,6 +6,7 @@ import { CampaignFinanceList } from "./CampaignFinanceList";
 import { OutsideMoney } from "@/components/OutsideMoney";
 import { CorrectionModal } from "@/components/CorrectionModal";
 import { TakeActionCenter } from "@/components/TakeActionCenter";
+import { SiteShell } from "@/components/SiteShell";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -23,56 +24,59 @@ export default async function OfficialPage({ params }: Props) {
 
   if (!official) {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center">
+      <SiteShell>
+<main className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center">
         <p className="text-5xl font-bold text-brand-light-gray dark:text-brand-dark-gray mb-4">
           404
         </p>
-        <h1 className="text-xl font-semibold text-brand-navy dark:text-brand-off-white mb-2">
+        <h1 className="text-xl font-semibold text-fg mb-2">
           Official not found
         </h1>
-        <p className="text-sm text-brand-navy/55 dark:text-brand-off-white/50 mb-8">
+        <p className="text-sm text-muted mb-8">
           This profile may have been removed or the link is incorrect.
         </p>
         <Link
           href="/?state=53&clearSession=true#map"
-          className="rounded-lg bg-brand-primary hover:bg-brand-navy dark:bg-brand-red text-white font-medium px-5 py-2.5 text-sm transition-colors"
+          className="rounded-xl bg-fg hover:bg-fg/90 text-on-fg font-medium px-5 py-2.5 text-sm transition-colors"
         >
           ← Back to map
         </Link>
       </main>
+</SiteShell>
     );
   }
 
   return (
-    <main className="flex-1 px-6 py-12">
+    <SiteShell>
+<main className="flex-1 px-6 py-12">
       <div className="mx-auto max-w-3xl space-y-8">
         {/* Back button */}
         <Link
           href="/?state=53#map"
-          className="inline-flex items-center gap-1.5 text-sm text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-primary dark:hover:text-brand-red transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors"
         >
           ← Back to map
         </Link>
 
         {/* ── Profile header ──────────────────────────────────────── */}
-        <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-6">
+        <div className="rounded-2xl border border-line bg-surface px-6 py-6">
           {official.party?.trim() && (
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <PartyBadge party={official.party} />
             </div>
           )}
 
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-fg">
             {official.official_name}
           </h1>
 
           {official.office_title && (
-            <p className="mt-1.5 text-lg text-brand-navy/65 dark:text-brand-off-white/60">
+            <p className="mt-1.5 text-lg text-muted">
               {official.office_title}
             </p>
           )}
 
-          <p className="mt-1 text-sm text-brand-navy/50 dark:text-brand-off-white/40">
+          <p className="mt-1 text-sm text-muted">
             <LocationLine level={official.level} jurisdictionName={official.jurisdiction_name} />
           </p>
         </div>
@@ -144,6 +148,7 @@ export default async function OfficialPage({ params }: Props) {
         </div>
       </div>
     </main>
+</SiteShell>
   );
 }
 
@@ -151,8 +156,8 @@ export default async function OfficialPage({ params }: Props) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-6">
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-navy/45 dark:text-brand-off-white/40 mb-5">
+    <div className="rounded-2xl border border-line bg-surface px-6 py-6">
+      <h2 className="text-xs font-semibold uppercase tracking-widest text-muted mb-5">
         {title}
       </h2>
       {children}
@@ -164,10 +169,10 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
   if (!value) return null;
   return (
     <div>
-      <dt className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-0.5">
+      <dt className="text-[11px] font-medium uppercase tracking-wider text-muted mb-0.5">
         {label}
       </dt>
-      <dd className="text-sm font-medium text-brand-navy dark:text-brand-off-white">
+      <dd className="text-sm font-medium text-fg">
         {value}
       </dd>
     </div>
@@ -180,7 +185,7 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-transparent hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10 hover:border-brand-primary/40 dark:hover:border-brand-red/40 px-4 py-2 text-sm font-medium text-brand-navy dark:text-brand-off-white transition-all duration-150"
+      className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-transparent hover:bg-fg/5 hover:border-fg/30 px-4 py-2 text-sm font-medium text-fg transition-all duration-150"
     >
       {label}
       <ArrowUpRightIcon />
@@ -192,10 +197,10 @@ function PartyBadge({ party }: { party: OfficialProfile["party"] }) {
   if (!party?.trim()) return null;
   const normalized = party === "Democrat" ? "Democratic" : party;
   const styles: Record<string, string> = {
-    Democratic: "bg-brand-light-blue/50 text-brand-navy dark:bg-brand-primary/25 dark:text-brand-light-blue",
-    Republican: "bg-brand-red/15 text-brand-red dark:bg-brand-red/20 dark:text-brand-red",
+    Democratic: "bg-brand-primary/10 text-fg dark:bg-brand-primary/25",
+    Republican: "bg-brand-red/15 text-brand-red dark:bg-brand-red/20",
   };
-  const cls = styles[normalized] ?? "bg-brand-light-gray/50 text-brand-navy/60 dark:bg-brand-dark-gray dark:text-brand-off-white/50";
+  const cls = styles[normalized] ?? "bg-fg/5 text-muted";
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${cls}`}>
       {normalized}

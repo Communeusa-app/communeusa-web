@@ -13,7 +13,7 @@ interface Props {
 function partyClass(party: string | null) {
   if (party === "Democrat") return "text-brand-primary dark:text-brand-light-blue";
   if (party === "Republican") return "text-brand-red";
-  return "text-brand-mid-gray";
+  return "text-muted";
 }
 
 export function CountyPanel({ countyName, onClose }: Props) {
@@ -44,16 +44,16 @@ export function CountyPanel({ countyName, onClose }: Props) {
   }, [countyName]);
 
   return (
-    <div className="w-72 flex-shrink-0 flex flex-col rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray overflow-hidden">
+    <div className="w-72 flex-shrink-0 flex flex-col rounded-2xl border border-line bg-surface overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-brand-light-gray/70 dark:border-brand-dark-gray">
-        <h3 className="font-semibold text-sm text-brand-navy dark:text-brand-off-white">
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-line">
+        <h3 className="font-semibold text-sm text-fg">
           {countyName} County
         </h3>
         <button
           onClick={onClose}
           aria-label="Close panel"
-          className="rounded-md p-1 text-brand-navy/40 dark:text-brand-off-white/40 hover:text-brand-primary dark:hover:text-brand-red hover:bg-brand-light-blue/30 dark:hover:bg-brand-red/10 transition-colors"
+          className="rounded-md p-1 text-muted hover:text-brand-primary dark:hover:text-brand-light-blue hover:bg-fg/5 transition-colors"
         >
           <CloseIcon />
         </button>
@@ -66,18 +66,18 @@ export function CountyPanel({ countyName, onClose }: Props) {
             {Array.from({ length: 4 }).map((_, i) => (
               <li
                 key={i}
-                className="animate-pulse space-y-1.5 border-b border-brand-light-gray/50 dark:border-brand-dark-gray/60 pb-4 last:border-0"
+                className="animate-pulse space-y-1.5 border-b border-line pb-4 last:border-0"
               >
-                <div className="h-2 w-2/3 rounded-full bg-brand-light-gray dark:bg-brand-dark-gray/80" />
-                <div className="h-3 w-3/4 rounded-full bg-brand-light-gray dark:bg-brand-dark-gray/80" />
-                <div className="h-2 w-1/3 rounded-full bg-brand-light-gray/60 dark:bg-brand-dark-gray/50" />
+                <div className="h-2 w-2/3 rounded-full bg-brand-light-gray" />
+                <div className="h-3 w-3/4 rounded-full bg-brand-light-gray" />
+                <div className="h-2 w-1/3 rounded-full bg-fg/5" />
               </li>
             ))}
           </ul>
         ) : error ? (
           <p className="text-xs text-brand-red leading-relaxed">{error}</p>
         ) : officials.length === 0 ? (
-          <p className="text-xs text-brand-navy/50 dark:text-brand-off-white/45 leading-relaxed">
+          <p className="text-xs text-muted leading-relaxed">
             No officials on record for {countyName} County.
           </p>
         ) : (
@@ -87,13 +87,13 @@ export function CountyPanel({ countyName, onClose }: Props) {
                 <div
                   role="button"
                   onClick={() => router.push(`/officials/${o.id}`)}
-                  className="group flex items-center justify-between gap-3 rounded-lg px-3 py-3 -mx-3 cursor-pointer hover:bg-brand-light-blue/20 dark:hover:bg-brand-red/10 transition-colors"
+                  className="group flex items-center justify-between gap-3 rounded-xl px-3 py-3 -mx-3 cursor-pointer hover:bg-fg/5 transition-colors"
                 >
                   <div className="min-w-0">
-                    <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/50 dark:text-brand-off-white/45">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-muted">
                       {o.office_title ?? "—"}
                     </p>
-                    <p className="mt-0.5 text-sm font-semibold text-brand-navy dark:text-brand-off-white truncate">
+                    <p className="mt-0.5 text-sm font-semibold text-fg truncate">
                       {o.official_name}
                     </p>
                     <p className={`mt-0.5 text-xs ${partyClass(o.party)}`}>
@@ -110,7 +110,7 @@ export function CountyPanel({ countyName, onClose }: Props) {
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="shrink-0 text-brand-navy/25 dark:text-brand-off-white/25 group-hover:text-brand-primary dark:group-hover:text-brand-red transition-colors"
+                    className="shrink-0 text-brand-navy/25 group-hover:text-brand-primary dark:group-hover:text-brand-light-blue transition-colors"
                   >
                     <polyline points="9 18 15 12 9 6" />
                   </svg>

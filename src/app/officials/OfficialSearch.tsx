@@ -11,12 +11,12 @@ const LEVEL_CONFIG: Record<string, { label: string; className: string }> = {
   federal: {
     label: "Federal",
     className:
-      "bg-brand-light-blue/50 text-brand-navy dark:bg-brand-primary/25 dark:text-brand-light-blue",
+      "bg-brand-primary/10 text-fg dark:bg-brand-primary/25",
   },
   state: {
     label: "State",
     className:
-      "bg-brand-red/12 text-brand-red dark:bg-brand-red/20 dark:text-brand-red",
+      "bg-brand-red/12 text-brand-red dark:bg-brand-red/20",
   },
   county: {
     label: "County",
@@ -26,12 +26,12 @@ const LEVEL_CONFIG: Record<string, { label: string; className: string }> = {
   city: {
     label: "City",
     className:
-      "bg-brand-light-gray/60 text-brand-navy/60 dark:bg-brand-dark-gray dark:text-brand-off-white/55",
+      "bg-fg/5 text-muted",
   },
 };
 
 function LevelBadge({ level }: { level: string }) {
-  const cfg = LEVEL_CONFIG[level] ?? { label: level, className: "bg-brand-light-gray/50 text-brand-navy/55 dark:bg-brand-dark-gray dark:text-brand-off-white/45" };
+  const cfg = LEVEL_CONFIG[level] ?? { label: level, className: "bg-fg/5 text-muted" };
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${cfg.className}`}>
       {cfg.label}
@@ -94,7 +94,7 @@ export function OfficialSearch() {
     <div className="space-y-6">
       {/* Search input */}
       <div className="relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-navy/35 dark:text-brand-off-white/30 pointer-events-none">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none">
           <SearchIcon />
         </span>
         <input
@@ -103,36 +103,36 @@ export function OfficialSearch() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search officials by name..."
           autoFocus
-          className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white placeholder:text-brand-mid-gray pl-11 pr-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 transition shadow-sm"
+          className="w-full rounded-2xl border border-line bg-surface text-fg placeholder:text-muted pl-11 pr-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 transition shadow-sm"
         />
       </div>
 
       {/* States */}
       {!hasQuery && (
-        <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-10 text-center">
-          <p className="text-brand-navy/55 dark:text-brand-off-white/50 text-sm leading-relaxed">
+        <div className="rounded-2xl border border-line bg-surface px-6 py-10 text-center">
+          <p className="text-muted text-sm leading-relaxed">
             Search for any elected or appointed official in Washington by name.
           </p>
         </div>
       )}
 
       {hasQuery && loading && (
-        <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-10 text-center">
-          <p className="text-sm text-brand-navy/45 dark:text-brand-off-white/40">Searching…</p>
+        <div className="rounded-2xl border border-line bg-surface px-6 py-10 text-center">
+          <p className="text-sm text-muted">Searching…</p>
         </div>
       )}
 
       {hasQuery && !loading && results !== null && results.length === 0 && (
-        <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-10 text-center">
-          <p className="text-sm text-brand-navy/65 dark:text-brand-off-white/55">
+        <div className="rounded-2xl border border-line bg-surface px-6 py-10 text-center">
+          <p className="text-sm text-muted">
             No officials found matching{" "}
-            <span className="font-semibold text-brand-navy dark:text-brand-off-white">
+            <span className="font-semibold text-fg">
               &ldquo;{query.trim()}&rdquo;
             </span>
             . Try a different spelling or{" "}
             <Link
               href="/"
-              className="text-brand-primary dark:text-brand-red underline underline-offset-2 hover:opacity-75 transition-opacity"
+              className="text-brand-primary dark:text-brand-light-blue underline underline-offset-2 hover:opacity-75 transition-opacity"
             >
               search by address on the home page
             </Link>
@@ -143,7 +143,7 @@ export function OfficialSearch() {
 
       {hasQuery && !loading && results && results.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/40 dark:text-brand-off-white/35 px-1">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted px-1">
             {results.length} result{results.length !== 1 ? "s" : ""}
             {results.length === 30 ? " — refine your search for more" : ""}
           </p>
@@ -152,27 +152,27 @@ export function OfficialSearch() {
               <li key={official.id}>
                 <Link
                   href={`/officials/${official.id}`}
-                  className="group flex items-center justify-between gap-4 rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-5 py-4 hover:border-brand-primary/40 dark:hover:border-brand-red/40 hover:bg-brand-light-blue/10 dark:hover:bg-brand-red/5 transition-all duration-150"
+                  className="group flex items-center justify-between gap-4 rounded-2xl border border-line bg-surface px-5 py-4 hover:border-fg/30 hover:bg-fg/5 dark:hover:bg-brand-red/5 transition-all duration-150"
                 >
                   <div className="min-w-0 space-y-1">
-                    <p className="font-semibold text-brand-navy dark:text-brand-off-white truncate">
+                    <p className="font-semibold text-fg truncate">
                       {official.official_name}
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
                       <LevelBadge level={official.level} />
                       {official.office_title && (
-                        <span className="text-xs text-brand-navy/60 dark:text-brand-off-white/55 truncate">
+                        <span className="text-xs text-muted truncate">
                           {official.office_title}
                         </span>
                       )}
                       {official.jurisdiction_name && (
-                        <span className="text-xs text-brand-navy/40 dark:text-brand-off-white/35">
+                        <span className="text-xs text-muted">
                           · {official.jurisdiction_name}
                         </span>
                       )}
                     </div>
                   </div>
-                  <span className="shrink-0 text-brand-navy/25 dark:text-brand-off-white/25 group-hover:text-brand-primary dark:group-hover:text-brand-red transition-colors">
+                  <span className="shrink-0 text-brand-navy/25 group-hover:text-brand-primary dark:group-hover:text-brand-light-blue transition-colors">
                     <ArrowRightIcon />
                   </span>
                 </Link>

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { CorrectionModal } from "@/components/CorrectionModal";
 import {
   getEntityDetailRaw,
@@ -8,16 +7,9 @@ import {
   getSchoolBoardMemberDistrictId,
 } from "@/app/actions/directory";
 import type { DirectoryCategory, SchoolBoardMember } from "@/app/actions/directory";
+import { SiteShell } from "@/components/SiteShell";
 
-const NAV_LINKS = [
-  { label: "Representatives", href: "/#representatives" },
-  { label: "Officials",       href: "/officials" },
-  { label: "Elections",       href: "/elections" },
-  { label: "Finance",         href: "/finance" },
-  { label: "Directory",       href: "/directory" },
-  { label: "Rights",          href: "/rights" },
-  { label: "About",           href: "/about" },
-] as const;
+
 
 const CATEGORY_LABELS: Record<string, string> = {
   "school-districts":    "School Districts",
@@ -74,94 +66,66 @@ export default async function EntityDetailPage({ params }: Props) {
   const countyName: string | null = raw.counties?.name ?? null;
 
   return (
-    <>
-      <header className="sticky top-0 z-50 border-b border-brand-light-gray/60 dark:border-brand-dark-gray bg-brand-off-white/95 dark:bg-brand-charcoal/95 backdrop-blur-sm">
-        <nav className="mx-auto max-w-6xl px-6 h-16 flex items-center gap-6">
-          <a href="/" className="flex items-center gap-2.5 shrink-0">
-            <LogoMark />
-            <span className="font-semibold text-[15px] tracking-tight text-brand-navy dark:text-brand-off-white">
-              CommuneUSA
-            </span>
-          </a>
-          <div className="hidden md:flex items-center gap-0.5 ml-2">
-            {NAV_LINKS.map(({ label, href }) => (
-              <Link
-                key={label}
-                href={href}
-                className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
-                  href === "/directory"
-                    ? "text-brand-primary dark:text-brand-red font-medium bg-brand-light-blue/20 dark:bg-brand-red/10"
-                    : "text-brand-navy/60 dark:text-brand-off-white/60 hover:text-brand-primary dark:hover:text-brand-red hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-          <div className="ml-auto">
-            <ThemeToggle />
-          </div>
-        </nav>
-      </header>
+    <SiteShell>
 
       <main className="flex-1 px-6 py-12">
         <div className="mx-auto max-w-3xl space-y-6">
           {/* Back link */}
           <Link
             href={`/directory?category=${category}`}
-            className="inline-flex items-center gap-1.5 text-sm text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-primary dark:hover:text-brand-red transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors"
           >
             ← {categoryLabel}
           </Link>
 
           {/* Profile header */}
-          <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-6">
+          <div className="rounded-2xl border border-line bg-surface px-6 py-6">
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <Pill cls="bg-brand-light-blue/20 dark:bg-brand-red/10 text-brand-primary dark:text-brand-red">
+              <Pill cls="bg-brand-primary/10 dark:bg-brand-red/10 text-brand-primary dark:text-brand-light-blue">
                 {categoryLabel}
               </Pill>
               {category === "law-enforcement" && raw.agency_type && (
-                <Pill cls="bg-brand-light-gray/50 dark:bg-brand-dark-gray text-brand-navy/60 dark:text-brand-off-white/50 border border-brand-light-gray dark:border-brand-dark-gray">
+                <Pill cls="bg-fg/5 text-muted border border-line">
                   {raw.agency_type}
                 </Pill>
               )}
               {category === "fire-ems" && raw.agency_type && (
-                <Pill cls="bg-brand-light-gray/50 dark:bg-brand-dark-gray text-brand-navy/60 dark:text-brand-off-white/50 border border-brand-light-gray dark:border-brand-dark-gray">
+                <Pill cls="bg-fg/5 text-muted border border-line">
                   {raw.agency_type}
                 </Pill>
               )}
               {category === "hospitals" && raw.ownership_type && (
-                <Pill cls="bg-brand-light-gray/50 dark:bg-brand-dark-gray text-brand-navy/60 dark:text-brand-off-white/50 border border-brand-light-gray dark:border-brand-dark-gray">
+                <Pill cls="bg-fg/5 text-muted border border-line">
                   {raw.ownership_type}
                 </Pill>
               )}
               {category === "utilities-transit" && raw.category && (
-                <Pill cls="bg-brand-light-gray/50 dark:bg-brand-dark-gray text-brand-navy/60 dark:text-brand-off-white/50 border border-brand-light-gray dark:border-brand-dark-gray">
+                <Pill cls="bg-fg/5 text-muted border border-line">
                   {raw.category}
                 </Pill>
               )}
               {category === "state-agencies" && raw.abbreviation && (
-                <Pill cls="bg-brand-light-gray/50 dark:bg-brand-dark-gray text-brand-navy/60 dark:text-brand-off-white/50 border border-brand-light-gray dark:border-brand-dark-gray font-mono">
+                <Pill cls="bg-fg/5 text-muted border border-line font-mono">
                   {raw.abbreviation}
                 </Pill>
               )}
               {category === "judiciary" && raw.court_level && (
-                <Pill cls="bg-brand-light-gray/50 dark:bg-brand-dark-gray text-brand-navy/60 dark:text-brand-off-white/50 border border-brand-light-gray dark:border-brand-dark-gray">
+                <Pill cls="bg-fg/5 text-muted border border-line">
                   {raw.court_level}
                 </Pill>
               )}
               {category === "courts" && raw.court_level && (
-                <Pill cls="bg-brand-light-gray/50 dark:bg-brand-dark-gray text-brand-navy/60 dark:text-brand-off-white/50 border border-brand-light-gray dark:border-brand-dark-gray">
+                <Pill cls="bg-fg/5 text-muted border border-line">
                   {raw.court_level}
                 </Pill>
               )}
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-fg">
               {entityName}
             </h1>
             {countyName && (
-              <p className="mt-1.5 text-lg text-brand-navy/65 dark:text-brand-off-white/60">
+              <p className="mt-1.5 text-lg text-muted">
                 {countyName} County
               </p>
             )}
@@ -181,7 +145,7 @@ export default async function EntityDetailPage({ params }: Props) {
                 </dl>
                 {!raw.chief_name?.trim() && (
                   <div className="mt-4 flex items-center justify-between gap-4">
-                    <p className="text-sm text-brand-navy/55 dark:text-brand-off-white/45">
+                    <p className="text-sm text-muted">
                       The current chief or sheriff for this agency isn&apos;t on file yet.
                     </p>
                     <CorrectionModal
@@ -196,13 +160,13 @@ export default async function EntityDetailPage({ params }: Props) {
               <Section title="Contact">
                 {!raw.phone?.trim() && !website ? (
                   <div className="space-y-2">
-                    <p className="text-sm text-brand-navy/55 dark:text-brand-off-white/45">
+                    <p className="text-sm text-muted">
                       Direct contact details for this agency aren&apos;t on file yet.
                     </p>
                     {countyName && (
-                      <p className="text-sm text-brand-navy/50 dark:text-brand-off-white/40">
+                      <p className="text-sm text-muted">
                         You can reach this agency through{" "}
-                        <span className="font-medium text-brand-navy/70 dark:text-brand-off-white/60">
+                        <span className="font-medium text-muted">
                           {countyName} County
                         </span>{" "}
                         government.
@@ -263,7 +227,7 @@ export default async function EntityDetailPage({ params }: Props) {
                   <Detail label="Beds"          value={raw.beds != null ? String(raw.beds) : null} />
                   {raw.trauma_level && (
                     <div>
-                      <dt className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-0.5">
+                      <dt className="text-[11px] font-medium uppercase tracking-wider text-muted mb-0.5">
                         Trauma Level
                       </dt>
                       <dd>
@@ -312,26 +276,26 @@ export default async function EntityDetailPage({ params }: Props) {
                     {boardMembers.map((m) => (
                       <li
                         key={m.id}
-                        className="flex flex-wrap items-center justify-between gap-2 py-2.5 border-b border-brand-light-gray/40 dark:border-brand-dark-gray/60 last:border-0"
+                        className="flex flex-wrap items-center justify-between gap-2 py-2.5 border-b border-line last:border-0"
                       >
                         <div>
-                          <p className="text-sm font-medium text-brand-navy dark:text-brand-off-white">
+                          <p className="text-sm font-medium text-fg">
                             {m.name}
                           </p>
                           {m.position && (
-                            <p className="text-xs text-brand-navy/55 dark:text-brand-off-white/45 mt-0.5">
+                            <p className="text-xs text-muted mt-0.5">
                               {m.position}
                             </p>
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {m.party && (
-                            <Pill cls="bg-brand-light-gray/40 dark:bg-brand-dark-gray text-brand-navy/55 dark:text-brand-off-white/45 border border-brand-light-gray/60 dark:border-brand-dark-gray">
+                            <Pill cls="bg-fg/5 text-muted border border-line">
                               {m.party}
                             </Pill>
                           )}
                           {(m.term_start || m.term_end) && (
-                            <span className="text-[11px] text-brand-navy/40 dark:text-brand-off-white/35">
+                            <span className="text-[11px] text-muted">
                               {m.term_start ?? "?"} – {m.term_end ?? "?"}
                             </span>
                           )}
@@ -349,7 +313,7 @@ export default async function EntityDetailPage({ params }: Props) {
             <>
               {raw.mission && (
                 <Section title="Mission">
-                  <p className="text-sm text-brand-navy/75 dark:text-brand-off-white/70 leading-relaxed">
+                  <p className="text-sm text-muted leading-relaxed">
                     {raw.mission}
                   </p>
                 </Section>
@@ -456,28 +420,7 @@ export default async function EntityDetailPage({ params }: Props) {
         </div>
       </main>
 
-      <footer className="border-t border-brand-light-gray/60 dark:border-brand-dark-gray px-6 py-8 mt-auto">
-        <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <LogoMark />
-            <span className="text-sm font-semibold text-brand-navy dark:text-brand-off-white">CommuneUSA</span>
-          </div>
-          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm text-brand-navy/55 dark:text-brand-off-white/55">
-            {NAV_LINKS.map(({ label, href }) => (
-              <Link key={label} href={href} className="hover:text-brand-primary dark:hover:text-brand-red transition-colors">
-                {label}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div className="mt-5 flex justify-center">
-          <CorrectionModal entityType="general" variant="footer-link" />
-        </div>
-        <p className="mt-2 text-center text-xs text-brand-navy/35 dark:text-brand-off-white/35">
-          © {new Date().getFullYear()} CommuneUSA. All rights reserved.
-        </p>
-      </footer>
-    </>
+    </SiteShell>
   );
 }
 
@@ -485,8 +428,8 @@ export default async function EntityDetailPage({ params }: Props) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-6">
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-navy/45 dark:text-brand-off-white/40 mb-5">
+    <div className="rounded-2xl border border-line bg-surface px-6 py-6">
+      <h2 className="text-xs font-semibold uppercase tracking-widest text-muted mb-5">
         {title}
       </h2>
       {children}
@@ -498,10 +441,10 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
   if (!value) return null;
   return (
     <div>
-      <dt className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-0.5">
+      <dt className="text-[11px] font-medium uppercase tracking-wider text-muted mb-0.5">
         {label}
       </dt>
-      <dd className="text-sm font-medium text-brand-navy dark:text-brand-off-white">
+      <dd className="text-sm font-medium text-fg">
         {value}
       </dd>
     </div>
@@ -514,7 +457,7 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-transparent hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10 hover:border-brand-primary/40 dark:hover:border-brand-red/40 px-4 py-2 text-sm font-medium text-brand-navy dark:text-brand-off-white transition-all duration-150"
+      className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-transparent hover:bg-fg/5 hover:border-fg/30 px-4 py-2 text-sm font-medium text-fg transition-all duration-150"
     >
       {label}
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -534,9 +477,9 @@ function Pill({ cls, children }: { cls: string; children: React.ReactNode }) {
 
 function TraumaLevelBadge({ level }: { level: string }) {
   const lower = level.toLowerCase();
-  let cls = "bg-brand-light-gray/40 text-brand-navy/70 dark:bg-brand-dark-gray dark:text-brand-off-white/60";
+  let cls = "bg-fg/5 text-muted";
   if (lower.includes("level i") && !lower.includes("level ii")) {
-    cls = "bg-brand-red/15 text-brand-red dark:bg-brand-red/20 dark:text-brand-red";
+    cls = "bg-brand-red/15 text-brand-red dark:bg-brand-red/20";
   } else if (lower.includes("level ii") && !lower.includes("level iii")) {
     cls = "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400";
   } else if (lower.includes("level iii")) {
@@ -554,11 +497,3 @@ function normalizeUrl(url: string): string {
   return `https://${url}`;
 }
 
-function LogoMark() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-      <rect x="5.5" y="5.5" width="13" height="13" transform="rotate(45 12 12)" className="stroke-brand-primary dark:stroke-white fill-none" strokeWidth="1.5" />
-      <rect x="8.5" y="8.5" width="7" height="7" transform="rotate(45 12 12)" className="fill-brand-primary dark:fill-brand-red" />
-    </svg>
-  );
-}

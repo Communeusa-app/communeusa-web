@@ -1,4 +1,4 @@
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { SiteShell } from "@/components/SiteShell";
 
 export const metadata = {
   title: "Privacy Policy — CommuneUSA",
@@ -7,33 +7,19 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <>
-      {/* ── Navbar ── */}
-      <header className="sticky top-0 z-50 border-b border-brand-light-gray/60 dark:border-brand-dark-gray bg-brand-off-white/95 dark:bg-brand-charcoal/95 backdrop-blur-sm">
-        <nav className="mx-auto max-w-6xl px-6 h-16 flex items-center gap-6">
-          <a href="/" className="flex items-center gap-2.5 shrink-0">
-            <LogoMark />
-            <span className="font-semibold text-[15px] tracking-tight text-brand-navy dark:text-brand-off-white">
-              CommuneUSA
-            </span>
-          </a>
-          <div className="ml-auto">
-            <ThemeToggle />
-          </div>
-        </nav>
-      </header>
+    <SiteShell>
 
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
           {/* Header */}
           <div className="mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-primary dark:text-brand-red mb-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-primary dark:text-brand-light-blue mb-3">
               Legal
             </p>
-            <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-4">
+            <h1 className="text-4xl font-bold tracking-tight text-fg mb-4">
               Privacy Policy
             </h1>
-            <p className="text-brand-navy/55 dark:text-brand-off-white/55 text-sm">
+            <p className="text-muted text-sm">
               Last updated: May 2026
             </p>
           </div>
@@ -176,8 +162,7 @@ export default function PrivacyPage() {
         </div>
       </main>
 
-      <Footer />
-    </>
+    </SiteShell>
   );
 }
 
@@ -192,10 +177,10 @@ function Section({
 }) {
   return (
     <section className="mt-10">
-      <h2 className="text-lg font-semibold text-brand-navy dark:text-brand-off-white mb-3">
+      <h2 className="text-lg font-semibold text-fg mb-3">
         {title}
       </h2>
-      <div className="space-y-3 text-[15px] leading-relaxed text-brand-navy/75 dark:text-brand-off-white/70">
+      <div className="space-y-3 text-[15px] leading-relaxed text-muted">
         {children}
       </div>
     </section>
@@ -214,48 +199,10 @@ function ExternalLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-brand-primary dark:text-brand-red underline underline-offset-2 hover:opacity-75 transition-opacity"
+      className="text-brand-primary dark:text-brand-light-blue underline underline-offset-2 hover:opacity-75 transition-opacity"
     >
       {children}
     </a>
   );
 }
 
-function Footer() {
-  return (
-    <footer className="border-t border-brand-light-gray/60 dark:border-brand-dark-gray px-6 py-10 mt-8">
-      <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center sm:items-start justify-between gap-8">
-        <div className="flex flex-col items-center sm:items-start gap-1.5">
-          <a href="/" className="flex items-center gap-2">
-            <LogoMark />
-            <span className="text-sm font-semibold text-brand-navy dark:text-brand-off-white">
-              CommuneUSA
-            </span>
-          </a>
-          <p className="text-xs text-brand-navy/45 dark:text-brand-off-white/45">
-            Civic data for verified American citizens.
-          </p>
-        </div>
-        <div className="flex flex-wrap justify-center sm:justify-end gap-x-6 gap-y-2 text-sm text-brand-navy/55 dark:text-brand-off-white/55">
-          <a href="/" className="hover:text-brand-primary dark:hover:text-brand-red transition-colors">Home</a>
-          <a href="/privacy" className="text-brand-primary dark:text-brand-red">Privacy</a>
-          <a href="/terms" className="hover:text-brand-primary dark:hover:text-brand-red transition-colors">Terms</a>
-        </div>
-      </div>
-      <p className="mt-8 text-center text-xs text-brand-navy/35 dark:text-brand-off-white/35">
-        © {new Date().getFullYear()} CommuneUSA. All rights reserved.
-      </p>
-    </footer>
-  );
-}
-
-function LogoMark() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" width="28" height="28">
-      <rect x="5.5" y="5.5" width="13" height="13" transform="rotate(45 12 12)"
-        className="stroke-brand-primary dark:stroke-white fill-none" strokeWidth="1.5" />
-      <rect x="8.5" y="8.5" width="7" height="7" transform="rotate(45 12 12)"
-        className="fill-brand-primary dark:fill-brand-red" />
-    </svg>
-  );
-}

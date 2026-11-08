@@ -70,18 +70,18 @@ function EntityCard({ entity }: { entity: DirectoryEntity }) {
   const href = `/directory/${entity.category}/${entity.id}`;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start gap-4 rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-5 py-4 hover:border-brand-primary/30 dark:hover:border-brand-red/30 transition-colors">
+    <div className="flex flex-col sm:flex-row sm:items-start gap-4 rounded-2xl border border-line bg-surface px-5 py-4 hover:border-brand-primary/30 dark:hover:border-brand-red/30 transition-colors">
       {/* Main info */}
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 mb-1">
           <Link
             href={href}
-            className="text-sm font-semibold text-brand-navy dark:text-brand-off-white hover:text-brand-primary dark:hover:text-brand-red transition-colors truncate"
+            className="text-sm font-semibold text-fg hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors truncate"
           >
             {entity.name}
           </Link>
           {entity.county_name && (
-            <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium bg-brand-light-gray/50 dark:bg-brand-dark-gray/60 text-brand-navy/55 dark:text-brand-off-white/45">
+            <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium bg-fg/5 text-muted">
               {entity.county_name} Co.
             </span>
           )}
@@ -89,9 +89,9 @@ function EntityCard({ entity }: { entity: DirectoryEntity }) {
 
         {/* Contact */}
         {entity.contact_name && (
-          <p className="text-xs text-brand-navy/55 dark:text-brand-off-white/50 mt-0.5 truncate">
+          <p className="text-xs text-muted mt-0.5 truncate">
             {entity.contact_label && (
-              <span className="font-medium text-brand-navy/40 dark:text-brand-off-white/35 mr-1">
+              <span className="font-medium text-muted mr-1">
                 {entity.contact_label}:
               </span>
             )}
@@ -102,12 +102,12 @@ function EntityCard({ entity }: { entity: DirectoryEntity }) {
         {/* Jurisdiction / detail row */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
           {entity.detail_value && entity.detail_label && (
-            <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium bg-brand-light-blue/15 dark:bg-brand-red/10 text-brand-primary/80 dark:text-brand-red/80">
+            <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium bg-brand-primary/10 dark:bg-brand-red/10 text-brand-primary/80 dark:text-brand-red/80">
               {entity.detail_label}: {entity.detail_value}
             </span>
           )}
           {entity.jurisdiction && !entity.county_name && (
-            <span className="text-xs text-brand-navy/40 dark:text-brand-off-white/35 truncate max-w-xs">
+            <span className="text-xs text-muted truncate max-w-xs">
               {entity.jurisdiction}
             </span>
           )}
@@ -119,7 +119,7 @@ function EntityCard({ entity }: { entity: DirectoryEntity }) {
         {entity.phone && (
           <a
             href={`tel:${entity.phone}`}
-            className="text-xs text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-primary dark:hover:text-brand-red transition-colors tabular-nums whitespace-nowrap"
+            className="text-xs text-muted hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors tabular-nums whitespace-nowrap"
           >
             {entity.phone}
           </a>
@@ -129,7 +129,7 @@ function EntityCard({ entity }: { entity: DirectoryEntity }) {
             href={entity.website.startsWith("http") ? entity.website : `https://${entity.website}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-medium text-brand-primary dark:text-brand-red hover:underline whitespace-nowrap"
+            className="inline-flex items-center gap-1 text-xs font-medium text-brand-primary dark:text-brand-light-blue hover:underline whitespace-nowrap"
           >
             Website
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -139,7 +139,7 @@ function EntityCard({ entity }: { entity: DirectoryEntity }) {
         )}
         <Link
           href={href}
-          className="text-xs text-brand-navy/40 dark:text-brand-off-white/35 hover:text-brand-primary dark:hover:text-brand-red transition-colors whitespace-nowrap"
+          className="text-xs text-muted hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors whitespace-nowrap"
         >
           Details →
         </Link>
@@ -224,14 +224,14 @@ export function DirectoryBrowser({ initialCategory, initialEntities, counties }:
 
       {/* State selector */}
       <div className="flex items-center gap-2.5">
-        <span className="text-sm text-brand-navy/55 dark:text-brand-off-white/50">
+        <span className="text-sm text-muted">
           Showing data for
         </span>
-        <div className="inline-flex items-center p-1 rounded-lg bg-brand-light-gray/30 dark:bg-brand-dark-gray/50">
+        <div className="inline-flex items-center p-1 rounded-xl bg-fg/5">
           <select
             value={selectedState}
             onChange={(e) => setSelectedState(e.target.value)}
-            className="px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer focus:outline-none bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm transition-colors"
+            className="px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer focus:outline-none bg-surface text-fg shadow-sm transition-colors"
           >
             {US_STATES.map(({ abbr, name }) => (
               <option key={abbr} value={abbr}>{name}</option>
@@ -243,15 +243,15 @@ export function DirectoryBrowser({ initialCategory, initialEntities, counties }:
       {/* Coming soon (non-WA) */}
       {selectedState !== "WA" && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-brand-light-gray/40 dark:bg-brand-dark-gray flex items-center justify-center mb-5">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-navy/30 dark:text-brand-off-white/30">
+          <div className="w-14 h-14 rounded-2xl bg-fg/5 flex items-center justify-center mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
               <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-brand-navy dark:text-brand-off-white mb-2">
+          <h3 className="text-lg font-semibold text-fg mb-2">
             {selectedStateName} directory coming soon
           </h3>
-          <p className="max-w-sm text-sm text-brand-navy/55 dark:text-brand-off-white/50 leading-relaxed">
+          <p className="max-w-sm text-sm text-muted leading-relaxed">
             CommuneUSA is expanding to all 50 states. The {selectedStateName} public
             institution directory will be available once we complete data collection for
             that state.
@@ -263,7 +263,7 @@ export function DirectoryBrowser({ initialCategory, initialEntities, counties }:
       {/* Search + county filter row */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-mid-gray" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
@@ -271,17 +271,17 @@ export function DirectoryBrowser({ initialCategory, initialEntities, counties }:
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search all entities by name…"
-            className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white placeholder:text-brand-mid-gray pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 focus:border-transparent transition"
+            className="w-full rounded-2xl border border-line bg-surface text-fg placeholder:text-muted pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 focus:border-transparent transition"
           />
           {searchLoading && (
-            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-mid-gray text-xs">…</span>
+            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted text-xs">…</span>
           )}
         </div>
 
         <select
           value={selectedCounty}
           onChange={(e) => handleCountyChange(e.target.value)}
-          className="rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 focus:border-transparent transition sm:w-52"
+          className="rounded-2xl border border-line bg-surface text-fg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 focus:border-transparent transition sm:w-52"
         >
           <option value="">All counties</option>
           {counties.map((c) => (
@@ -293,15 +293,15 @@ export function DirectoryBrowser({ initialCategory, initialEntities, counties }:
       {/* Category tabs */}
       {!isSearchMode && (
         <div ref={tabsRef} className="overflow-x-auto -mx-1 px-1">
-          <div className="flex gap-1 min-w-max p-1 rounded-xl bg-brand-light-gray/30 dark:bg-brand-dark-gray/50">
+          <div className="flex gap-1 min-w-max p-1 rounded-2xl bg-fg/5">
             {TABS.map(({ id, label }) => (
               <button
                 key={id}
                 onClick={() => handleTabChange(id)}
                 className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
                   activeCategory === id
-                    ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
-                    : "text-brand-navy/50 dark:text-brand-off-white/45 hover:text-brand-navy dark:hover:text-brand-off-white"
+                    ? "bg-surface text-fg shadow-sm"
+                    : "text-muted hover:text-fg"
                 }`}
               >
                 {label}
@@ -315,7 +315,7 @@ export function DirectoryBrowser({ initialCategory, initialEntities, counties }:
       <div>
         {/* Count line */}
         {!loading && !searchLoading && (
-          <p className="text-xs text-brand-navy/40 dark:text-brand-off-white/35 mb-3">
+          <p className="text-xs text-muted mb-3">
             {isSearchMode
               ? `${displayEntities.length} result${displayEntities.length !== 1 ? "s" : ""} across all categories`
               : `${displayEntities.length} ${TABS.find(t => t.id === activeCategory)?.label.toLowerCase() ?? "entities"}${selectedCounty ? " in selected county" : ""}`
@@ -326,14 +326,14 @@ export function DirectoryBrowser({ initialCategory, initialEntities, counties }:
         {(loading || searchLoading) && (
           <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-20 rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray animate-pulse" />
+              <div key={i} className="h-20 rounded-2xl border border-line bg-surface animate-pulse" />
             ))}
           </div>
         )}
 
         {!loading && !searchLoading && displayEntities.length === 0 && (
-          <div className="rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-10 text-center">
-            <p className="text-sm text-brand-navy/45 dark:text-brand-off-white/40">
+          <div className="rounded-2xl border border-line bg-surface px-6 py-10 text-center">
+            <p className="text-sm text-muted">
               {isSearchMode
                 ? `No entities found matching "${searchQuery}"`
                 : "No records found for this category."
