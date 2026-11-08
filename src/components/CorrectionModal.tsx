@@ -140,10 +140,10 @@ export function CorrectionModal({
   }
 
   const inputCls =
-    "w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white placeholder:text-brand-mid-gray px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 transition";
+    "w-full rounded-2xl border border-line bg-surface text-fg placeholder:text-muted px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 transition";
 
   const labelCls =
-    "block text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-1.5";
+    "block text-[11px] font-medium uppercase tracking-wider text-muted mb-1.5";
 
   return (
     <>
@@ -152,7 +152,7 @@ export function CorrectionModal({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg border border-brand-primary dark:border-brand-red px-4 py-2 text-sm font-medium text-brand-primary dark:text-brand-red bg-transparent hover:bg-brand-light-blue/20 dark:hover:bg-brand-red/10 transition-colors"
+          className="inline-flex items-center gap-2 rounded-xl border border-brand-primary dark:border-brand-red px-4 py-2 text-sm font-medium text-brand-primary dark:text-brand-light-blue bg-transparent hover:bg-fg/5 transition-colors"
         >
           <FlagIcon />
           Suggest a Correction
@@ -160,7 +160,7 @@ export function CorrectionModal({
       ) : (
         <button
           onClick={() => setOpen(true)}
-          className="text-xs text-brand-navy/35 dark:text-brand-off-white/30 hover:text-brand-primary dark:hover:text-brand-red transition-colors"
+          className="text-xs text-muted hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors"
         >
           Suggest a correction
         </button>
@@ -177,24 +177,24 @@ export function CorrectionModal({
 
           {/* Panel */}
           <div
-            className="relative z-10 w-full max-w-lg rounded-2xl bg-brand-off-white dark:bg-brand-charcoal border border-brand-light-gray/70 dark:border-brand-dark-gray shadow-2xl max-h-[90vh] flex flex-col"
+            className="relative z-10 w-full max-w-lg rounded-2xl bg-brand-off-white border border-line shadow-2xl max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-brand-light-gray/60 dark:border-brand-dark-gray shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
               <div>
-                <h2 className="text-base font-semibold text-brand-navy dark:text-brand-off-white">
+                <h2 className="text-base font-semibold text-fg">
                   Suggest a Correction
                 </h2>
                 {entityName && (
-                  <p className="text-xs text-brand-navy/50 dark:text-brand-off-white/45 mt-0.5 truncate">
+                  <p className="text-xs text-muted mt-0.5 truncate">
                     {entityName}
                   </p>
                 )}
               </div>
               <button
                 onClick={handleClose}
-                className="shrink-0 ml-4 text-brand-navy/40 dark:text-brand-off-white/40 hover:text-brand-navy dark:hover:text-brand-off-white transition-colors"
+                className="shrink-0 ml-4 text-muted hover:text-fg transition-colors"
                 aria-label="Close"
               >
                 <XIcon />
@@ -206,19 +206,19 @@ export function CorrectionModal({
               {success ? (
                 /* ── Success state ────────────────────────────────────────── */
                 <div className="text-center py-6">
-                  <div className="w-14 h-14 rounded-full bg-brand-light-blue/30 dark:bg-brand-primary/20 flex items-center justify-center mx-auto mb-4 text-brand-primary dark:text-brand-light-blue">
+                  <div className="w-14 h-14 rounded-full bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center mx-auto mb-4 text-brand-primary dark:text-brand-light-blue">
                     <CheckCircleIcon />
                   </div>
-                  <h3 className="text-base font-semibold text-brand-navy dark:text-brand-off-white mb-2">
+                  <h3 className="text-base font-semibold text-fg mb-2">
                     Correction submitted
                   </h3>
-                  <p className="text-sm text-brand-navy/60 dark:text-brand-off-white/55 mb-6 leading-relaxed">
+                  <p className="text-sm text-muted mb-6 leading-relaxed">
                     Thank you — our team will review your suggestion and update the
                     record if it checks out.
                   </p>
                   <button
                     onClick={handleClose}
-                    className="rounded-xl bg-brand-primary hover:bg-brand-navy dark:bg-brand-red dark:hover:bg-brand-red/80 text-white font-semibold px-6 py-2.5 text-sm transition-colors"
+                    className="rounded-2xl bg-fg hover:bg-fg/90 dark:hover:bg-brand-red/80 text-on-fg font-semibold px-6 py-2.5 text-sm transition-colors"
                   >
                     Done
                   </button>
@@ -245,7 +245,7 @@ export function CorrectionModal({
                   <div>
                     <label className={labelCls}>
                       What it currently says{" "}
-                      <span className="normal-case font-normal text-brand-navy/35 dark:text-brand-off-white/30">
+                      <span className="normal-case font-normal text-muted">
                         — optional
                       </span>
                     </label>
@@ -278,7 +278,7 @@ export function CorrectionModal({
                   <div>
                     <label className={labelCls}>
                       Reason{" "}
-                      <span className="normal-case font-normal text-brand-navy/35 dark:text-brand-off-white/30">
+                      <span className="normal-case font-normal text-muted">
                         — optional
                       </span>
                     </label>
@@ -295,7 +295,7 @@ export function CorrectionModal({
                   <div>
                     <label className={labelCls}>
                       Source URL{" "}
-                      <span className="normal-case font-normal text-brand-navy/35 dark:text-brand-off-white/30">
+                      <span className="normal-case font-normal text-muted">
                         — link to official source
                       </span>
                     </label>
@@ -312,7 +312,7 @@ export function CorrectionModal({
                   <div>
                     <label className={labelCls}>
                       Your email{" "}
-                      <span className="normal-case font-normal text-brand-navy/35 dark:text-brand-off-white/30">
+                      <span className="normal-case font-normal text-muted">
                         — optional, for follow-up
                       </span>
                     </label>
@@ -334,20 +334,20 @@ export function CorrectionModal({
                     <button
                       type="button"
                       onClick={handleClose}
-                      className="flex-1 rounded-xl border border-brand-light-gray dark:border-brand-dark-gray px-4 py-2.5 text-sm font-medium text-brand-navy/60 dark:text-brand-off-white/55 hover:bg-brand-light-gray/30 dark:hover:bg-brand-dark-gray/60 transition-colors"
+                      className="flex-1 rounded-2xl border border-line px-4 py-2.5 text-sm font-medium text-muted hover:bg-brand-light-gray/30 dark:hover:bg-brand-dark-gray/60 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loading || !suggested.trim()}
-                      className="flex-1 rounded-xl bg-brand-primary hover:bg-brand-navy disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-red dark:hover:bg-brand-red/80 text-white font-semibold px-4 py-2.5 text-sm transition-colors"
+                      className="flex-1 rounded-2xl bg-fg hover:bg-fg/90 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-brand-red/80 text-on-fg font-semibold px-4 py-2.5 text-sm transition-colors"
                     >
                       {loading ? "Submitting…" : "Submit correction"}
                     </button>
                   </div>
 
-                  <p className="text-[11px] text-brand-navy/35 dark:text-brand-off-white/30 leading-relaxed">
+                  <p className="text-[11px] text-muted leading-relaxed">
                     Corrections are reviewed by our editorial team. We will not publish
                     your email address.
                   </p>

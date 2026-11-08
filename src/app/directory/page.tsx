@@ -23,10 +23,10 @@ export default async function DirectoryPage() {
         <div className="mx-auto max-w-5xl">
           {/* Hero */}
           <div className="mb-10">
-            <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
+            <h1 className="text-4xl font-bold tracking-tight text-fg">
               Government Directory
             </h1>
-            <p className="mt-2 text-brand-navy/60 dark:text-brand-off-white/55 max-w-2xl">
+            <p className="mt-2 text-muted max-w-2xl">
               Every public institution, agency, and entity serving American residents.
             </p>
           </div>

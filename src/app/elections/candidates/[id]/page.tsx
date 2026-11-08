@@ -39,26 +39,26 @@ export default async function CandidatePage({ params }: Props) {
         {/* Back */}
         <Link
           href={`/elections/${candidate.election.id}`}
-          className="inline-flex items-center gap-1.5 text-sm text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-primary dark:hover:text-brand-red transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors"
         >
           ← Back to election
         </Link>
 
         {/* Header */}
-        <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-6">
+        <div className="rounded-2xl border border-line bg-surface px-6 py-6">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             {candidate.party && <PartyBadge party={candidate.party} />}
             {candidate.is_incumbent && <IncumbentBadge />}
             <LevelBadge level={candidate.election.level} />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-fg">
             {candidate.name}
           </h1>
-          <p className="mt-1.5 text-lg text-brand-navy/65 dark:text-brand-off-white/60">
+          <p className="mt-1.5 text-lg text-muted">
             Candidate for {candidate.election.office_name}
           </p>
           {candidate.election.election_date && (
-            <p className="mt-0.5 text-sm text-brand-navy/45 dark:text-brand-off-white/40">
+            <p className="mt-0.5 text-sm text-muted">
               Election: {formatDate(candidate.election.election_date)}
             </p>
           )}
@@ -78,7 +78,7 @@ export default async function CandidatePage({ params }: Props) {
             {candidate.official_id && (
               <Link
                 href={`/officials/${candidate.official_id}`}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-transparent hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10 hover:border-brand-primary/40 dark:hover:border-brand-red/40 px-4 py-2 text-sm font-medium text-brand-navy dark:text-brand-off-white transition-all duration-150"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-transparent hover:bg-fg/5 hover:border-fg/30 px-4 py-2 text-sm font-medium text-fg transition-all duration-150"
               >
                 View official profile
               </Link>
@@ -100,12 +100,12 @@ export default async function CandidatePage({ params }: Props) {
               {positions.map((p) => (
                 <div key={p.id}>
                   {p.issue_area && (
-                    <p className="text-xs font-semibold uppercase tracking-wider text-brand-primary dark:text-brand-red mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-brand-primary dark:text-brand-light-blue mb-1">
                       {p.issue_area}
                     </p>
                   )}
                   {p.position_statement && (
-                    <p className="text-sm text-brand-navy/75 dark:text-brand-off-white/70 leading-relaxed">
+                    <p className="text-sm text-muted leading-relaxed">
                       {p.position_statement}
                     </p>
                   )}
@@ -114,7 +114,7 @@ export default async function CandidatePage({ params }: Props) {
                       href={normalizeUrl(p.source_url)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-1 inline-flex items-center gap-0.5 text-xs text-brand-primary dark:text-brand-red hover:underline"
+                      className="mt-1 inline-flex items-center gap-0.5 text-xs text-brand-primary dark:text-brand-light-blue hover:underline"
                     >
                       Source
                       <ArrowUpRightIcon />
@@ -129,25 +129,25 @@ export default async function CandidatePage({ params }: Props) {
         {/* Endorsements */}
         {endorsements.length > 0 && (
           <Section title="Endorsements">
-            <div className="divide-y divide-brand-light-gray/50 dark:divide-brand-dark-gray">
+            <div className="divide-y divide-line">
               {endorsements.map((e) => (
                 <div
                   key={e.id}
                   className="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0"
                 >
                   <div>
-                    <p className="text-sm font-medium text-brand-navy dark:text-brand-off-white">
+                    <p className="text-sm font-medium text-fg">
                       {e.endorser_name}
                     </p>
                     {e.endorser_type && (
-                      <p className="text-xs text-brand-navy/50 dark:text-brand-off-white/45 mt-0.5">
+                      <p className="text-xs text-muted mt-0.5">
                         {e.endorser_type}
                       </p>
                     )}
                   </div>
                   <div className="text-right shrink-0 space-y-0.5">
                     {e.endorsement_date && (
-                      <p className="text-xs text-brand-navy/40 dark:text-brand-off-white/35">
+                      <p className="text-xs text-muted">
                         {e.endorsement_date}
                       </p>
                     )}
@@ -156,7 +156,7 @@ export default async function CandidatePage({ params }: Props) {
                         href={normalizeUrl(e.source_url)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-0.5 text-xs text-brand-primary dark:text-brand-red hover:underline"
+                        className="inline-flex items-center gap-0.5 text-xs text-brand-primary dark:text-brand-light-blue hover:underline"
                       >
                         Source
                         <ArrowUpRightIcon />
@@ -203,8 +203,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-6">
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-navy/45 dark:text-brand-off-white/40 mb-5">
+    <div className="rounded-2xl border border-line bg-surface px-6 py-6">
+      <h2 className="text-xs font-semibold uppercase tracking-widest text-muted mb-5">
         {title}
       </h2>
       {children}
@@ -215,15 +215,15 @@ function Section({
 function PartyBadge({ party }: { party: string }) {
   const styles: Record<string, string> = {
     Democrat:
-      "bg-brand-light-blue/50 text-brand-navy dark:bg-brand-primary/25 dark:text-brand-light-blue",
+      "bg-brand-primary/10 text-fg dark:bg-brand-primary/25",
     Democratic:
-      "bg-brand-light-blue/50 text-brand-navy dark:bg-brand-primary/25 dark:text-brand-light-blue",
+      "bg-brand-primary/10 text-fg dark:bg-brand-primary/25",
     Republican:
-      "bg-brand-red/15 text-brand-red dark:bg-brand-red/20 dark:text-brand-red",
+      "bg-brand-red/15 text-brand-red dark:bg-brand-red/20",
   };
   const cls =
     styles[party] ??
-    "bg-brand-light-gray/50 text-brand-navy/60 dark:bg-brand-dark-gray dark:text-brand-off-white/50";
+    "bg-fg/5 text-muted";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${cls}`}
@@ -235,7 +235,7 @@ function PartyBadge({ party }: { party: string }) {
 
 function IncumbentBadge() {
   return (
-    <span className="inline-flex items-center rounded-full bg-brand-light-blue/50 dark:bg-brand-primary/20 text-brand-primary dark:text-brand-light-blue px-2.5 py-0.5 text-xs font-semibold">
+    <span className="inline-flex items-center rounded-full bg-brand-primary/10 dark:bg-brand-primary/20 text-brand-primary dark:text-brand-light-blue px-2.5 py-0.5 text-xs font-semibold">
       Incumbent
     </span>
   );
@@ -249,7 +249,7 @@ function LevelBadge({ level }: { level: string }) {
     city: "City",
   };
   return (
-    <span className="inline-flex items-center rounded-full border border-brand-light-gray dark:border-brand-dark-gray px-2.5 py-0.5 text-xs font-medium text-brand-navy/60 dark:text-brand-off-white/50">
+    <span className="inline-flex items-center rounded-full border border-line px-2.5 py-0.5 text-xs font-medium text-muted">
       {labels[level] ?? level}
     </span>
   );
@@ -261,7 +261,7 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-transparent hover:bg-brand-light-blue/25 dark:hover:bg-brand-red/10 hover:border-brand-primary/40 dark:hover:border-brand-red/40 px-4 py-2 text-sm font-medium text-brand-navy dark:text-brand-off-white transition-all duration-150"
+      className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-transparent hover:bg-fg/5 hover:border-fg/30 px-4 py-2 text-sm font-medium text-fg transition-all duration-150"
     >
       {label}
       <ArrowUpRightIcon />

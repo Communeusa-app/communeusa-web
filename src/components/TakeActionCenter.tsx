@@ -100,14 +100,14 @@ function ToolHeader({
       className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-brand-light-gray/20 dark:hover:bg-brand-dark-gray/40 transition-colors"
     >
       <div>
-        <span className="text-sm font-semibold text-brand-navy dark:text-brand-off-white tracking-wide">
+        <span className="text-sm font-semibold text-fg tracking-wide">
           {label}
         </span>
-        <span className="ml-2.5 text-xs text-brand-navy/45 dark:text-brand-off-white/40">
+        <span className="ml-2.5 text-xs text-muted">
           {description}
         </span>
       </div>
-      <span className="shrink-0 text-brand-navy/40 dark:text-brand-off-white/40">
+      <span className="shrink-0 text-muted">
         <ChevronIcon open={isOpen} />
       </span>
     </button>
@@ -120,7 +120,7 @@ function ExternalLink({ href, children }: { href: string; children: React.ReactN
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 text-brand-primary dark:text-brand-red hover:opacity-75 transition-opacity underline underline-offset-2 text-sm"
+      className="inline-flex items-center gap-1 text-brand-primary dark:text-brand-light-blue hover:opacity-75 transition-opacity underline underline-offset-2 text-sm"
     >
       {children}
       <ArrowUpRightIcon />
@@ -137,20 +137,20 @@ function InfoRow({ icon, label, value, href, hrefLabel }: {
 }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="mt-0.5 shrink-0 text-brand-navy/40 dark:text-brand-off-white/35">
+      <span className="mt-0.5 shrink-0 text-muted">
         {icon}
       </span>
       <div>
-        <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-0.5">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-muted mb-0.5">
           {label}
         </p>
-        <p className="text-sm font-medium text-brand-navy dark:text-brand-off-white">
+        <p className="text-sm font-medium text-fg">
           {value}
         </p>
         {href && (
           <a
             href={href}
-            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-brand-primary dark:text-brand-red hover:opacity-75 transition-opacity"
+            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-brand-primary dark:text-brand-light-blue hover:opacity-75 transition-opacity"
           >
             {hrefLabel ?? href}
           </a>
@@ -259,15 +259,15 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
   const testimony = getTestimonyContent(official);
 
   return (
-    <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray overflow-hidden">
+    <div className="rounded-2xl border border-line bg-surface overflow-hidden">
       {/* Section header */}
-      <div className="px-6 py-5 border-b border-brand-light-gray/60 dark:border-brand-dark-gray/60">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-navy/45 dark:text-brand-off-white/40">
+      <div className="px-6 py-5 border-b border-line">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
           Take Action
         </h2>
       </div>
 
-      <div className="divide-y divide-brand-light-gray/60 dark:divide-brand-dark-gray/60">
+      <div className="divide-y divide-line">
 
         {/* ── 1. CONTACT ──────────────────────────────────────────────────── */}
         <ToolHeader
@@ -277,7 +277,7 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
           onToggle={() => toggleTool("contact")}
         />
         {open.contact && (
-          <div className="px-6 py-5 space-y-6 bg-brand-light-gray/10 dark:bg-brand-charcoal/30">
+          <div className="px-6 py-5 space-y-6 bg-fg/5">
 
             {/* Contact details */}
             <div className="space-y-3">
@@ -299,7 +299,7 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
               )}
               {!official.phone && !official.email && (
                 <div className="space-y-3">
-                  <p className="text-sm text-brand-navy/65 dark:text-brand-off-white/55">
+                  <p className="text-sm text-muted">
                     Direct contact details for this official aren&apos;t on file yet.
                   </p>
                   {official.official_website && (
@@ -307,16 +307,16 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
                       href={normalizeUrl(official.official_website)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray hover:bg-brand-light-blue/20 dark:hover:bg-brand-red/10 hover:border-brand-primary/40 dark:hover:border-brand-red/40 px-3.5 py-2 text-sm font-medium text-brand-navy dark:text-brand-off-white transition-all duration-150"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface hover:bg-fg/5 hover:border-fg/30 px-3.5 py-2 text-sm font-medium text-fg transition-all duration-150"
                     >
                       Visit their office website
                       <ArrowUpRightIcon />
                     </a>
                   )}
                   {official.jurisdiction_name && (
-                    <p className="text-sm text-brand-navy/55 dark:text-brand-off-white/45">
+                    <p className="text-sm text-muted">
                       You can also reach their office through the{" "}
-                      <span className="font-medium text-brand-navy/75 dark:text-brand-off-white/65">
+                      <span className="font-medium text-muted">
                         {official.jurisdiction_name}
                       </span>{" "}
                       government.
@@ -328,11 +328,11 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
 
             {/* Message templates */}
             <div data-action-variant="template" className="space-y-3">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted">
                 Message templates
               </p>
-              <p className="text-xs text-brand-navy/55 dark:text-brand-off-white/50 leading-relaxed">
-                Select a template, fill in the <span className="font-semibold text-brand-navy/70 dark:text-brand-off-white/65">[bracketed]</span> fields, then copy or open in your mail client.
+              <p className="text-xs text-muted leading-relaxed">
+                Select a template, fill in the <span className="font-semibold text-muted">[bracketed]</span> fields, then copy or open in your mail client.
               </p>
 
               {/* Template selector */}
@@ -344,8 +344,8 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
                     onClick={() => setSelectedTemplate(i)}
                     className={`w-full text-left rounded-lg border px-3.5 py-2.5 text-sm transition-all duration-150 ${
                       selectedTemplate === i
-                        ? "border-brand-primary dark:border-brand-red bg-brand-light-blue/20 dark:bg-brand-red/10 text-brand-navy dark:text-brand-off-white"
-                        : "border-brand-light-gray dark:border-brand-dark-gray text-brand-navy/65 dark:text-brand-off-white/55 hover:border-brand-primary/40 dark:hover:border-brand-red/40 hover:bg-brand-light-blue/10 dark:hover:bg-brand-red/5"
+                        ? "border-brand-primary dark:border-brand-red bg-brand-primary/10 dark:bg-brand-red/10 text-fg"
+                        : "border-line text-muted hover:border-fg/30 hover:bg-fg/5 dark:hover:bg-brand-red/5"
                     }`}
                   >
                     <span className="block font-medium text-[11px] uppercase tracking-wider mb-1 opacity-60">
@@ -361,7 +361,7 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
                 <button
                   type="button"
                   onClick={copyTemplate}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray hover:bg-brand-light-blue/20 dark:hover:bg-brand-red/10 hover:border-brand-primary/40 dark:hover:border-brand-red/40 px-3.5 py-2 text-sm font-medium text-brand-navy dark:text-brand-off-white transition-all duration-150"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface hover:bg-fg/5 hover:border-fg/30 px-3.5 py-2 text-sm font-medium text-fg transition-all duration-150"
                 >
                   {copied ? <CheckIcon /> : <CopyIcon />}
                   {copied ? "Copied!" : "Copy template"}
@@ -370,7 +370,7 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
                 {mailtoHref && (
                   <a
                     href={mailtoHref}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-brand-primary dark:bg-brand-red hover:bg-brand-navy dark:hover:bg-brand-red/80 px-3.5 py-2 text-sm font-medium text-white transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-fg hover:bg-fg/90 dark:hover:bg-brand-red/80 px-3.5 py-2 text-sm font-medium text-on-fg transition-colors"
                   >
                     <MailIcon />
                     Open in mail app
@@ -389,17 +389,17 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
           onToggle={() => toggleTool("vote")}
         />
         {open.vote && (
-          <div className="px-6 py-5 space-y-4 bg-brand-light-gray/10 dark:bg-brand-charcoal/30">
-            <div className="rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-4 py-3.5">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-1">
+          <div className="px-6 py-5 space-y-4 bg-fg/5">
+            <div className="rounded-xl border border-line bg-surface px-4 py-3.5">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted mb-1">
                 Next election
               </p>
-              <p className="text-sm font-semibold text-brand-navy dark:text-brand-off-white">
+              <p className="text-sm font-semibold text-fg">
                 {upcomingElectionDate ? formatDate(upcomingElectionDate) : "No upcoming election on file"}
               </p>
             </div>
 
-            <p className="text-sm text-brand-navy/65 dark:text-brand-off-white/55 leading-relaxed">
+            <p className="text-sm text-muted leading-relaxed">
               The most direct way to hold any official accountable is at the ballot box.
             </p>
 
@@ -417,8 +417,8 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
           onToggle={() => toggleTool("testify")}
         />
         {open.testify && (
-          <div className="px-6 py-5 space-y-4 bg-brand-light-gray/10 dark:bg-brand-charcoal/30">
-            <p className="text-sm text-brand-navy/75 dark:text-brand-off-white/70 leading-relaxed">
+          <div className="px-6 py-5 space-y-4 bg-fg/5">
+            <p className="text-sm text-muted leading-relaxed">
               {testimony.body}
             </p>
 
@@ -442,24 +442,24 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
           onToggle={() => toggleTool("recall")}
         />
         {open.recall && (
-          <div className="px-6 py-5 space-y-5 bg-brand-light-gray/10 dark:bg-brand-charcoal/30">
-            <div className="rounded-lg border border-brand-light-gray/80 dark:border-brand-dark-gray bg-brand-off-white dark:bg-brand-charcoal px-4 py-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-1">
+          <div className="px-6 py-5 space-y-5 bg-fg/5">
+            <div className="rounded-xl border border-line bg-brand-off-white px-4 py-3.5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-1">
                 Educational information only
               </p>
-              <p className="text-xs text-brand-navy/60 dark:text-brand-off-white/50 leading-relaxed">
+              <p className="text-xs text-muted leading-relaxed">
                 The following is a factual summary of Washington state law. It is not legal advice. Recall is a serious legal process with specific statutory requirements.
               </p>
             </div>
 
-            <div className="space-y-3 text-sm text-brand-navy/75 dark:text-brand-off-white/70 leading-relaxed">
+            <div className="space-y-3 text-sm text-muted leading-relaxed">
               <p>
                 Washington state allows voters to petition for the recall of certain public officials under{" "}
                 <ExternalLink href="https://app.leg.wa.gov/rcw/default.aspx?cite=29A.56">
                   RCW 29A.56.110–29A.56.270
                 </ExternalLink>
                 . The law sets a high legal standard: a recall petition must allege{" "}
-                <strong className="font-semibold text-brand-navy dark:text-brand-off-white">malfeasance, misfeasance, or violation of the oath of office</strong>
+                <strong className="font-semibold text-fg">malfeasance, misfeasance, or violation of the oath of office</strong>
                 {" "}— not mere policy disagreement or dissatisfaction with an official&apos;s decisions.
               </p>
 
@@ -467,29 +467,29 @@ export function TakeActionCenter({ official, upcomingElectionDate }: Props) {
                 Before any signature gathering may begin, a superior court judge reviews the petition to determine whether the stated charges are legally and factually sufficient under the statute. Petitions that fail this standard are dismissed.
               </p>
 
-              <div className="rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-4 py-3.5 space-y-2">
-                <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/45 dark:text-brand-off-white/40 mb-1">
+              <div className="rounded-xl border border-line bg-surface px-4 py-3.5 space-y-2">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-muted mb-1">
                   Signature thresholds
                 </p>
                 <div className="space-y-1.5">
                   <div className="flex items-start gap-2">
                     <span className="mt-0.5 inline-block w-2 h-2 rounded-full bg-brand-primary/50 dark:bg-brand-red/50 shrink-0" />
                     <p>
-                      <strong className="font-semibold text-brand-navy dark:text-brand-off-white">State officials:</strong>{" "}
+                      <strong className="font-semibold text-fg">State officials:</strong>{" "}
                       25% of votes cast for that office in the last general election
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="mt-0.5 inline-block w-2 h-2 rounded-full bg-brand-primary/50 dark:bg-brand-red/50 shrink-0" />
                     <p>
-                      <strong className="font-semibold text-brand-navy dark:text-brand-off-white">Most local officials:</strong>{" "}
+                      <strong className="font-semibold text-fg">Most local officials:</strong>{" "}
                       35% of votes cast for that office in the last general election
                     </p>
                   </div>
                 </div>
               </div>
 
-              <p className="text-brand-navy/60 dark:text-brand-off-white/50 text-xs leading-relaxed border-t border-brand-light-gray/60 dark:border-brand-dark-gray/60 pt-3">
+              <p className="text-muted text-xs leading-relaxed border-t border-line pt-3">
                 This section provides educational context about how the recall process works under Washington law. It is not legal advice. If you believe an official has committed an act that meets the statutory standard, consult a licensed attorney about your options.
               </p>
             </div>

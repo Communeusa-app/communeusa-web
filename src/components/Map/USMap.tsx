@@ -461,7 +461,7 @@ export function USMap({
     <div ref={containerRef} className="relative w-full pointer-events-none">
       {mapLoading && !mapError && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-sm text-brand-navy/40 dark:text-brand-off-white/40">Loading map…</p>
+          <p className="text-sm text-muted">Loading map…</p>
         </div>
       )}
       {mapError && (
@@ -482,7 +482,7 @@ export function USMap({
         <button
           onClick={() => resetRef.current?.()}
           style={{ pointerEvents: "auto" }}
-          className="absolute top-3 left-3 flex items-center gap-1.5 rounded-lg border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-3 py-1.5 text-sm font-medium text-brand-navy dark:text-brand-off-white shadow-sm hover:bg-brand-light-blue/30 dark:hover:bg-brand-red/10 hover:text-brand-primary dark:hover:text-brand-red transition-colors"
+          className="absolute top-3 left-3 flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-1.5 text-sm font-medium text-fg shadow-sm hover:bg-fg/5 hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors"
         >
           ← All States
         </button>
@@ -491,7 +491,7 @@ export function USMap({
       {/* "Coming soon" tooltip for non-WA states */}
       {simpleTooltip && !inStateView && (
         <div
-          className="pointer-events-none absolute rounded-md bg-brand-navy dark:bg-brand-charcoal px-2.5 py-1 text-xs font-medium text-white dark:text-brand-off-white shadow-md whitespace-nowrap"
+          className="pointer-events-none absolute rounded-md bg-brand-navy px-2.5 py-1 text-xs font-medium text-white shadow-md whitespace-nowrap"
           style={{ left: simpleTooltip.x, top: simpleTooltip.y - 36, transform: "translateX(-50%)" }}
         >
           Coming soon
@@ -501,14 +501,14 @@ export function USMap({
       {/* District hover tooltip */}
       {districtTooltip && (
         <div
-          className="pointer-events-none absolute rounded-lg border border-brand-light-gray/60 dark:border-brand-dark-gray bg-white dark:bg-brand-charcoal px-3 py-2 shadow-lg whitespace-nowrap"
+          className="pointer-events-none absolute rounded-xl border border-line bg-surface px-3 py-2 shadow-lg whitespace-nowrap"
           style={{ left: districtTooltip.x, top: districtTooltip.y - 64, transform: "translateX(-50%)" }}
         >
-          <p className="text-xs font-semibold text-brand-navy dark:text-brand-off-white">
+          <p className="text-xs font-semibold text-fg">
             {districtTooltip.title}
           </p>
           {districtTooltip.reps.map((name, i) => (
-            <p key={i} className="text-xs text-brand-navy/60 dark:text-brand-off-white/55 mt-0.5">
+            <p key={i} className="text-xs text-muted mt-0.5">
               {name}
             </p>
           ))}

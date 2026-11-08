@@ -588,46 +588,46 @@ function RightsAccordion({ card }: { card: RightsCard }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray overflow-hidden">
+    <div className="rounded-2xl border border-line bg-surface overflow-hidden">
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full text-left px-5 py-4 flex items-start justify-between gap-4 hover:bg-brand-light-gray/20 dark:hover:bg-brand-dark-gray/60 transition-colors"
         aria-expanded={open}
       >
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-brand-navy dark:text-brand-off-white text-base leading-snug">
+          <p className="font-semibold text-fg text-base leading-snug">
             {card.title}
           </p>
           {!open && (
-            <p className="mt-1 text-sm text-brand-navy/55 dark:text-brand-off-white/50 leading-relaxed line-clamp-2">
+            <p className="mt-1 text-sm text-muted leading-relaxed line-clamp-2">
               {card.summary}
             </p>
           )}
         </div>
         <span
-          className={`shrink-0 mt-0.5 text-brand-navy/40 dark:text-brand-off-white/40 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`shrink-0 mt-0.5 text-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         >
           <ChevronDownIcon />
         </span>
       </button>
 
       {open && (
-        <div className="px-5 pb-5 space-y-5 border-t border-brand-light-gray/50 dark:border-brand-dark-gray/80 pt-4">
+        <div className="px-5 pb-5 space-y-5 border-t border-line pt-4">
           {/* Summary */}
-          <p className="text-sm leading-relaxed text-brand-navy/70 dark:text-brand-off-white/65">
+          <p className="text-sm leading-relaxed text-muted">
             {card.summary}
           </p>
 
           {/* Two-column rights grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* What you can do */}
-            <div className="rounded-lg bg-brand-light-blue/20 dark:bg-brand-primary/10 border border-brand-light-blue/50 dark:border-brand-primary/20 p-4">
+            <div className="rounded-xl bg-brand-primary/10 dark:bg-brand-primary/10 border border-brand-light-blue/50 dark:border-brand-primary/20 p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-brand-primary dark:text-brand-light-blue mb-2.5">
                 What you can do
               </p>
               <ul className="space-y-1.5">
                 {card.canDo.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-brand-navy/75 dark:text-brand-off-white/70 leading-relaxed">
+                  <li key={i} className="flex items-start gap-2 text-sm text-muted leading-relaxed">
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-primary dark:bg-brand-light-blue shrink-0 mt-1.5" />
                     {item}
                   </li>
@@ -636,13 +636,13 @@ function RightsAccordion({ card }: { card: RightsCard }) {
             </div>
 
             {/* What they can do */}
-            <div className="rounded-lg bg-brand-light-gray/30 dark:bg-brand-charcoal/40 border border-brand-light-gray/60 dark:border-brand-dark-gray/80 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-brand-navy/50 dark:text-brand-off-white/40 mb-2.5">
+            <div className="rounded-xl bg-fg/5 border border-line p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-2.5">
                 What they can do
               </p>
               <ul className="space-y-1.5">
                 {card.theyCanDo.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-brand-navy/65 dark:text-brand-off-white/55 leading-relaxed">
+                  <li key={i} className="flex items-start gap-2 text-sm text-muted leading-relaxed">
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-mid-gray shrink-0 mt-1.5" />
                     {item}
                   </li>
@@ -652,18 +652,18 @@ function RightsAccordion({ card }: { card: RightsCard }) {
           </div>
 
           {/* Action box */}
-          <div className="rounded-lg bg-brand-red/8 dark:bg-brand-red/12 border border-brand-red/25 dark:border-brand-red/30 p-4">
+          <div className="rounded-xl bg-brand-red/8 dark:bg-brand-red/12 border border-brand-red/25 dark:border-brand-red/30 p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-brand-red mb-2">
               What to do right now
             </p>
-            <p className="text-sm leading-relaxed text-brand-navy/80 dark:text-brand-off-white/75">
+            <p className="text-sm leading-relaxed text-brand-navy/80">
               {card.action}
             </p>
           </div>
 
           {/* Sources */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-brand-navy/40 dark:text-brand-off-white/35 mb-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
               Sources
             </p>
             <ul className="space-y-1">
@@ -694,10 +694,10 @@ function CategorySection({ category }: { category: RightsCategory }) {
   return (
     <div>
       <div className="flex items-center gap-2.5 mb-3">
-        <span className="w-8 h-8 rounded-lg bg-brand-light-blue/30 dark:bg-brand-primary/20 flex items-center justify-center text-brand-primary dark:text-brand-light-blue shrink-0">
+        <span className="w-8 h-8 rounded-xl bg-brand-primary/10 dark:bg-brand-primary/20 flex items-center justify-center text-brand-primary dark:text-brand-light-blue shrink-0">
           {category.icon}
         </span>
-        <h3 className="text-lg font-semibold text-brand-navy dark:text-brand-off-white">
+        <h3 className="text-lg font-semibold text-fg">
           {category.label}
         </h3>
       </div>
@@ -715,12 +715,12 @@ function CategorySection({ category }: { category: RightsCategory }) {
 function LocalRightsPanel() {
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray p-5">
+      <div className="rounded-2xl border border-line bg-surface p-5">
         <div className="flex items-center gap-2 mb-3">
           <MapPinIcon />
-          <h3 className="font-semibold text-brand-navy dark:text-brand-off-white">Local Rights Vary by City and County</h3>
+          <h3 className="font-semibold text-fg">Local Rights Vary by City and County</h3>
         </div>
-        <p className="text-sm text-brand-navy/65 dark:text-brand-off-white/55 leading-relaxed">
+        <p className="text-sm text-muted leading-relaxed">
           Cities and counties in Washington can enact protections that go beyond state law — including higher minimum wages,
           stronger tenant protections, and stricter limits on police conduct. Seattle, Tacoma, Bellevue, and other jurisdictions
           have their own rules that may apply to you. Always check your local ordinances.
@@ -728,7 +728,7 @@ function LocalRightsPanel() {
         <div className="mt-4">
           <Link
             href="/directory?category=law-enforcement"
-            className="inline-flex items-center gap-1.5 text-sm text-brand-primary dark:text-brand-red font-medium hover:underline"
+            className="inline-flex items-center gap-1.5 text-sm text-brand-primary dark:text-brand-light-blue font-medium hover:underline"
           >
             View local law enforcement agencies in the Directory
             <ExternalLinkIcon />
@@ -736,9 +736,9 @@ function LocalRightsPanel() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray p-5">
-        <h3 className="font-semibold text-brand-navy dark:text-brand-off-white mb-3">Sanctuary Jurisdictions in Washington</h3>
-        <p className="text-sm text-brand-navy/65 dark:text-brand-off-white/55 leading-relaxed mb-4">
+      <div className="rounded-2xl border border-line bg-surface p-5">
+        <h3 className="font-semibold text-fg mb-3">Sanctuary Jurisdictions in Washington</h3>
+        <p className="text-sm text-muted leading-relaxed mb-4">
           The following Washington jurisdictions have policies limiting local law enforcement cooperation with federal
           immigration enforcement (ICE detainer requests). This does not prevent federal immigration enforcement —
           it means local agencies will not detain individuals solely on ICE detainer requests without judicial warrants.
@@ -747,27 +747,27 @@ function LocalRightsPanel() {
           {WA_SANCTUARY_CITIES.map((city) => (
             <span
               key={city}
-              className="px-2.5 py-1 rounded-md text-xs font-medium bg-brand-light-blue/25 dark:bg-brand-primary/15 text-brand-primary dark:text-brand-light-blue border border-brand-light-blue/50 dark:border-brand-primary/25"
+              className="px-2.5 py-1 rounded-md text-xs font-medium bg-brand-primary/10 dark:bg-brand-primary/15 text-brand-primary dark:text-brand-light-blue border border-brand-light-blue/50 dark:border-brand-primary/25"
             >
               {city}
             </span>
           ))}
         </div>
-        <p className="mt-4 text-xs text-brand-navy/45 dark:text-brand-off-white/35">
+        <p className="mt-4 text-xs text-muted">
           Source:{" "}
           <a
             href="https://www.ilrc.org/local-enforcement-guide"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:text-brand-primary dark:hover:text-brand-red"
+            className="underline hover:text-brand-primary dark:hover:text-brand-light-blue"
           >
             Immigrant Legal Resource Center — Local Enforcement Guide
           </a>
         </p>
       </div>
 
-      <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray p-5">
-        <h3 className="font-semibold text-brand-navy dark:text-brand-off-white mb-3">Notable Local Protections</h3>
+      <div className="rounded-2xl border border-line bg-surface p-5">
+        <h3 className="font-semibold text-fg mb-3">Notable Local Protections</h3>
         <ul className="space-y-3 text-sm">
           {[
             {
@@ -792,12 +792,12 @@ function LocalRightsPanel() {
             },
           ].map(({ place, rule, url }) => (
             <li key={place} className="flex items-start gap-3">
-              <span className="shrink-0 mt-0.5 px-2 py-0.5 text-xs font-semibold rounded bg-brand-light-gray/50 dark:bg-brand-dark-gray text-brand-navy/60 dark:text-brand-off-white/50">
+              <span className="shrink-0 mt-0.5 px-2 py-0.5 text-xs font-semibold rounded bg-fg/5 text-muted">
                 {place}
               </span>
-              <span className="text-brand-navy/70 dark:text-brand-off-white/60 leading-relaxed">
+              <span className="text-muted leading-relaxed">
                 {rule}{" "}
-                <a href={url} target="_blank" rel="noopener noreferrer" className="text-brand-primary dark:text-brand-red hover:underline inline-flex items-center gap-0.5">
+                <a href={url} target="_blank" rel="noopener noreferrer" className="text-brand-primary dark:text-brand-light-blue hover:underline inline-flex items-center gap-0.5">
                   Learn more <ExternalLinkIcon />
                 </a>
               </span>
@@ -870,16 +870,16 @@ const US_STATES = [
 function ComingSoonPanel({ stateName }: { stateName: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-brand-light-gray/40 dark:bg-brand-dark-gray flex items-center justify-center mb-5">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-navy/30 dark:text-brand-off-white/30">
+      <div className="w-14 h-14 rounded-2xl bg-fg/5 flex items-center justify-center mb-5">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-brand-navy dark:text-brand-off-white mb-2">
+      <h3 className="text-lg font-semibold text-fg mb-2">
         {stateName} rights coming soon
       </h3>
-      <p className="max-w-sm text-sm text-brand-navy/55 dark:text-brand-off-white/50 leading-relaxed">
+      <p className="max-w-sm text-sm text-muted leading-relaxed">
         We&apos;re working on plain-language explanations sourced to {stateName} statutes and
         rulings. In the meantime, your federal rights above apply in every state.
       </p>
@@ -887,7 +887,7 @@ function ComingSoonPanel({ stateName }: { stateName: string }) {
         href={`https://www.aclu.org/know-your-rights`}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-6 inline-flex items-center gap-1.5 text-sm text-brand-primary dark:text-brand-red font-medium hover:underline"
+        className="mt-6 inline-flex items-center gap-1.5 text-sm text-brand-primary dark:text-brand-light-blue font-medium hover:underline"
       >
         ACLU Know Your Rights
         <ExternalLinkIcon />
@@ -913,14 +913,14 @@ export function RightsBrowser() {
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex items-center gap-1 mb-8 p-1 rounded-lg bg-brand-light-gray/30 dark:bg-brand-dark-gray/50 w-fit flex-wrap">
+      <div className="flex items-center gap-1 mb-8 p-1 rounded-xl bg-fg/5 w-fit flex-wrap">
         {/* Federal tab */}
         <button
           onClick={() => setActiveTab("federal")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
             activeTab === "federal"
-              ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
-              : "text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
+              ? "bg-surface text-fg shadow-sm"
+              : "text-muted hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
           }`}
         >
           Federal Rights
@@ -933,8 +933,8 @@ export function RightsBrowser() {
           onClick={() => setActiveTab("state")}
           className={`px-3 py-2 rounded-md text-sm font-medium transition-all cursor-pointer focus:outline-none ${
             activeTab === "state"
-              ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
-              : "bg-transparent text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
+              ? "bg-surface text-fg shadow-sm"
+              : "bg-transparent text-muted hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
           }`}
         >
           {US_STATES.map(({ abbr, name }) => (
@@ -949,8 +949,8 @@ export function RightsBrowser() {
           onClick={() => setActiveTab("local")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
             activeTab === "local"
-              ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
-              : "text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
+              ? "bg-surface text-fg shadow-sm"
+              : "text-muted hover:text-brand-navy/80 dark:hover:text-brand-off-white/80"
           }`}
         >
           Local Rights

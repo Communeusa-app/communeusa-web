@@ -69,7 +69,7 @@ function donorTypeBadge(donor: TopDonor): { label: string; className: string } {
     return { label: "PAC", className: "bg-brand-red/15 text-brand-red" };
   }
   if (donor.donorType === "Individual") {
-    return { label: "Indiv", className: "bg-brand-light-gray/60 dark:bg-brand-dark-gray text-brand-mid-gray dark:text-brand-off-white/50" };
+    return { label: "Indiv", className: "bg-fg/5 text-muted" };
   }
   return { label: "Org", className: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" };
 }
@@ -87,7 +87,7 @@ function FundingBar({ pacTotal, individualTotal, otherTotal, totalRaised }: {
 
   return (
     <div className="space-y-1.5">
-      <div className="flex h-2 rounded-full overflow-hidden bg-brand-light-gray/40 dark:bg-brand-dark-gray/60">
+      <div className="flex h-2 rounded-full overflow-hidden bg-fg/5">
         {indPct > 0 && (
           <div className="h-full bg-brand-primary dark:bg-brand-light-blue" style={{ width: `${indPct}%` }} />
         )}
@@ -100,19 +100,19 @@ function FundingBar({ pacTotal, individualTotal, otherTotal, totalRaised }: {
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
         {indPct > 0 && (
-          <span className="flex items-center gap-1 text-[10px] text-brand-navy/50 dark:text-brand-off-white/40">
+          <span className="flex items-center gap-1 text-[10px] text-muted">
             <span className="w-2 h-2 rounded-sm bg-brand-primary dark:bg-brand-light-blue inline-block" />
             Individual {indPct}%
           </span>
         )}
         {pacPct > 0 && (
-          <span className="flex items-center gap-1 text-[10px] text-brand-navy/50 dark:text-brand-off-white/40">
+          <span className="flex items-center gap-1 text-[10px] text-muted">
             <span className="w-2 h-2 rounded-sm bg-brand-red inline-block" />
             PAC {pacPct}%
           </span>
         )}
         {otherPct > 0 && (
-          <span className="flex items-center gap-1 text-[10px] text-brand-navy/50 dark:text-brand-off-white/40">
+          <span className="flex items-center gap-1 text-[10px] text-muted">
             <span className="w-2 h-2 rounded-sm bg-brand-mid-gray/50 inline-block" />
             Other {otherPct}%
           </span>
@@ -124,27 +124,27 @@ function FundingBar({ pacTotal, individualTotal, otherTotal, totalRaised }: {
 
 function FinanceCard({ summary }: { summary: FinanceSummary }) {
   return (
-    <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray p-5 flex flex-col gap-4">
+    <div className="rounded-2xl border border-line bg-surface p-5 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
           <Link
             href={`/officials/${summary.id}`}
-            className="text-base font-semibold text-brand-navy dark:text-brand-off-white hover:text-brand-primary dark:hover:text-brand-red transition-colors"
+            className="text-base font-semibold text-fg hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors"
           >
             {summary.name}
           </Link>
-          <p className="text-xs text-brand-navy/50 dark:text-brand-off-white/45 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {summary.officeTitle}
             {summary.district && ` · District ${summary.district}`}
             {summary.municipalityName && ` · ${summary.municipalityName}`}
           </p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-xl font-bold text-brand-navy dark:text-brand-off-white tabular-nums">
+          <p className="text-xl font-bold text-fg tabular-nums">
             {formatMoney(summary.totalRaised)}
           </p>
-          <p className="text-[10px] text-brand-navy/40 dark:text-brand-off-white/35 mt-0.5">
+          <p className="text-[10px] text-muted mt-0.5">
             {summary.donorCount} donors
           </p>
         </div>
@@ -161,7 +161,7 @@ function FinanceCard({ summary }: { summary: FinanceSummary }) {
       {/* Top donors */}
       {summary.topDonors.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-navy/40 dark:text-brand-off-white/35">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
             Top donors
           </p>
           {summary.topDonors.map((donor, i) => {
@@ -172,11 +172,11 @@ function FinanceCard({ summary }: { summary: FinanceSummary }) {
                   <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${badge.className}`}>
                     {badge.label}
                   </span>
-                  <span className="text-xs text-brand-navy/70 dark:text-brand-off-white/65 truncate">
+                  <span className="text-xs text-muted truncate">
                     {donor.name}
                   </span>
                 </div>
-                <span className="text-xs font-medium text-brand-navy dark:text-brand-off-white tabular-nums shrink-0">
+                <span className="text-xs font-medium text-fg tabular-nums shrink-0">
                   {formatMoney(donor.amount)}
                 </span>
               </div>
@@ -187,7 +187,7 @@ function FinanceCard({ summary }: { summary: FinanceSummary }) {
 
       <Link
         href={`/officials/${summary.id}`}
-        className="mt-auto text-xs font-medium text-brand-primary dark:text-brand-red hover:underline"
+        className="mt-auto text-xs font-medium text-brand-primary dark:text-brand-light-blue hover:underline"
       >
         Full profile →
       </Link>
@@ -315,14 +315,14 @@ export function FinanceBrowser({
 
       {/* ── State selector ────────────────────────────────────────────────── */}
       <div className="flex items-center gap-2.5">
-        <span className="text-sm text-brand-navy/55 dark:text-brand-off-white/50">
+        <span className="text-sm text-muted">
           Showing data for
         </span>
-        <div className="inline-flex items-center p-1 rounded-lg bg-brand-light-gray/30 dark:bg-brand-dark-gray/50">
+        <div className="inline-flex items-center p-1 rounded-xl bg-fg/5">
           <select
             value={selectedState}
             onChange={(e) => setSelectedState(e.target.value)}
-            className="px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer focus:outline-none bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm transition-colors"
+            className="px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer focus:outline-none bg-surface text-fg shadow-sm transition-colors"
           >
             {US_STATES.map(({ abbr, name }) => (
               <option key={abbr} value={abbr}>{name}</option>
@@ -334,15 +334,15 @@ export function FinanceBrowser({
       {/* ── Coming soon (non-WA states) ───────────────────────────────────── */}
       {selectedState !== "WA" && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-brand-light-gray/40 dark:bg-brand-dark-gray flex items-center justify-center mb-5">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-navy/30 dark:text-brand-off-white/30">
+          <div className="w-14 h-14 rounded-2xl bg-fg/5 flex items-center justify-center mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
               <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-brand-navy dark:text-brand-off-white mb-2">
+          <h3 className="text-lg font-semibold text-fg mb-2">
             {selectedStateName} campaign finance coming soon
           </h3>
-          <p className="max-w-sm text-sm text-brand-navy/55 dark:text-brand-off-white/50 leading-relaxed">
+          <p className="max-w-sm text-sm text-muted leading-relaxed">
             CommuneUSA is expanding to all 50 states. {selectedStateName} finance data will
             be available once we integrate with the appropriate state disclosure database.
           </p>
@@ -350,7 +350,7 @@ export function FinanceBrowser({
             href="https://www.followthemoney.org"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-1.5 text-sm text-brand-primary dark:text-brand-red font-medium hover:underline"
+            className="mt-6 inline-flex items-center gap-1.5 text-sm text-brand-primary dark:text-brand-light-blue font-medium hover:underline"
           >
             FollowTheMoney.org — national campaign finance data
           </a>
@@ -361,10 +361,10 @@ export function FinanceBrowser({
 
       {/* ── Your Representatives' Funding ─────────────────────────────────── */}
       <section>
-        <h2 className="text-2xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-2">
+        <h2 className="text-2xl font-bold tracking-tight text-fg mb-2">
           Your Representatives&apos; Funding
         </h2>
-        <p className="text-sm text-brand-navy/55 dark:text-brand-off-white/50 mb-6">
+        <p className="text-sm text-muted mb-6">
           Enter your address to see campaign finance data for officials who represent you.
         </p>
 
@@ -374,19 +374,19 @@ export function FinanceBrowser({
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Enter your address…"
-            className="flex-1 rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white placeholder:text-brand-mid-gray px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 focus:border-transparent transition"
+            className="flex-1 rounded-2xl border border-line bg-surface text-fg placeholder:text-muted px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 focus:border-transparent transition"
           />
           <button
             type="submit"
             disabled={repLoading || !address.trim()}
-            className="rounded-xl bg-brand-primary hover:bg-brand-navy disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brand-red text-white font-semibold px-5 py-3 text-sm transition-colors whitespace-nowrap"
+            className="rounded-2xl bg-fg hover:bg-fg/90 disabled:opacity-50 disabled:cursor-not-allowed text-on-fg font-semibold px-5 py-3 text-sm transition-colors whitespace-nowrap"
           >
             {repLoading ? "Searching…" : "Find funding"}
           </button>
         </form>
 
         {repError && (
-          <div className="rounded-xl border border-brand-red/30 bg-brand-red/10 px-4 py-3 text-sm text-brand-red mb-6">
+          <div className="rounded-2xl border border-brand-red/30 bg-brand-red/10 px-4 py-3 text-sm text-brand-red mb-6">
             {repError}
           </div>
         )}
@@ -394,7 +394,7 @@ export function FinanceBrowser({
         {repLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[1, 2].map((i) => (
-              <div key={i} className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray h-44 animate-pulse" />
+              <div key={i} className="rounded-2xl border border-line bg-surface h-44 animate-pulse" />
             ))}
           </div>
         )}
@@ -408,12 +408,12 @@ export function FinanceBrowser({
 
       {/* ── Top Donors Leaderboard ────────────────────────────────────────── */}
       <section>
-        <h2 className="text-2xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-6">
+        <h2 className="text-2xl font-bold tracking-tight text-fg mb-6">
           Top Donors
         </h2>
 
         {/* Tab bar */}
-        <div className="flex gap-1 p-1 rounded-xl bg-brand-light-gray/30 dark:bg-brand-dark-gray/50 w-fit mb-6">
+        <div className="flex gap-1 p-1 rounded-2xl bg-fg/5 w-fit mb-6">
           {([
             { id: "pacs",        label: "PACs & Super PACs" },
             { id: "individuals", label: "Individual Donors" },
@@ -424,8 +424,8 @@ export function FinanceBrowser({
               onClick={() => setLeaderboardTab(id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 leaderboardTab === id
-                  ? "bg-white dark:bg-brand-charcoal text-brand-navy dark:text-brand-off-white shadow-sm"
-                  : "text-brand-navy/55 dark:text-brand-off-white/50 hover:text-brand-navy dark:hover:text-brand-off-white"
+                  ? "bg-surface text-fg shadow-sm"
+                  : "text-muted hover:text-fg"
               }`}
             >
               {label}
@@ -440,8 +440,8 @@ export function FinanceBrowser({
               <EmptyState label="No PAC data on file yet." />
             ) : (
               pacDonors.map((row, i) => (
-                <div key={row.donorName} className="flex items-center gap-4 rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-4 py-3">
-                  <span className="w-6 text-xs font-semibold text-brand-navy/35 dark:text-brand-off-white/30 tabular-nums text-right shrink-0">
+                <div key={row.donorName} className="flex items-center gap-4 rounded-2xl border border-line bg-surface px-4 py-3">
+                  <span className="w-6 text-xs font-semibold text-muted tabular-nums text-right shrink-0">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -449,11 +449,11 @@ export function FinanceBrowser({
                       <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-brand-red/15 text-brand-red shrink-0">
                         PAC
                       </span>
-                      <span className="text-sm font-medium text-brand-navy dark:text-brand-off-white truncate">
+                      <span className="text-sm font-medium text-fg truncate">
                         {row.donorName}
                       </span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-brand-light-gray/40 dark:bg-brand-dark-gray/60 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-fg/5 overflow-hidden">
                       <div
                         className="h-full bg-brand-red rounded-full"
                         style={{ width: `${(row.totalAmount / maxPACAmount) * 100}%` }}
@@ -461,10 +461,10 @@ export function FinanceBrowser({
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-brand-navy dark:text-brand-off-white tabular-nums">
+                    <p className="text-sm font-semibold text-fg tabular-nums">
                       {formatMoney(row.totalAmount)}
                     </p>
-                    <p className="text-[10px] text-brand-navy/40 dark:text-brand-off-white/35">
+                    <p className="text-[10px] text-muted">
                       {row.officialCount} official{row.officialCount !== 1 ? "s" : ""}
                     </p>
                   </div>
@@ -481,20 +481,20 @@ export function FinanceBrowser({
               <EmptyState label="No individual donor data on file yet." />
             ) : (
               individualDonors.map((row, i) => (
-                <div key={row.donorName} className="flex items-center gap-4 rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-4 py-3">
-                  <span className="w-6 text-xs font-semibold text-brand-navy/35 dark:text-brand-off-white/30 tabular-nums text-right shrink-0">
+                <div key={row.donorName} className="flex items-center gap-4 rounded-2xl border border-line bg-surface px-4 py-3">
+                  <span className="w-6 text-xs font-semibold text-muted tabular-nums text-right shrink-0">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-brand-light-gray/60 dark:bg-brand-dark-gray text-brand-mid-gray dark:text-brand-off-white/50 shrink-0">
+                      <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-fg/5 text-muted shrink-0">
                         Indiv
                       </span>
-                      <span className="text-sm font-medium text-brand-navy dark:text-brand-off-white truncate">
+                      <span className="text-sm font-medium text-fg truncate">
                         {row.donorName}
                       </span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-brand-light-gray/40 dark:bg-brand-dark-gray/60 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-fg/5 overflow-hidden">
                       <div
                         className="h-full bg-brand-primary dark:bg-brand-light-blue rounded-full"
                         style={{ width: `${(row.totalAmount / maxIndivAmount) * 100}%` }}
@@ -502,10 +502,10 @@ export function FinanceBrowser({
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-brand-navy dark:text-brand-off-white tabular-nums">
+                    <p className="text-sm font-semibold text-fg tabular-nums">
                       {formatMoney(row.totalAmount)}
                     </p>
-                    <p className="text-[10px] text-brand-navy/40 dark:text-brand-off-white/35">
+                    <p className="text-[10px] text-muted">
                       {row.officialCount} official{row.officialCount !== 1 ? "s" : ""}
                     </p>
                   </div>
@@ -522,15 +522,15 @@ export function FinanceBrowser({
               <EmptyState label="No industry data on file yet." />
             ) : (
               industries.map((row, i) => (
-                <div key={row.sector} className="flex items-center gap-4 rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-4 py-3">
-                  <span className="w-6 text-xs font-semibold text-brand-navy/35 dark:text-brand-off-white/30 tabular-nums text-right shrink-0">
+                <div key={row.sector} className="flex items-center gap-4 rounded-2xl border border-line bg-surface px-4 py-3">
+                  <span className="w-6 text-xs font-semibold text-muted tabular-nums text-right shrink-0">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-brand-navy dark:text-brand-off-white mb-1.5 truncate">
+                    <p className="text-sm font-medium text-fg mb-1.5 truncate">
                       {row.sector}
                     </p>
-                    <div className="h-1.5 rounded-full bg-brand-light-gray/40 dark:bg-brand-dark-gray/60 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-fg/5 overflow-hidden">
                       <div
                         className="h-full bg-brand-primary/70 dark:bg-brand-light-blue/60 rounded-full"
                         style={{ width: `${(row.totalAmount / maxIndustryAmount) * 100}%` }}
@@ -538,10 +538,10 @@ export function FinanceBrowser({
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-brand-navy dark:text-brand-off-white tabular-nums">
+                    <p className="text-sm font-semibold text-fg tabular-nums">
                       {formatMoney(row.totalAmount)}
                     </p>
-                    <p className="text-[10px] text-brand-navy/40 dark:text-brand-off-white/35">
+                    <p className="text-[10px] text-muted">
                       {row.donorCount} donor{row.donorCount !== 1 ? "s" : ""}
                     </p>
                   </div>
@@ -554,10 +554,10 @@ export function FinanceBrowser({
 
       {/* ── Browse Officials ───────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-2xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-2">
+        <h2 className="text-2xl font-bold tracking-tight text-fg mb-2">
           Browse Officials
         </h2>
-        <p className="text-sm text-brand-navy/55 dark:text-brand-off-white/50 mb-6">
+        <p className="text-sm text-muted mb-6">
           Search for any official with campaign finance data on file.
         </p>
 
@@ -567,17 +567,17 @@ export function FinanceBrowser({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name…"
-            className="w-full rounded-xl border border-brand-light-gray dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray text-brand-navy dark:text-brand-off-white placeholder:text-brand-mid-gray px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-red/40 focus:border-transparent transition"
+            className="w-full rounded-2xl border border-line bg-surface text-fg placeholder:text-muted px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 focus:border-transparent transition"
           />
           {searchLoading && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-mid-gray text-xs">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-xs">
               …
             </span>
           )}
         </div>
 
         {searchQuery.trim() && !searchLoading && searchResults?.length === 0 && (
-          <p className="text-sm text-brand-navy/45 dark:text-brand-off-white/40">
+          <p className="text-sm text-muted">
             No officials with finance data found matching &ldquo;{searchQuery}&rdquo;.
           </p>
         )}
@@ -585,7 +585,7 @@ export function FinanceBrowser({
         {browseItems.length > 0 && (
           <>
             {!searchQuery.trim() && (
-              <p className="text-xs text-brand-navy/40 dark:text-brand-off-white/35 mb-4">
+              <p className="text-xs text-muted mb-4">
                 Showing {browseItems.length} official{browseItems.length !== 1 ? "s" : ""} with finance data on file
               </p>
             )}
@@ -603,6 +603,6 @@ export function FinanceBrowser({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <p className="text-sm text-brand-navy/45 dark:text-brand-off-white/40 py-4">{label}</p>
+    <p className="text-sm text-muted py-4">{label}</p>
   );
 }

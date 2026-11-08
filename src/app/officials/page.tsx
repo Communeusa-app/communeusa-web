@@ -17,10 +17,10 @@ export default function OfficialsPage() {
         <div className="mx-auto max-w-3xl">
           {/* Hero */}
           <div className="mb-10">
-            <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
+            <h1 className="text-4xl font-bold tracking-tight text-fg">
               Officials Search
             </h1>
-            <p className="mt-2 text-brand-navy/60 dark:text-brand-off-white/55">
+            <p className="mt-2 text-muted">
               Find any elected or appointed official in Washington by name.
             </p>
           </div>

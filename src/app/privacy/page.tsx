@@ -13,13 +13,13 @@ export default function PrivacyPage() {
         <div className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
           {/* Header */}
           <div className="mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-brand-primary dark:text-brand-red mb-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-brand-primary dark:text-brand-light-blue mb-3">
               Legal
             </p>
-            <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-4">
+            <h1 className="text-4xl font-bold tracking-tight text-fg mb-4">
               Privacy Policy
             </h1>
-            <p className="text-brand-navy/55 dark:text-brand-off-white/55 text-sm">
+            <p className="text-muted text-sm">
               Last updated: May 2026
             </p>
           </div>
@@ -177,10 +177,10 @@ function Section({
 }) {
   return (
     <section className="mt-10">
-      <h2 className="text-lg font-semibold text-brand-navy dark:text-brand-off-white mb-3">
+      <h2 className="text-lg font-semibold text-fg mb-3">
         {title}
       </h2>
-      <div className="space-y-3 text-[15px] leading-relaxed text-brand-navy/75 dark:text-brand-off-white/70">
+      <div className="space-y-3 text-[15px] leading-relaxed text-muted">
         {children}
       </div>
     </section>
@@ -199,7 +199,7 @@ function ExternalLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-brand-primary dark:text-brand-red underline underline-offset-2 hover:opacity-75 transition-opacity"
+      className="text-brand-primary dark:text-brand-light-blue underline underline-offset-2 hover:opacity-75 transition-opacity"
     >
       {children}
     </a>

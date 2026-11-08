@@ -18,10 +18,10 @@ export default async function ElectionsPage() {
       <main className="flex-1 px-6 py-12">
         <div className="mx-auto max-w-5xl">
           <div className="mb-10">
-            <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
+            <h1 className="text-4xl font-bold tracking-tight text-fg">
               Elections
             </h1>
-            <p className="mt-2 text-brand-navy/60 dark:text-brand-off-white/55">
+            <p className="mt-2 text-muted">
               Upcoming elections and candidates for Washington State.
             </p>
           </div>

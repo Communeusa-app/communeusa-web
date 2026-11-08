@@ -17,10 +17,10 @@ export default function RightsPage() {
         <div className="mx-auto max-w-4xl">
           {/* Hero */}
           <div className="mb-12">
-            <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white">
+            <h1 className="text-4xl font-bold tracking-tight text-fg">
               Know Your Rights
             </h1>
-            <p className="mt-3 max-w-2xl text-brand-navy/60 dark:text-brand-off-white/55 leading-relaxed">
+            <p className="mt-3 max-w-2xl text-muted leading-relaxed">
               Plain language explanations of your rights as an American citizen at the
               federal, state, and local level. Every entry is sourced to the actual
               statute, ruling, or regulation.
@@ -28,7 +28,7 @@ export default function RightsPage() {
           </div>
 
           {/* Disclaimer */}
-          <div className="mb-10 flex gap-3 rounded-xl border border-brand-light-gray/60 dark:border-brand-dark-gray bg-brand-light-gray/20 dark:bg-brand-dark-gray/30 px-5 py-4">
+          <div className="mb-10 flex gap-3 rounded-2xl border border-line bg-fg/5 px-5 py-4">
             <svg
               width="16"
               height="16"
@@ -38,14 +38,14 @@ export default function RightsPage() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="shrink-0 mt-0.5 text-brand-navy/40 dark:text-brand-off-white/35"
+              className="shrink-0 mt-0.5 text-muted"
             >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
-            <p className="text-sm text-brand-navy/60 dark:text-brand-off-white/50 leading-relaxed">
-              <strong className="font-semibold text-brand-navy/75 dark:text-brand-off-white/70">
+            <p className="text-sm text-muted leading-relaxed">
+              <strong className="font-semibold text-muted">
                 Educational purposes only.
               </strong>{" "}
               This information does not constitute legal advice. Laws change — always
@@ -55,7 +55,7 @@ export default function RightsPage() {
                 href="https://www.aclu.org/know-your-rights"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-primary dark:text-brand-red hover:underline"
+                className="text-brand-primary dark:text-brand-light-blue hover:underline"
               >
                 ACLU Know Your Rights
               </a>
@@ -64,7 +64,7 @@ export default function RightsPage() {
                 href="https://www.lawhelp.org/wa"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-primary dark:text-brand-red hover:underline"
+                className="text-brand-primary dark:text-brand-light-blue hover:underline"
               >
                 LawHelp WA
               </a>

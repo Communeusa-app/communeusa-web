@@ -67,10 +67,10 @@ export default function AboutPage() {
 
           {/* Mission */}
           <section>
-            <h1 className="text-4xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-6">
+            <h1 className="text-4xl font-bold tracking-tight text-fg mb-6">
               Our Mission
             </h1>
-            <p className="text-lg leading-relaxed text-brand-navy/70 dark:text-brand-off-white/65 max-w-3xl">
+            <p className="text-lg leading-relaxed text-muted max-w-3xl">
               CommuneUSA is a civic utility built to make government transparent
               and accessible to every American. We believe an informed citizen is
               the foundation of a healthy democracy. Our mission is to put the
@@ -82,19 +82,19 @@ export default function AboutPage() {
 
           {/* What we cover */}
           <section>
-            <h2 className="text-2xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-6">
+            <h2 className="text-2xl font-bold tracking-tight text-fg mb-6">
               What We Cover
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {COVERAGE.map(({ title, description }) => (
                 <div
                   key={title}
-                  className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray p-6"
+                  className="rounded-2xl border border-line bg-surface p-6"
                 >
-                  <h3 className="text-base font-semibold text-brand-navy dark:text-brand-off-white mb-2">
+                  <h3 className="text-base font-semibold text-fg mb-2">
                     {title}
                   </h3>
-                  <p className="text-sm text-brand-navy/60 dark:text-brand-off-white/55 leading-relaxed">
+                  <p className="text-sm text-muted leading-relaxed">
                     {description}
                   </p>
                 </div>
@@ -104,17 +104,17 @@ export default function AboutPage() {
 
           {/* Our principles */}
           <section>
-            <h2 className="text-2xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-6">
+            <h2 className="text-2xl font-bold tracking-tight text-fg mb-6">
               Our Principles
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {PRINCIPLES.map(({ title, description }) => (
                 <div key={title}>
-                  <div className="w-8 h-0.5 bg-brand-primary dark:bg-brand-red mb-4 rounded-full" />
-                  <h3 className="text-base font-semibold text-brand-navy dark:text-brand-off-white mb-2">
+                  <div className="w-8 h-0.5 bg-fg mb-4 rounded-full" />
+                  <h3 className="text-base font-semibold text-fg mb-2">
                     {title}
                   </h3>
-                  <p className="text-sm text-brand-navy/60 dark:text-brand-off-white/55 leading-relaxed">
+                  <p className="text-sm text-muted leading-relaxed">
                     {description}
                   </p>
                 </div>
@@ -124,16 +124,16 @@ export default function AboutPage() {
 
           {/* Data sources */}
           <section>
-            <h2 className="text-2xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-6">
+            <h2 className="text-2xl font-bold tracking-tight text-fg mb-6">
               Data Sources
             </h2>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {SOURCES.map((source) => (
                 <li
                   key={source}
-                  className="flex items-center gap-3 text-sm text-brand-navy/70 dark:text-brand-off-white/65"
+                  className="flex items-center gap-3 text-sm text-muted"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-primary dark:bg-brand-red shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-fg shrink-0" />
                   {source}
                 </li>
               ))}
@@ -142,11 +142,11 @@ export default function AboutPage() {
 
           {/* Contact */}
           <section>
-            <h2 className="text-2xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-4">
+            <h2 className="text-2xl font-bold tracking-tight text-fg mb-4">
               Contact
             </h2>
-            <div className="rounded-xl border border-brand-light-gray/70 dark:border-brand-dark-gray bg-white dark:bg-brand-dark-gray px-6 py-5">
-              <p className="text-sm text-brand-navy/60 dark:text-brand-off-white/55">
+            <div className="rounded-2xl border border-line bg-surface px-6 py-5">
+              <p className="text-sm text-muted">
                 Have a question or found inaccurate data? Contact form coming
                 soon.
               </p>

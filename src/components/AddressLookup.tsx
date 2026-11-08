@@ -75,7 +75,7 @@ function partyClass(party: string) {
   if (party === "Democratic" || party === "Democrat")
     return "text-brand-primary dark:text-brand-light-blue";
   if (party === "Republican") return "text-brand-red";
-  return "text-brand-mid-gray";
+  return "text-muted";
 }
 
 const SESSION_KEY = "communeusa_lookup";
@@ -253,14 +253,14 @@ export function AddressLookup() {
       </form>
       <a
         href="#map"
-        className="mt-5 inline-block font-mono text-[13px] text-brand-primary hover:text-brand-navy dark:text-brand-light-blue dark:hover:text-white transition-colors"
+        className="mt-5 inline-block font-mono text-[13px] text-brand-primary dark:text-brand-light-blue hover:text-fg dark:hover:text-white transition-colors"
       >
         or explore the map ↓
       </a>
 
       {/* Error */}
       {error && (
-        <div className="mt-5 rounded-xl border border-brand-red/30 bg-brand-red/10 px-4 py-3 text-sm text-brand-red text-left">
+        <div className="mt-5 rounded-2xl border border-brand-red/30 bg-brand-red/10 px-4 py-3 text-sm text-brand-red text-left">
           {error}
         </div>
       )}
@@ -271,7 +271,7 @@ export function AddressLookup() {
           {(Object.entries(grouped) as [Level, Rep[]][]).map(
             ([level, officials]) => (
               <div key={level}>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-brand-navy/45 dark:text-fg/40 mb-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted dark:text-fg/40 mb-2">
                   {level}
                 </p>
                 <ul className="space-y-0.5">
@@ -281,7 +281,7 @@ export function AddressLookup() {
                         <div
                           role="button"
                           onClick={() => navigateToProfile(rep.dbId!)}
-                          className="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 -mx-3 cursor-pointer hover:bg-brand-light-blue/20 dark:hover:bg-brand-red/10 transition-colors"
+                          className="group flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 -mx-3 cursor-pointer hover:bg-fg/5 transition-colors"
                         >
                           <RepCard rep={rep} />
                           <ChevronRight />
@@ -306,10 +306,10 @@ export function AddressLookup() {
 function RepCard({ rep }: { rep: Rep }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-brand-navy/50 dark:text-fg/45 leading-none mb-0.5">
+      <p className="text-[11px] font-medium uppercase tracking-wider text-muted dark:text-fg/45 leading-none mb-0.5">
         {rep.officeName}
       </p>
-      <p className="text-sm font-semibold text-brand-navy dark:text-fg truncate">
+      <p className="text-sm font-semibold text-fg dark:text-fg truncate">
         {rep.name}
       </p>
       {rep.party && (
@@ -327,7 +327,7 @@ function ChevronRight() {
       width="14" height="14" viewBox="0 0 24 24"
       fill="none" stroke="currentColor" strokeWidth="2.5"
       strokeLinecap="round" strokeLinejoin="round"
-      className="shrink-0 text-brand-navy/25 dark:text-fg/25 group-hover:text-brand-primary dark:group-hover:text-brand-red transition-colors"
+      className="shrink-0 text-brand-navy/25 dark:text-fg/25 group-hover:text-brand-primary dark:group-hover:text-brand-light-blue transition-colors"
     >
       <polyline points="9 18 15 12 9 6" />
     </svg>

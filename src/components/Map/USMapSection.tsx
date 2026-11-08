@@ -14,10 +14,10 @@ export function USMapSection({ initialState }: Props) {
   return (
     <section id="map" className="px-6 py-10">
       <div className="mx-auto max-w-5xl">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-brand-navy dark:text-brand-off-white mb-3 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-fg mb-3 text-center">
           Explore Your Government
         </h2>
-        <p className="text-base text-brand-navy/60 dark:text-brand-off-white/55 text-center mb-10 max-w-xl mx-auto leading-relaxed">
+        <p className="text-base text-muted text-center mb-10 max-w-xl mx-auto leading-relaxed">
           Click any state to drill down into counties, cities, and the officials
           representing you at every level.
         </p>
