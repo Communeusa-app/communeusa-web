@@ -131,8 +131,8 @@ export function LogoMark() {
       aria-hidden="true"
       className="flex-none"
     >
-      <rect x="5.5" y="5.5" width="13" height="13" transform="rotate(45 12 12)" className="stroke-white fill-none" strokeWidth="1.5" />
-      <rect x="8.5" y="8.5" width="7" height="7" transform="rotate(45 12 12)" className="fill-brand-red" />
+      <rect x="5.5" y="5.5" width="13" height="13" transform="rotate(45 12 12)" className="stroke-brand-primary dark:stroke-white fill-none" strokeWidth="1.5" />
+      <rect x="8.5" y="8.5" width="7" height="7" transform="rotate(45 12 12)" className="fill-brand-primary dark:fill-brand-red" />
     </svg>
   );
 }

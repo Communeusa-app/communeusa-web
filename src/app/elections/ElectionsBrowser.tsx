@@ -174,13 +174,6 @@ export function ElectionsBrowser({ counties, cities }: Props) {
 
   return (
     <div>
-      {/* Interactive map — always visible above tabs */}
-      <ElectionsMap
-        selectedCounty={tab === "browse" ? selectedCountyName : null}
-        onCountySelect={handleMapCountySelect}
-        onReset={handleMapReset}
-      />
-
       {/* Tabs */}
       <div className="flex gap-1 p-1 rounded-2xl bg-fg/5 w-fit mb-8">
         {(["location", "browse"] as Tab[]).map((t) => (
@@ -260,6 +253,15 @@ export function ElectionsBrowser({ counties, cities }: Props) {
           </div>
         </div>
       )}
+
+      {/* Interactive map — below the search controls */}
+      <div className="mb-8">
+        <ElectionsMap
+          selectedCounty={tab === "browse" ? selectedCountyName : null}
+          onCountySelect={handleMapCountySelect}
+          onReset={handleMapReset}
+        />
+      </div>
 
       {/* Error */}
       {error && (
