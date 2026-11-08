@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { geocodeAddress } from "@/app/actions/geocode";
+import { DonorPill } from "./DonorPill";
 import { searchOfficialFinance } from "@/app/actions/finance";
 import type {
   FinanceSummary,
@@ -172,9 +173,11 @@ function FinanceCard({ summary }: { summary: FinanceSummary }) {
                   <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${badge.className}`}>
                     {badge.label}
                   </span>
-                  <span className="text-xs text-muted truncate">
-                    {donor.name}
-                  </span>
+                  <DonorPill
+                    name={donor.name}
+                    tone={donor.industrySector === "Political Action Committee" ? "pac" : "neutral"}
+                    className="!px-2.5 !py-0.5 !text-xs"
+                  />
                 </div>
                 <span className="text-xs font-medium text-fg tabular-nums shrink-0">
                   {formatMoney(donor.amount)}
@@ -449,9 +452,7 @@ export function FinanceBrowser({
                       <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-brand-red/15 text-brand-red shrink-0">
                         PAC
                       </span>
-                      <span className="text-sm font-medium text-fg truncate">
-                        {row.donorName}
-                      </span>
+                      <DonorPill name={row.donorName} tone="pac" />
                     </div>
                     <div className="h-1.5 rounded-full bg-fg/5 overflow-hidden">
                       <div
@@ -490,9 +491,7 @@ export function FinanceBrowser({
                       <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-fg/5 text-muted shrink-0">
                         Indiv
                       </span>
-                      <span className="text-sm font-medium text-fg truncate">
-                        {row.donorName}
-                      </span>
+                      <DonorPill name={row.donorName} />
                     </div>
                     <div className="h-1.5 rounded-full bg-fg/5 overflow-hidden">
                       <div
