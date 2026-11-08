@@ -12,6 +12,21 @@ import { ElectionsMap } from "./ElectionsMap";
 
 type Tab = "location" | "browse";
 
+const US_STATES: [string, string][] = [
+  ["01","Alabama"],["02","Alaska"],["04","Arizona"],["05","Arkansas"],["06","California"],["08","Colorado"],
+  ["09","Connecticut"],["10","Delaware"],["12","Florida"],["13","Georgia"],["15","Hawaii"],["16","Idaho"],
+  ["17","Illinois"],["18","Indiana"],["19","Iowa"],["20","Kansas"],["21","Kentucky"],["22","Louisiana"],
+  ["23","Maine"],["24","Maryland"],["25","Massachusetts"],["26","Michigan"],["27","Minnesota"],["28","Mississippi"],
+  ["29","Missouri"],["30","Montana"],["31","Nebraska"],["32","Nevada"],["33","New Hampshire"],["34","New Jersey"],
+  ["35","New Mexico"],["36","New York"],["37","North Carolina"],["38","North Dakota"],["39","Ohio"],["40","Oklahoma"],
+  ["41","Oregon"],["42","Pennsylvania"],["44","Rhode Island"],["45","South Carolina"],["46","South Dakota"],["47","Tennessee"],
+  ["48","Texas"],["49","Utah"],["50","Vermont"],["51","Virginia"],["53","Washington"],["54","West Virginia"],
+  ["55","Wisconsin"],["56","Wyoming"],
+];
+// Only Washington has data so far; the rest are listed so people can see what is coming.
+const LIVE_STATES = new Set(["53"]);
+
+
 const LEVEL_ORDER = ["city", "county", "state", "federal"] as const;
 const LEVEL_LABELS: Record<string, string> = {
   city: "City",
@@ -30,6 +45,7 @@ interface Props {
 export function ElectionsBrowser({ counties, cities }: Props) {
   const [tab, setTab] = useState<Tab>("location");
   const [address, setAddress] = useState("");
+  const [selectedStateFips, setSelectedStateFips] = useState("");
   const [selectedCountyId, setSelectedCountyId] = useState("");
   const [selectedCityId, setSelectedCityId] = useState("");
   const [elections, setElections] = useState<Election[] | null>(null);
@@ -142,11 +158,34 @@ export function ElectionsBrowser({ counties, cities }: Props) {
   }
 
   // Map county click → switch to Browse tab with that county selected
+  // Picked from the dropdown: drive the map to match.
+  function handleStateSelect(fips: string) {
+    setSelectedStateFips(fips);
+    setSelectedCountyId("");
+    setSelectedCityId("");
+    setElections(null);
+    setError(null);
+    window.dispatchEvent(
+      new CustomEvent("communeusa:state-select", { detail: { fips: fips || null } }),
+    );
+  }
+
+  // Picked or cleared on the map: keep the dropdown in sync (map already moved).
+  function handleMapStateChange(fips: string | null) {
+    setSelectedStateFips(fips ?? "");
+    if (!fips) {
+      setSelectedCountyId("");
+      setSelectedCityId("");
+      setElections(null);
+    }
+  }
+
   function handleMapCountySelect(countyName: string) {
     const match = counties.find(
       (c) => c.name.toLowerCase() === countyName.toLowerCase(),
     );
     if (match) {
+      setSelectedStateFips("53");
       setSelectedCountyId(match.id);
       setSelectedCityId("");
       setTab("browse");
@@ -215,16 +254,35 @@ export function ElectionsBrowser({ counties, cities }: Props) {
       {tab === "browse" && (
         <div className="flex flex-wrap gap-4 mb-8">
           <div className="flex-1 min-w-[180px] max-w-[260px]">
+            <label htmlFor="browse-state" className="block text-[11px] font-medium uppercase tracking-wider text-muted mb-1.5">
+              State
+            </label>
+            <select
+              id="browse-state"
+              value={selectedStateFips}
+              onChange={(e) => handleStateSelect(e.target.value)}
+              className="w-full rounded-2xl border border-line bg-surface text-fg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 transition"
+            >
+              <option value="">Select a state</option>
+              {US_STATES.map(([fips, name]) => (
+                <option key={fips} value={fips} disabled={!LIVE_STATES.has(fips)}>
+                  {LIVE_STATES.has(fips) ? name : `${name} (coming soon)`}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1 min-w-[180px] max-w-[260px]">
             <label className="block text-[11px] font-medium uppercase tracking-wider text-muted mb-1.5">
               County
             </label>
             <select
               value={selectedCountyId}
+              disabled={!selectedStateFips}
               onChange={(e) => {
                 setSelectedCountyId(e.target.value);
                 setSelectedCityId("");
               }}
-              className="w-full rounded-2xl border border-line bg-surface text-fg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 transition"
+              className="disabled:opacity-50 disabled:cursor-not-allowed w-full rounded-2xl border border-line bg-surface text-fg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 transition"
             >
               <option value="">All counties</option>
               {counties.map((c) => (
@@ -240,8 +298,9 @@ export function ElectionsBrowser({ counties, cities }: Props) {
             </label>
             <select
               value={selectedCityId}
+              disabled={!selectedStateFips}
               onChange={(e) => setSelectedCityId(e.target.value)}
-              className="w-full rounded-2xl border border-line bg-surface text-fg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 transition"
+              className="disabled:opacity-50 disabled:cursor-not-allowed w-full rounded-2xl border border-line bg-surface text-fg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40 transition"
             >
               <option value="">All cities</option>
               {cities.map((c) => (
@@ -260,6 +319,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
           selectedCounty={tab === "browse" ? selectedCountyName : null}
           onCountySelect={handleMapCountySelect}
           onReset={handleMapReset}
+          onStateChange={handleMapStateChange}
         />
       </div>
 
@@ -285,7 +345,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
       {/* Empty prompt for browse */}
       {tab === "browse" && !selectedCountyId && !selectedCityId && !loading && (
         <p className="text-sm text-muted">
-          Select a county or city above, or click a county on the map.
+          Choose a state, then a county or city above, or click a state and county on the map.
         </p>
       )}
 
