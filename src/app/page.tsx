@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CorrectionModal } from "@/components/CorrectionModal";
 import { USMapSection } from "@/components/Map/USMapSection";
 import { AddressLookup } from "@/components/AddressLookup";
+import { MobileNav } from "@/components/MobileNav";
 import { HowTabs, type HowTab } from "@/components/HowTabs";
 
 const NAV_LINKS = [
@@ -144,7 +145,7 @@ export default async function Home({
       <header className="mx-auto max-w-6xl px-6 pt-6">
         <nav
           aria-label="Main"
-          className="flex items-center justify-between gap-x-7 gap-y-3 rounded-[28px] border border-line bg-surface/70 px-4 py-3 backdrop-blur sm:px-5 sm:py-3.5"
+          className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-[28px] border border-line bg-surface/70 px-4 py-3 backdrop-blur sm:px-5 sm:py-3.5"
         >
           <a href="/" className="flex min-w-0 items-center gap-2.5 text-lg font-semibold tracking-tight sm:gap-3 sm:text-2xl">
             <LogoMark />
@@ -159,10 +160,11 @@ export default async function Home({
           </div>
           <a
             href="#lookup"
-            className="flex-none whitespace-nowrap rounded-full bg-brand-off-white px-3.5 py-2.5 text-[13px] font-semibold text-ink hover:bg-white transition-colors sm:px-6 sm:py-3 sm:text-[15px]"
+            className="ml-auto hidden flex-none whitespace-nowrap sm:inline-block rounded-full bg-brand-off-white px-3.5 py-2.5 text-[13px] font-semibold text-ink hover:bg-white transition-colors sm:px-6 sm:py-3 sm:text-[15px]"
           >
             Look up my reps
           </a>
+          <MobileNav links={NAV_LINKS} />
         </nav>
       </header>
 
