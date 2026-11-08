@@ -466,3 +466,249 @@ export async function getOfficialsByCounty(
 
   return (data ?? []) as Official[];
 }
+
+// ── Smart search: "Seattle mayor", "King County sheriff", "Representatives for King County" ──
+
+export interface SmartSearchResponse {
+  results: OfficialSearchResult[];
+  /** What we understood from the query, shown back to the user. */
+  place: { name: string; kind: "city" | "county" } | null;
+  role: string | null;
+  /** True when the query named a county, so state/federal officials are not included. */
+  countyOnly: boolean;
+  /** Plain-language explanation when we widened or changed the search, e.g. a statewide office. */
+  note: string | null;
+  /** Set when the query had typos and we searched a corrected version instead. */
+  correctedQuery?: string | null;
+}
+
+interface PlaceRow { id: string; name: string }
+
+let placeCache: { at: number; counties: PlaceRow[]; cities: PlaceRow[] } | null = null;
+
+async function loadPlaces() {
+  if (placeCache && Date.now() - placeCache.at < 60 * 60 * 1000) return placeCache;
+  const [{ data: counties }, { data: cities }] = await Promise.all([
+    supabase.from("counties").select("id, name"),
+    supabase.from("municipalities").select("id, name"),
+  ]);
+  placeCache = {
+    at: Date.now(),
+    counties: (counties ?? []) as PlaceRow[],
+    cities: (cities ?? []) as PlaceRow[],
+  };
+  return placeCache;
+}
+
+// Words in a query that name an office. `titles` are matched against office_title.
+const ROLES: { label: string; re: RegExp; titles: string[] }[] = [
+  // More specific offices first, so "insurance commissioner" is not read as plain "commissioner".
+  { label: "Secretary of State", re: /\bsecretary of state\b/,                       titles: ["secretary of state"] },
+  { label: "Lieutenant Governor", re: /\b(?:lieutenant|lt\.?) governors?\b/,            titles: ["lieutenant governor"] },
+  { label: "Commissioner of Public Lands", re: /\b(?:public lands|lands commissioner)\b/, titles: ["public lands"] },
+  { label: "Insurance Commissioner", re: /\binsurance commissioners?\b/,              titles: ["insurance commissioner"] },
+  { label: "Superintendent",   re: /\bsuperintendents?\b/,                          titles: ["superintendent"] },
+  { label: "Mayor",            re: /\bmayors?\b/,                                     titles: ["mayor"] },
+  { label: "Council",          re: /\bcouncil(?:\s?member|man|woman|lor)?s?\b/,       titles: ["council"] },
+  { label: "Sheriff",          re: /\bsheriffs?\b/,                                   titles: ["sheriff"] },
+  { label: "Assessor",         re: /\bassessors?\b/,                                  titles: ["assessor"] },
+  { label: "Auditor",          re: /\bauditors?\b/,                                   titles: ["auditor"] },
+  { label: "Treasurer",        re: /\btreasurers?\b/,                                 titles: ["treasurer"] },
+  { label: "Prosecutor",       re: /\bprosecut(?:or|ors|ing attorneys?)\b/,           titles: ["prosecut"] },
+  { label: "Clerk",            re: /\bclerks?\b/,                                     titles: ["clerk"] },
+  { label: "Coroner",          re: /\b(?:coroners?|medical examiners?)\b/,            titles: ["coroner", "medical examiner"] },
+  { label: "Commissioner",     re: /\bcommissioners?\b/,                              titles: ["commissioner"] },
+  { label: "Executive",        re: /\b(?:county )?executives?\b/,                     titles: ["executive"] },
+  { label: "Judge",            re: /\b(?:judges?|justices?)\b/,                       titles: ["judge", "justice"] },
+  { label: "Governor",         re: /\bgovernors?\b/,                                  titles: ["governor"] },
+  { label: "Attorney General", re: /\battorney generals?\b/,                          titles: ["attorney general"] },
+  { label: "Senator",          re: /\bsenators?\b/,                                   titles: ["senator"] },
+  { label: "School board",     re: /\bschool (?:board|directors?)\b|\bschool\b/,      titles: ["school", "director"] },
+];
+
+const STOP_WORDS = new Set([
+  "who", "is", "are", "the", "my", "of", "in", "for", "at", "a", "an", "and", "me", "show",
+  "find", "list", "all", "current", "county", "city", "wa", "washington", "state", "us", "u.s.",
+  "officials", "official", "representative", "representatives", "reps", "rep", "elected",
+]);
+
+function escapeLike(s: string) {
+  // Strip characters that have meaning inside a PostgREST filter string.
+  return s.replace(/[%,()*\\]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+async function runSmartSearch(rawQuery: string): Promise<SmartSearchResponse> {
+  const empty: SmartSearchResponse = { results: [], place: null, role: null, countyOnly: false, note: null };
+  const q = rawQuery.toLowerCase().replace(/[“”"']/g, "").replace(/\s+/g, " ").trim();
+  if (q.length < 2) return empty;
+
+  const { counties, cities } = await loadPlaces();
+  const hasWord = (w: string) => new RegExp(`\\b${w}\\b`).test(q);
+  const countyHint = hasWord("county");
+  const cityHint = hasWord("city");
+
+  // 1. Find a place named in the query (longest name wins).
+  const nameIn = (name: string) => {
+    const n = name.toLowerCase();
+    return new RegExp(`(^|[^a-z])${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z]|$)`).test(q);
+  };
+  const cityMatches = cities.filter((c) => nameIn(c.name)).sort((a, b) => b.name.length - a.name.length);
+  const countyMatches = counties.filter((c) => nameIn(c.name)).sort((a, b) => b.name.length - a.name.length);
+
+  let place: { name: string; kind: "city" | "county"; id: string } | null = null;
+  const city = cityMatches[0];
+  const county = countyMatches[0];
+  if (county && (countyHint || !city)) place = { name: county.name, kind: "county", id: county.id };
+  else if (city && !(cityHint === false && countyHint && county)) place = { name: city.name, kind: "city", id: city.id };
+  else if (county) place = { name: county.name, kind: "county", id: county.id };
+
+  // 2. Find an office named in the query.
+  const role = ROLES.find((r) => r.re.test(q)) ?? null;
+
+  // Some offices cover the whole state, so a place in the query ("Seattle governor") should not
+  // filter them out. Search statewide and say so.
+  const STATEWIDE = new Set(["Governor", "Lieutenant Governor", "Attorney General", "Secretary of State", "Commissioner of Public Lands", "Insurance Commissioner"]);
+  let note: string | null = null;
+  if (place && role && STATEWIDE.has(role.label)) {
+    note = `${role.label} is a statewide office, so ${place.name}${place.kind === "county" ? " County" : ""} is not used to narrow the results.`;
+    place = null;
+  }
+
+  // 3. Text left over once place and office words are removed.
+  let rest = q;
+  if (place) rest = rest.replace(new RegExp(place.name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"), " ");
+  if (role) rest = rest.replace(role.re, " ");
+  const leftover = rest
+    .split(/[^a-z0-9.'-]+/)
+    .filter((w) => w && !STOP_WORDS.has(w))
+    .join(" ");
+
+  // 4. Build the query.
+  let builder = supabase
+    .from("officials")
+    .select("id, official_name, office_title, level, party, municipalities(name), counties(name)")
+    .eq("is_active", true)
+    .not("official_name", "is", null);
+
+  if (place?.kind === "city") builder = builder.eq("municipality_id", place.id);
+  if (place?.kind === "county") builder = builder.eq("county_id", place.id);
+
+  const conds: string[] = [];
+  if (role) {
+    // "representative(s)" never appears here: it is a stop word, so "Representatives for
+    // King County" lists everyone for that place.
+    for (const t of role.titles) conds.push(`office_title.ilike.%${t}%`);
+  }
+  const text = escapeLike(leftover);
+  if (!place && !role) {
+    // Nothing recognised: treat the whole query as a name or office.
+    const whole = escapeLike(q);
+    if (whole.length < 2) return empty;
+    conds.push(`official_name.ilike.%${whole}%`, `office_title.ilike.%${whole}%`);
+  } else if (text.length >= 2 && !role) {
+    conds.push(`official_name.ilike.%${text}%`, `office_title.ilike.%${text}%`);
+  }
+  if (conds.length) builder = builder.or(conds.join(","));
+
+  // "senator" / "governor" with no place: keep state and federal results.
+  const { data, error } = await builder.order("official_name").limit(80);
+  if (error || !data) return { ...empty, place: place && { name: place.name, kind: place.kind }, role: role?.label ?? null, note };
+
+  const results = (data as unknown as Array<{
+    id: string;
+    official_name: string;
+    office_title: string | null;
+    level: string;
+    party: string | null;
+    municipalities: { name: string } | null;
+    counties: { name: string } | null;
+  }>).map((row) => ({
+    id: row.id,
+    official_name: row.official_name,
+    office_title: row.office_title,
+    level: row.level,
+    party: row.party,
+    jurisdiction_name: row.municipalities?.name ?? row.counties?.name ?? null,
+  }));
+
+  return {
+    results,
+    place: place ? { name: place.name, kind: place.kind } : null,
+    role: role?.label ?? null,
+    countyOnly: place?.kind === "county",
+    note,
+  };
+}
+
+
+// ── Typo tolerance ─────────────────────────────────────────────────────────────
+
+// Edit distance that counts a swapped pair of letters ("washingotn") as one edit.
+function editDistance(a: string, b: string): number {
+  const d: number[][] = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 0; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+  }
+  return d[a.length][b.length];
+}
+
+const KNOWN_WORDS = [
+  "mayor", "council", "councilmember", "councilman", "councilwoman", "sheriff", "assessor", "auditor",
+  "treasurer", "prosecutor", "prosecuting", "attorney", "general", "clerk", "coroner", "commissioner",
+  "executive", "judge", "justice", "governor", "senator", "school", "board", "directors", "representatives",
+  "washington", "county", "officials",
+];
+
+/** Fix likely typos by snapping unknown words to the nearest place or office word. */
+async function correctTypos(rawQuery: string): Promise<string> {
+  const { counties, cities } = await loadPlaces();
+  const vocab = new Set<string>(KNOWN_WORDS);
+  for (const p of [...counties, ...cities]) {
+    for (const w of p.name.toLowerCase().split(/[^a-z]+/)) if (w.length >= 4) vocab.add(w);
+  }
+  const words = Array.from(vocab);
+  return rawQuery
+    .toLowerCase()
+    .split(/(\s+)/)
+    .map((tok) => {
+      const t = tok.replace(/[^a-z]/g, "");
+      if (t.length < 5 || vocab.has(t)) return tok;
+      const limit = t.length >= 8 ? 2 : 1;
+      let best: string | null = null;
+      let bestDist = limit + 1;
+      for (const w of words) {
+        if (Math.abs(w.length - t.length) > limit) continue;
+        const dist = editDistance(t, w);
+        if (dist < bestDist) { best = w; bestDist = dist; }
+      }
+      return best ?? tok;
+    })
+    .join("");
+}
+
+function titleCase(s: string) {
+  const small = new Set(["of", "for", "the", "in", "and"]);
+  return s
+    .split(" ")
+    .map((w, i) => (i > 0 && small.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
+export async function smartSearchOfficials(rawQuery: string): Promise<SmartSearchResponse> {
+  const first = await runSmartSearch(rawQuery);
+  if (first.results.length > 0) return first;
+
+  // Nothing found: try again with obvious typos fixed ("washingotn governor").
+  const fixed = (await correctTypos(rawQuery)).replace(/\s+/g, " ").trim();
+  const original = rawQuery.toLowerCase().replace(/\s+/g, " ").trim();
+  if (!fixed || fixed === original) return first;
+  const second = await runSmartSearch(fixed);
+  return second.results.length > 0 ? { ...second, correctedQuery: titleCase(fixed) } : first;
+}
