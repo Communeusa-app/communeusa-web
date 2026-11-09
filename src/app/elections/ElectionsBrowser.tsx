@@ -1,5 +1,6 @@
 "use client";
 
+import { SHOW_CANDIDATES, CANDIDATES_PENDING_MESSAGE } from "@/lib/electionFlags";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { geocodeAddress } from "@/app/actions/geocode";
@@ -392,7 +393,9 @@ function ElectionCard({ election }: { election: Election }) {
           </span>
         )}
       </div>
-      {candidates.length > 0 ? (
+      {!SHOW_CANDIDATES ? (
+        <p className="text-xs text-muted mt-1">{CANDIDATES_PENDING_MESSAGE}</p>
+      ) : candidates.length > 0 ? (
         <div className="flex flex-wrap gap-1.5 mt-2">
           {candidates.map((c) => (
             <CandidateChip key={c.id} candidate={c} />
