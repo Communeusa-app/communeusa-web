@@ -1,3 +1,4 @@
+import { SHOW_CANDIDATES, CANDIDATES_PENDING_MESSAGE } from "@/lib/electionFlags";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getElectionById } from "@/app/actions/elections";
@@ -74,7 +75,9 @@ export default async function ElectionPage({ params }: Props) {
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted mb-5">
             Candidates
           </h2>
-          {election.candidates.length === 0 ? (
+          {!SHOW_CANDIDATES ? (
+            <p className="text-sm text-muted">{CANDIDATES_PENDING_MESSAGE}</p>
+          ) : election.candidates.length === 0 ? (
             <p className="text-sm text-muted">
               No candidates on file yet.
             </p>
