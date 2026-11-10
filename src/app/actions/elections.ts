@@ -25,6 +25,7 @@ export interface Election {
   source_url: string | null;
   seats: number | null;
   results_status: "unofficial" | "certified" | null;
+  results_updated_at: string | null;
   candidates: ElectionCandidate[];
 }
 
@@ -64,7 +65,7 @@ export interface CandidateEndorsement {
 type ElectionRow = Omit<Election, "candidates">;
 
 const ELECTION_SELECT =
-  "id, office_name, level, election_date, primary_date, filing_deadline, description, source_url, seats, results_status";
+  "id, office_name, level, election_date, primary_date, filing_deadline, description, source_url, seats, results_status, results_updated_at";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

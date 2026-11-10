@@ -1,6 +1,6 @@
 "use client";
 
-import { CANDIDATES_PENDING_MESSAGE, formatVotes } from "@/lib/electionFlags";
+import { CANDIDATES_PENDING_MESSAGE, formatVotes, formatUpdated } from "@/lib/electionFlags";
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { geocodeAddress } from "@/app/actions/geocode";
@@ -450,7 +450,14 @@ function ElectionCard({ election }: { election: Election }) {
             <CandidateRow key={c.id} candidate={c} leading={i === 0 && (c.votes ?? 0) > 0} />
           ))}
         </ul>
-      ) : (
+      ) : null}
+      {candidates.length > 0 && formatUpdated(election.results_updated_at) && (
+        <p className="mt-2 text-[11px] text-muted">
+          {election.results_status === "certified" ? "Certified. " : "Unofficial. "}
+          Updated {formatUpdated(election.results_updated_at)}
+        </p>
+      )}
+      {candidates.length === 0 && (
         <p className="text-xs text-muted mt-2">{CANDIDATES_PENDING_MESSAGE}</p>
       )}
     </Link>

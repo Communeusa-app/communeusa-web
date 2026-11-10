@@ -11,3 +11,17 @@ export const UNOFFICIAL_RESULTS_LABEL =
 export function formatVotes(n: number | null | undefined): string | null {
   return typeof n === "number" ? n.toLocaleString("en-US") : null;
 }
+
+export function formatUpdated(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Los_Angeles",
+    timeZoneName: "short",
+  });
+}

@@ -1,4 +1,4 @@
-import { CANDIDATES_PENDING_MESSAGE, UNOFFICIAL_RESULTS_LABEL, formatVotes } from "@/lib/electionFlags";
+import { CANDIDATES_PENDING_MESSAGE, UNOFFICIAL_RESULTS_LABEL, formatVotes, formatUpdated } from "@/lib/electionFlags";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getElectionById } from "@/app/actions/elections";
@@ -86,6 +86,12 @@ export default async function ElectionPage({ params }: Props) {
           )}
           {election.candidates.length > 0 && election.results_status !== "certified" && (
             <p className="mt-4 text-xs text-muted">{UNOFFICIAL_RESULTS_LABEL}</p>
+          )}
+          {election.candidates.length > 0 && formatUpdated(election.results_updated_at) && (
+            <p className="mt-1 text-xs text-muted">
+              {election.results_status === "certified" ? "Certified results. " : ""}
+              Last updated {formatUpdated(election.results_updated_at)}.
+            </p>
           )}
           {election.candidates.length > 0 && election.seats && election.seats > 1 && (
             <p className="mt-2 text-xs text-muted">{election.seats} seats are elected in this race.</p>
