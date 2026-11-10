@@ -77,7 +77,20 @@ interface Props {
   recentlyRedrawn?:   RecentlyRedrawn;
 }
 
-interface SimpleTooltip { x: number; y: number }
+interface SimpleTooltip { x: number; y: number; name: string; live: boolean }
+
+const STATE_NAMES: Record<string, string> = {
+  "01":"Alabama","02":"Alaska","04":"Arizona","05":"Arkansas","06":"California","08":"Colorado",
+  "09":"Connecticut","10":"Delaware","11":"District of Columbia","12":"Florida","13":"Georgia",
+  "15":"Hawaii","16":"Idaho","17":"Illinois","18":"Indiana","19":"Iowa","20":"Kansas","21":"Kentucky",
+  "22":"Louisiana","23":"Maine","24":"Maryland","25":"Massachusetts","26":"Michigan","27":"Minnesota",
+  "28":"Mississippi","29":"Missouri","30":"Montana","31":"Nebraska","32":"Nevada","33":"New Hampshire",
+  "34":"New Jersey","35":"New Mexico","36":"New York","37":"North Carolina","38":"North Dakota",
+  "39":"Ohio","40":"Oklahoma","41":"Oregon","42":"Pennsylvania","44":"Rhode Island",
+  "45":"South Carolina","46":"South Dakota","47":"Tennessee","48":"Texas","49":"Utah","50":"Vermont",
+  "51":"Virginia","53":"Washington","54":"West Virginia","55":"Wisconsin","56":"Wyoming",
+};
+interface CountyTooltip { x: number; y: number; name: string }
 
 export function USMap({
   initialState,
@@ -106,6 +119,7 @@ export function USMap({
 
   const [inStateView,     setInStateView]     = useState(false);
   const [simpleTooltip,   setSimpleTooltip]   = useState<SimpleTooltip | null>(null);
+  const [countyTooltip,   setCountyTooltip]   = useState<CountyTooltip | null>(null);
   const [districtTooltip, setDistrictTooltip] = useState<DistrictTooltip | null>(null);
   const [mapLoading,      setMapLoading]      = useState(true);
   const [mapError,        setMapError]        = useState<string | null>(null);
@@ -312,17 +326,23 @@ export function USMap({
         .attr("pointer-events", inDistrictMode ? "none" : "all")
         .attr("d", (d) => pathGen(d) ?? "")
         .attr("opacity", 0)
-        .on("mouseenter", function (_, d) {
+        .on("mouseenter", function (ev, d) {
           const name = WA_COUNTY_NAMES[String(d.id ?? "")];
+          if (name) setCountyTooltip({ ...relPos(ev), name });
           if (name === highlightedCountyRef.current) return;
           d3.select(this).transition().duration(120).attr("fill", FILL_HOVER);
         })
+        .on("mousemove", (ev) => {
+          setCountyTooltip((prev) => prev ? { ...prev, ...relPos(ev) } : null);
+        })
         .on("mouseleave", function (_, d) {
           const name = WA_COUNTY_NAMES[String(d.id ?? "")];
+          setCountyTooltip(null);
           d3.select(this).transition().duration(120)
             .attr("fill", name === highlightedCountyRef.current ? highlightFill() : FILL);
         })
         .on("click", (_, d) => {
+          setCountyTooltip(null);
           const fipsId     = String(d.id ?? "");
           const countyName = WA_COUNTY_NAMES[fipsId];
           if (highlightedCountyRef.current) applyCountyHighlight(null);
@@ -435,11 +455,12 @@ export function USMap({
         .on("mouseenter", function (ev, d) {
           if (inStateViewRef.current) return;
           d3.select(this).transition().duration(120).attr("fill", FILL_HOVER);
-          if (String(d.id ?? "") !== WA_FIPS) setSimpleTooltip(relPos(ev));
+          const id = String(d.id ?? "");
+          setSimpleTooltip({ ...relPos(ev), name: STATE_NAMES[id] ?? "", live: id === WA_FIPS });
         })
-        .on("mousemove", (ev, d) => {
-          if (inStateViewRef.current || String(d.id ?? "") === WA_FIPS) return;
-          setSimpleTooltip(relPos(ev));
+        .on("mousemove", (ev) => {
+          if (inStateViewRef.current) return;
+          setSimpleTooltip((prev) => prev ? { ...prev, ...relPos(ev) } : null);
         })
         .on("mouseleave", function () {
           d3.select(this).transition().duration(120).attr("fill", FILL);
@@ -525,7 +546,18 @@ export function USMap({
           className="pointer-events-none absolute rounded-md bg-brand-navy px-2.5 py-1 text-xs font-medium text-white shadow-md whitespace-nowrap"
           style={{ left: simpleTooltip.x, top: simpleTooltip.y - 36, transform: "translateX(-50%)" }}
         >
-          Coming soon
+          {simpleTooltip.name}
+          {!simpleTooltip.live && <span className="ml-1.5 font-normal opacity-75">Coming soon</span>}
+        </div>
+      )}
+
+      {/* County name on hover */}
+      {countyTooltip && inStateView && !districtTooltip && (
+        <div
+          className="pointer-events-none absolute rounded-md bg-brand-navy px-2.5 py-1 text-xs font-medium text-white shadow-md whitespace-nowrap"
+          style={{ left: countyTooltip.x, top: countyTooltip.y - 36, transform: "translateX(-50%)" }}
+        >
+          {countyTooltip.name} County
         </div>
       )}
 
