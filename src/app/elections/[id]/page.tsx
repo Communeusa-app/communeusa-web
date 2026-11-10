@@ -35,6 +35,11 @@ export default async function ElectionPage({ params }: Props) {
                 {formatDate(election.election_date)}
               </span>
             )}
+            {election.election_type && election.election_type !== "general" && (
+              <span className="inline-flex items-center rounded-full border border-line px-2.5 py-0.5 text-xs font-medium text-muted capitalize">
+                {election.election_type}
+              </span>
+            )}
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-fg">
             {election.office_name}
@@ -80,7 +85,7 @@ export default async function ElectionPage({ params }: Props) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {election.candidates.map((c) => (
-                <CandidateCard key={c.id} candidate={c} />
+                <CandidateCard key={c.id} candidate={c} election={election} />
               ))}
             </div>
           )}
@@ -116,7 +121,17 @@ export default async function ElectionPage({ params }: Props) {
   );
 }
 
-function CandidateCard({ candidate }: { candidate: ElectionCandidate }) {
+function CandidateCard({ candidate, election }: { candidate: ElectionCandidate; election: { results_status?: string | null; election_type?: string | null } }) {
+  const certified = election.results_status === "certified";
+  const badge = !certified
+    ? null
+    : candidate.outcome === "won"
+      ? { label: "Won", cls: "bg-green-600/15 text-green-700 dark:text-green-400" }
+      : candidate.outcome === "advanced"
+        ? { label: "Advanced to general", cls: "bg-brand-primary/10 dark:bg-brand-primary/25 text-brand-primary dark:text-brand-light-blue" }
+        : election.election_type === "primary"
+          ? { label: "Did not advance", cls: "bg-fg/10 text-muted" }
+          : null;
   return (
     <Link
       href={`/elections/candidates/${candidate.id}`}
@@ -125,6 +140,11 @@ function CandidateCard({ candidate }: { candidate: ElectionCandidate }) {
       <div className="flex flex-wrap items-center gap-1.5 mb-2">
         {candidate.party && <PartyBadge party={candidate.party} />}
         {candidate.is_incumbent && <IncumbentBadge />}
+        {badge && (
+          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${badge.cls}`}>
+            {badge.label}
+          </span>
+        )}
       </div>
       <p className="text-base font-semibold text-fg group-hover:text-brand-primary dark:group-hover:text-brand-light-blue transition-colors">
         {candidate.name}
