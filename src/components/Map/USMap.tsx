@@ -78,6 +78,7 @@ interface Props {
 }
 
 interface SimpleTooltip { x: number; y: number }
+interface CountyTooltip { x: number; y: number; name: string }
 
 export function USMap({
   initialState,
@@ -106,6 +107,7 @@ export function USMap({
 
   const [inStateView,     setInStateView]     = useState(false);
   const [simpleTooltip,   setSimpleTooltip]   = useState<SimpleTooltip | null>(null);
+  const [countyTooltip,   setCountyTooltip]   = useState<CountyTooltip | null>(null);
   const [districtTooltip, setDistrictTooltip] = useState<DistrictTooltip | null>(null);
   const [mapLoading,      setMapLoading]      = useState(true);
   const [mapError,        setMapError]        = useState<string | null>(null);
@@ -312,17 +314,23 @@ export function USMap({
         .attr("pointer-events", inDistrictMode ? "none" : "all")
         .attr("d", (d) => pathGen(d) ?? "")
         .attr("opacity", 0)
-        .on("mouseenter", function (_, d) {
+        .on("mouseenter", function (ev, d) {
           const name = WA_COUNTY_NAMES[String(d.id ?? "")];
+          if (name) setCountyTooltip({ ...relPos(ev), name });
           if (name === highlightedCountyRef.current) return;
           d3.select(this).transition().duration(120).attr("fill", FILL_HOVER);
         })
+        .on("mousemove", (ev) => {
+          setCountyTooltip((prev) => prev ? { ...prev, ...relPos(ev) } : null);
+        })
         .on("mouseleave", function (_, d) {
           const name = WA_COUNTY_NAMES[String(d.id ?? "")];
+          setCountyTooltip(null);
           d3.select(this).transition().duration(120)
             .attr("fill", name === highlightedCountyRef.current ? highlightFill() : FILL);
         })
         .on("click", (_, d) => {
+          setCountyTooltip(null);
           const fipsId     = String(d.id ?? "");
           const countyName = WA_COUNTY_NAMES[fipsId];
           if (highlightedCountyRef.current) applyCountyHighlight(null);
@@ -526,6 +534,16 @@ export function USMap({
           style={{ left: simpleTooltip.x, top: simpleTooltip.y - 36, transform: "translateX(-50%)" }}
         >
           Coming soon
+        </div>
+      )}
+
+      {/* County name on hover */}
+      {countyTooltip && inStateView && !districtTooltip && (
+        <div
+          className="pointer-events-none absolute rounded-md bg-brand-navy px-2.5 py-1 text-xs font-medium text-white shadow-md whitespace-nowrap"
+          style={{ left: countyTooltip.x, top: countyTooltip.y - 36, transform: "translateX(-50%)" }}
+        >
+          {countyTooltip.name} County
         </div>
       )}
 
