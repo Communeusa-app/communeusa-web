@@ -1,7 +1,7 @@
 "use client";
 
 import { CANDIDATES_PENDING_MESSAGE, formatVotes } from "@/lib/electionFlags";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { geocodeAddress } from "@/app/actions/geocode";
 import {
@@ -37,6 +37,7 @@ const LEVEL_LABELS: Record<string, string> = {
 };
 
 const SESSION_KEY = "communeusa_lookup";
+const BROWSE_KEY = "communeusa_browse";
 
 interface Props {
   counties: { id: string; name: string }[];
@@ -52,6 +53,8 @@ export function ElectionsBrowser({ counties, cities }: Props) {
   const [elections, setElections] = useState<Election[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const browseRestored = useRef(false);
+  const persistReady = useRef(false);
 
   // Derived: county name for map highlight (follows Browse tab selection)
   const selectedCountyName =
@@ -97,8 +100,56 @@ export function ElectionsBrowser({ counties, cities }: Props) {
     }
   }, []);
 
+  // Restore the Browse selection (state, county, city) when coming back from a race page.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(BROWSE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        tab?: Tab; state?: string; county?: string; city?: string;
+      };
+      if (saved.tab !== "browse" || !saved.state) return;
+      setTab("browse");
+      setSelectedStateFips(saved.state);
+      if (saved.county) setSelectedCountyId(saved.county);
+      if (saved.city) setSelectedCityId(saved.city);
+      browseRestored.current = true;
+      // The map loads its shapes asynchronously, so repeat until it has caught up.
+      const countyName = saved.county
+        ? counties.find((c) => c.id === saved.county)?.name ?? null
+        : null;
+      const send = () => {
+        window.dispatchEvent(new CustomEvent("communeusa:state-select", { detail: { fips: saved.state } }));
+        if (countyName) {
+          window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: countyName } }));
+        }
+      };
+      [200, 800, 2000, 4000].forEach((ms) => setTimeout(send, ms));
+    } catch {
+      // ignore malformed session data
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (tab === "browse" && selectedStateFips) {
+        sessionStorage.setItem(
+          BROWSE_KEY,
+          JSON.stringify({ tab, state: selectedStateFips, county: selectedCountyId, city: selectedCityId }),
+        );
+      } else if (persistReady.current) {
+        sessionStorage.removeItem(BROWSE_KEY);
+      }
+      persistReady.current = true;
+    } catch {
+      // storage unavailable
+    }
+  }, [tab, selectedStateFips, selectedCountyId, selectedCityId]);
+
   // Restore address from sessionStorage on mount and auto-trigger
   useEffect(() => {
+    if (browseRestored.current) return;
     try {
       const saved = sessionStorage.getItem(SESSION_KEY);
       if (saved) {
@@ -394,38 +445,52 @@ function ElectionCard({ election }: { election: Election }) {
         )}
       </div>
       {candidates.length > 0 ? (
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {candidates.map((c) => (
-            <CandidateChip key={c.id} candidate={c} />
+        <ul className="mt-3 divide-y divide-line rounded-xl border border-line bg-brand-off-white/40 dark:bg-transparent">
+          {candidates.map((c, i) => (
+            <CandidateRow key={c.id} candidate={c} leading={i === 0 && (c.votes ?? 0) > 0} />
           ))}
-        </div>
+        </ul>
       ) : (
-        <p className="text-xs text-muted mt-1">{CANDIDATES_PENDING_MESSAGE}</p>
+        <p className="text-xs text-muted mt-2">{CANDIDATES_PENDING_MESSAGE}</p>
       )}
     </Link>
   );
 }
 
-function CandidateChip({ candidate }: { candidate: ElectionCandidate }) {
+function CandidateRow({ candidate, leading }: { candidate: ElectionCandidate; leading: boolean }) {
+  const pct = candidate.vote_pct ?? null;
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-brand-off-white/60 px-3 py-1">
-      <span className="text-xs font-medium text-fg">
-        {candidate.name}
-      </span>
-      {formatVotes(candidate.votes) && (
-        <span className="text-[11px] text-muted tabular-nums">{formatVotes(candidate.votes)}</span>
-      )}
-      {candidate.is_incumbent && (
-        <span className="rounded-full bg-brand-primary/10 dark:bg-brand-primary/25 text-brand-primary dark:text-brand-light-blue px-1.5 text-[10px] font-semibold leading-5">
-          Inc
+    <li className="px-3 py-2.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="min-w-0 text-sm font-semibold text-fg">
+          {candidate.name}
+          {candidate.is_incumbent && (
+            <span className="ml-2 rounded-full bg-brand-primary/10 dark:bg-brand-primary/25 text-brand-primary dark:text-brand-light-blue px-1.5 text-[10px] font-semibold leading-5">
+              Incumbent
+            </span>
+          )}
+          {candidate.party && (
+            <span className={`ml-2 text-xs font-medium ${partyColor(candidate.party)}`}>
+              {candidate.party}
+            </span>
+          )}
         </span>
+        {formatVotes(candidate.votes) && (
+          <span className="shrink-0 text-sm text-fg tabular-nums">
+            {formatVotes(candidate.votes)}
+            {pct != null && <span className="text-muted"> · {pct}%</span>}
+          </span>
+        )}
+      </div>
+      {pct != null && (
+        <div className="mt-1.5 h-1.5 w-full rounded-full bg-fg/10" aria-hidden="true">
+          <div
+            className={`h-1.5 rounded-full ${leading ? "bg-brand-primary dark:bg-brand-light-blue" : "bg-fg/35"}`}
+            style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+          />
+        </div>
       )}
-      {candidate.party && (
-        <span className={`text-[10px] font-medium ${partyColor(candidate.party)}`}>
-          {partyShort(candidate.party)}
-        </span>
-      )}
-    </span>
+    </li>
   );
 }
 
