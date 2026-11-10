@@ -8,7 +8,7 @@ import {
   getElectionsByLocation,
   getElectionsForBrowse,
 } from "@/app/actions/elections";
-import type { Election, ElectionCandidate } from "@/app/actions/elections";
+import type { ElectionCycle, Election, ElectionCandidate } from "@/app/actions/elections";
 import { ElectionsMap } from "./ElectionsMap";
 
 type Tab = "location" | "browse";
@@ -38,13 +38,25 @@ const LEVEL_LABELS: Record<string, string> = {
 
 const SESSION_KEY = "communeusa_lookup";
 const BROWSE_KEY = "communeusa_browse";
+const CYCLE_KEY = "communeusa_cycle";
 
 interface Props {
   counties: { id: string; name: string }[];
   cities: { id: string; name: string }[];
+  cycles: ElectionCycle[];
 }
 
-export function ElectionsBrowser({ counties, cities }: Props) {
+function cycleLabel(c: ElectionCycle): string {
+  const [y, m, d] = c.date.split("-").map(Number);
+  const month = new Date(Date.UTC(y, m - 1, d)).toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+  const type = c.type === "general" ? "General" : c.type === "primary" ? "Primary" : "Special";
+  return `${y} ${type} election (${month} ${d})`;
+}
+
+export function ElectionsBrowser({ counties, cities, cycles }: Props) {
+  // Default to the most recent general election.
+  const defaultCycle = (cycles.find((c) => c.type === "general") ?? cycles[0])?.date ?? "";
+  const [cycle, setCycle] = useState(defaultCycle);
   const [tab, setTab] = useState<Tab>("location");
   const [address, setAddress] = useState("");
   const [selectedStateFips, setSelectedStateFips] = useState("");
@@ -62,7 +74,7 @@ export function ElectionsBrowser({ counties, cities }: Props) {
       ? (counties.find((c) => c.id === selectedCountyId)?.name ?? null)
       : null;
 
-  const runLocationLookup = useCallback(async (addr: string) => {
+  const runLocationLookup = useCallback(async (addr: string, electionDate: string = cycle) => {
     setLoading(true);
     setError(null);
     setElections(null);
@@ -87,9 +99,10 @@ export function ElectionsBrowser({ counties, cities }: Props) {
         geo.stateAbbr ?? "WA",
         geo.county,
         geo.city,
+        electionDate || null,
       );
       if (!results.length) {
-        setError("No upcoming elections found for that address.");
+        setError("No races found for that address in this election.");
         return;
       }
       setElections(results);
@@ -98,7 +111,26 @@ export function ElectionsBrowser({ counties, cities }: Props) {
     } finally {
       setLoading(false);
     }
+  }, [cycle]);
+
+  // Remember the chosen election for the session.
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(CYCLE_KEY);
+      if (saved && cycles.some((c) => c.date === saved)) setCycle(saved);
+    } catch {
+      // storage unavailable
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function handleCycleChange(date: string) {
+    setCycle(date);
+    try { sessionStorage.setItem(CYCLE_KEY, date); } catch { /* storage unavailable */ }
+    if (tab === "location" && address.trim() && elections !== null) {
+      runLocationLookup(address.trim(), date);
+    }
+  }
 
   // Restore the Browse selection (state, county, city) when coming back from a race page.
   useEffect(() => {
@@ -187,14 +219,15 @@ export function ElectionsBrowser({ counties, cities }: Props) {
     getElectionsForBrowse(
       selectedCountyId || undefined,
       selectedCityId || undefined,
+      cycle || null,
     )
       .then((results) => {
-        if (!results.length) setError("No upcoming elections found.");
+        if (!results.length) setError("No races found for this election.");
         else setElections(results);
       })
       .catch(() => setError("Something went wrong. Please try again."))
       .finally(() => setLoading(false));
-  }, [tab, selectedCountyId, selectedCityId]);
+  }, [tab, selectedCountyId, selectedCityId, cycle]);
 
   async function handleAddressSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -281,6 +314,25 @@ export function ElectionsBrowser({ counties, cities }: Props) {
           </button>
         ))}
       </div>
+
+      {/* Election picker */}
+      {cycles.length > 1 && (
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <label htmlFor="election-cycle" className="text-sm font-medium text-fg">
+            Election
+          </label>
+          <select
+            id="election-cycle"
+            value={cycle}
+            onChange={(e) => handleCycleChange(e.target.value)}
+            className="rounded-xl border border-line bg-surface text-fg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 dark:focus:ring-brand-light-blue/40"
+          >
+            {cycles.map((c) => (
+              <option key={c.date} value={c.date}>{cycleLabel(c)}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Location tab */}
       {tab === "location" && (
@@ -447,7 +499,7 @@ function ElectionCard({ election }: { election: Election }) {
       {candidates.length > 0 ? (
         <ul className="mt-3 divide-y divide-line rounded-xl border border-line bg-brand-off-white/40 dark:bg-transparent">
           {candidates.map((c, i) => (
-            <CandidateRow key={c.id} candidate={c} leading={i === 0 && (c.votes ?? 0) > 0} />
+            <CandidateRow key={c.id} candidate={c} leading={i === 0 && (c.votes ?? 0) > 0} election={election} />
           ))}
         </ul>
       ) : null}
@@ -464,7 +516,16 @@ function ElectionCard({ election }: { election: Election }) {
   );
 }
 
-function CandidateRow({ candidate, leading }: { candidate: ElectionCandidate; leading: boolean }) {
+function outcomeBadge(c: ElectionCandidate, e: Election): { label: string; className: string } | null {
+  if (e.results_status !== "certified") return null;
+  if (c.outcome === "won") return { label: "Won", className: "bg-green-600/15 text-green-700 dark:text-green-400" };
+  if (c.outcome === "advanced") return { label: "Advanced", className: "bg-brand-primary/10 dark:bg-brand-primary/25 text-brand-primary dark:text-brand-light-blue" };
+  if (e.election_type === "primary") return { label: "Did not advance", className: "bg-fg/10 text-muted" };
+  return null;
+}
+
+function CandidateRow({ candidate, leading, election }: { candidate: ElectionCandidate; leading: boolean; election: Election }) {
+  const badge = outcomeBadge(candidate, election);
   const pct = candidate.vote_pct ?? null;
   return (
     <li className="px-3 py-2.5">
@@ -474,6 +535,11 @@ function CandidateRow({ candidate, leading }: { candidate: ElectionCandidate; le
           {candidate.is_incumbent && (
             <span className="ml-2 rounded-full bg-brand-primary/10 dark:bg-brand-primary/25 text-brand-primary dark:text-brand-light-blue px-1.5 text-[10px] font-semibold leading-5">
               Incumbent
+            </span>
+          )}
+          {badge && (
+            <span className={`ml-2 rounded-full px-1.5 text-[10px] font-semibold leading-5 ${badge.className}`}>
+              {badge.label}
             </span>
           )}
           {candidate.party && (

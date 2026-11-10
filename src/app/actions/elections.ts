@@ -12,6 +12,12 @@ export interface ElectionCandidate {
   ballotpedia_url: string | null;
   votes: number | null;
   vote_pct: number | null;
+  outcome: "advanced" | "won" | null;
+}
+
+export interface ElectionCycle {
+  date: string;
+  type: "primary" | "general" | "special";
 }
 
 export interface Election {
@@ -26,6 +32,7 @@ export interface Election {
   seats: number | null;
   results_status: "unofficial" | "certified" | null;
   results_updated_at: string | null;
+  election_type: "primary" | "general" | "special" | null;
   candidates: ElectionCandidate[];
 }
 
@@ -65,7 +72,7 @@ export interface CandidateEndorsement {
 type ElectionRow = Omit<Election, "candidates">;
 
 const ELECTION_SELECT =
-  "id, office_name, level, election_date, primary_date, filing_deadline, description, source_url, seats, results_status, results_updated_at";
+  "id, office_name, level, election_date, primary_date, filing_deadline, description, source_url, seats, results_status, results_updated_at, election_type";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -127,17 +134,22 @@ function isWARelevantElection(election: ElectionRow): boolean {
 async function attachCandidates(elections: ElectionRow[]): Promise<Election[]> {
   if (!elections.length) return [];
   const ids = elections.map((e) => e.id);
-  const { data, error } = await supabase
-    .from("candidates")
-    .select(
-      "id, election_id, name, party, is_incumbent, official_id, website, ballotpedia_url, votes, vote_pct",
-    )
-    .eq("status", "verified")
-    .in("election_id", ids)
-    .order("votes", { ascending: false, nullsFirst: false });
-  if (error) console.error("attachCandidates:", error.message);
+  const rows: (ElectionCandidate & { election_id: string })[] = [];
+  // Chunked so the request address stays short and each answer stays under the 1000 row cap.
+  for (let i = 0; i < ids.length; i += 60) {
+    const { data, error } = await supabase
+      .from("candidates")
+      .select(
+        "id, election_id, name, party, is_incumbent, official_id, website, ballotpedia_url, votes, vote_pct, outcome",
+      )
+      .eq("status", "verified")
+      .in("election_id", ids.slice(i, i + 60))
+      .order("votes", { ascending: false, nullsFirst: false });
+    if (error) console.error("attachCandidates:", error.message);
+    rows.push(...((data ?? []) as (ElectionCandidate & { election_id: string })[]));
+  }
   const byElection = new Map<string, ElectionCandidate[]>();
-  for (const c of (data ?? []) as (ElectionCandidate & { election_id: string })[]) {
+  for (const c of rows) {
     const cleanName = sanitizeCandidateName(c.name);
     if (!isValidCandidateName(cleanName)) continue;
     const list = byElection.get(c.election_id) ?? [];
@@ -160,6 +172,26 @@ async function dedupeAndAttach(rows: ElectionRow[]): Promise<Election[]> {
 }
 
 // ── Location helpers ───────────────────────────────────────────────────────
+
+/** Every election date we hold results for, newest first (for the year and election picker). */
+export async function getElectionCycles(): Promise<ElectionCycle[]> {
+  const seen = new Map<string, ElectionCycle>();
+  for (let from = 0; from < 10000; from += 1000) {
+    const { data, error } = await supabase
+      .from("elections")
+      .select("election_date, election_type")
+      .not("election_date", "is", null)
+      .not("election_type", "is", null)
+      .range(from, from + 999);
+    if (error) { console.error("getElectionCycles:", error.message); break; }
+    for (const r of data ?? []) {
+      const date = r.election_date as string;
+      if (!seen.has(date)) seen.set(date, { date, type: r.election_type as ElectionCycle["type"] });
+    }
+    if (!data || data.length < 1000) break;
+  }
+  return [...seen.values()].sort((a, b) => (a.date < b.date ? 1 : -1));
+}
 
 export async function getWACounties(): Promise<{ id: string; name: string }[]> {
   const { data: state } = await supabase
@@ -197,6 +229,7 @@ export async function getElectionsByLocation(
   stateAbbr: string,
   rawCounty?: string | null,
   rawCity?: string | null,
+  electionDate?: string | null,
 ): Promise<Election[]> {
   const { data: stateRow } = await supabase
     .from("states")
@@ -239,6 +272,7 @@ export async function getElectionsByLocation(
       .in("level", ["federal", "state"])
       .is("county_id", null)
       .is("municipality_id", null)
+      .match(electionDate ? { election_date: electionDate } : {})
       .order("election_date")
       .then(({ data }) => (data ?? []) as ElectionRow[]),
   ];
@@ -249,6 +283,7 @@ export async function getElectionsByLocation(
         .from("elections")
         .select(ELECTION_SELECT)
         .eq("county_id", countyId)
+        .match(electionDate ? { election_date: electionDate } : {})
         .order("election_date")
         .then(({ data }) => (data ?? []) as ElectionRow[]),
     );
@@ -260,6 +295,7 @@ export async function getElectionsByLocation(
         .from("elections")
         .select(ELECTION_SELECT)
         .eq("municipality_id", municipalityId)
+        .match(electionDate ? { election_date: electionDate } : {})
         .order("election_date")
         .then(({ data }) => (data ?? []) as ElectionRow[]),
     );
@@ -272,6 +308,7 @@ export async function getElectionsByLocation(
 export async function getElectionsForBrowse(
   countyId?: string,
   municipalityId?: string,
+  electionDate?: string | null,
 ): Promise<Election[]> {
   if (!countyId && !municipalityId) return [];
 
@@ -303,6 +340,7 @@ export async function getElectionsForBrowse(
         .in("level", ["federal", "state"])
         .is("county_id", null)
         .is("municipality_id", null)
+        .match(electionDate ? { election_date: electionDate } : {})
         .order("election_date")
         .then(({ data }) => (data ?? []) as ElectionRow[]),
     );
@@ -315,6 +353,7 @@ export async function getElectionsForBrowse(
         .select(ELECTION_SELECT)
         .eq("state_id", stateId)
         .eq("county_id", countyId)
+        .match(electionDate ? { election_date: electionDate } : {})
         .order("election_date")
         .then(({ data }) => (data ?? []) as ElectionRow[]),
     );
@@ -327,6 +366,7 @@ export async function getElectionsForBrowse(
         .select(ELECTION_SELECT)
         .eq("state_id", stateId)
         .eq("municipality_id", municipalityId)
+        .match(electionDate ? { election_date: electionDate } : {})
         .order("election_date")
         .then(({ data }) => (data ?? []) as ElectionRow[]),
     );

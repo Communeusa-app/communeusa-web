@@ -1,4 +1,4 @@
-import { getWACounties, getWACities } from "@/app/actions/elections";
+import { getWACounties, getWACities, getElectionCycles } from "@/app/actions/elections";
 import { ElectionsBrowser } from "./ElectionsBrowser";
 import { SiteShell } from "@/components/SiteShell";
 
@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 export default async function ElectionsPage() {
-  const [counties, cities] = await Promise.all([getWACounties(), getWACities()]);
+  const [counties, cities, cycles] = await Promise.all([getWACounties(), getWACities(), getElectionCycles()]);
 
   return (
     <SiteShell>
@@ -22,10 +22,10 @@ export default async function ElectionsPage() {
               Elections
             </h1>
             <p className="mt-2 text-muted">
-              Upcoming elections and candidates for Washington State.
+              Races, candidates and results for Washington State, from 2022 onward.
             </p>
           </div>
-          <ElectionsBrowser counties={counties} cities={cities} />
+          <ElectionsBrowser counties={counties} cities={cities} cycles={cycles} />
         </div>
       </main>
 
