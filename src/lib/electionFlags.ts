@@ -1,10 +1,13 @@
 /**
- * Candidate lists on election pages are hidden until they are rebuilt from the Washington
- * Secretary of State's official results. The earlier Ballotpedia-based import mixed in
- * candidates from other election cycles and left eliminated primary candidates in place.
- * Set to true once the verified import is live.
+ * Only candidates verified against the Washington Secretary of State's official results
+ * (candidates.status = 'verified') are shown. Races with none show the message below.
  */
-export const SHOW_CANDIDATES = false;
-
 export const CANDIDATES_PENDING_MESSAGE =
   "Candidate list is being verified against official results.";
+
+export const UNOFFICIAL_RESULTS_LABEL =
+  "Unofficial results. Counting continues until the state certifies.";
+
+export function formatVotes(n: number | null | undefined): string | null {
+  return typeof n === "number" ? n.toLocaleString("en-US") : null;
+}
