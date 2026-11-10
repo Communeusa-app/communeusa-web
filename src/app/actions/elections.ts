@@ -10,6 +10,8 @@ export interface ElectionCandidate {
   official_id: string | null;
   website: string | null;
   ballotpedia_url: string | null;
+  votes: number | null;
+  vote_pct: number | null;
 }
 
 export interface Election {
@@ -21,6 +23,8 @@ export interface Election {
   filing_deadline: string | null;
   description: string | null;
   source_url: string | null;
+  seats: number | null;
+  results_status: "unofficial" | "certified" | null;
   candidates: ElectionCandidate[];
 }
 
@@ -60,7 +64,7 @@ export interface CandidateEndorsement {
 type ElectionRow = Omit<Election, "candidates">;
 
 const ELECTION_SELECT =
-  "id, office_name, level, election_date, primary_date, filing_deadline, description, source_url";
+  "id, office_name, level, election_date, primary_date, filing_deadline, description, source_url, seats, results_status";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -125,9 +129,11 @@ async function attachCandidates(elections: ElectionRow[]): Promise<Election[]> {
   const { data, error } = await supabase
     .from("candidates")
     .select(
-      "id, election_id, name, party, is_incumbent, official_id, website, ballotpedia_url",
+      "id, election_id, name, party, is_incumbent, official_id, website, ballotpedia_url, votes, vote_pct",
     )
-    .in("election_id", ids);
+    .eq("status", "verified")
+    .in("election_id", ids)
+    .order("votes", { ascending: false, nullsFirst: false });
   if (error) console.error("attachCandidates:", error.message);
   const byElection = new Map<string, ElectionCandidate[]>();
   for (const c of (data ?? []) as (ElectionCandidate & { election_id: string })[]) {

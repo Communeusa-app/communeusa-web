@@ -1,6 +1,6 @@
 "use client";
 
-import { SHOW_CANDIDATES, CANDIDATES_PENDING_MESSAGE } from "@/lib/electionFlags";
+import { CANDIDATES_PENDING_MESSAGE, formatVotes } from "@/lib/electionFlags";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { geocodeAddress } from "@/app/actions/geocode";
@@ -393,18 +393,14 @@ function ElectionCard({ election }: { election: Election }) {
           </span>
         )}
       </div>
-      {!SHOW_CANDIDATES ? (
-        <p className="text-xs text-muted mt-1">{CANDIDATES_PENDING_MESSAGE}</p>
-      ) : candidates.length > 0 ? (
+      {candidates.length > 0 ? (
         <div className="flex flex-wrap gap-1.5 mt-2">
           {candidates.map((c) => (
             <CandidateChip key={c.id} candidate={c} />
           ))}
         </div>
       ) : (
-        <p className="text-xs text-muted mt-1">
-          No candidates on file yet
-        </p>
+        <p className="text-xs text-muted mt-1">{CANDIDATES_PENDING_MESSAGE}</p>
       )}
     </Link>
   );
@@ -416,6 +412,9 @@ function CandidateChip({ candidate }: { candidate: ElectionCandidate }) {
       <span className="text-xs font-medium text-fg">
         {candidate.name}
       </span>
+      {formatVotes(candidate.votes) && (
+        <span className="text-[11px] text-muted tabular-nums">{formatVotes(candidate.votes)}</span>
+      )}
       {candidate.is_incumbent && (
         <span className="rounded-full bg-brand-primary/10 dark:bg-brand-primary/25 text-brand-primary dark:text-brand-light-blue px-1.5 text-[10px] font-semibold leading-5">
           Inc

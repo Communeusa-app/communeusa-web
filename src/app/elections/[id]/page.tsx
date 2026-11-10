@@ -1,4 +1,4 @@
-import { SHOW_CANDIDATES, CANDIDATES_PENDING_MESSAGE } from "@/lib/electionFlags";
+import { CANDIDATES_PENDING_MESSAGE, UNOFFICIAL_RESULTS_LABEL, formatVotes } from "@/lib/electionFlags";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getElectionById } from "@/app/actions/elections";
@@ -75,18 +75,20 @@ export default async function ElectionPage({ params }: Props) {
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted mb-5">
             Candidates
           </h2>
-          {!SHOW_CANDIDATES ? (
+          {election.candidates.length === 0 ? (
             <p className="text-sm text-muted">{CANDIDATES_PENDING_MESSAGE}</p>
-          ) : election.candidates.length === 0 ? (
-            <p className="text-sm text-muted">
-              No candidates on file yet.
-            </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {election.candidates.map((c) => (
                 <CandidateCard key={c.id} candidate={c} />
               ))}
             </div>
+          )}
+          {election.candidates.length > 0 && election.results_status !== "certified" && (
+            <p className="mt-4 text-xs text-muted">{UNOFFICIAL_RESULTS_LABEL}</p>
+          )}
+          {election.candidates.length > 0 && election.seats && election.seats > 1 && (
+            <p className="mt-2 text-xs text-muted">{election.seats} seats are elected in this race.</p>
           )}
         </div>
 
@@ -121,6 +123,12 @@ function CandidateCard({ candidate }: { candidate: ElectionCandidate }) {
       <p className="text-base font-semibold text-fg group-hover:text-brand-primary dark:group-hover:text-brand-light-blue transition-colors">
         {candidate.name}
       </p>
+      {formatVotes(candidate.votes) && (
+        <p className="mt-1 text-sm text-fg tabular-nums">
+          {formatVotes(candidate.votes)} votes
+          {candidate.vote_pct != null && <span className="text-muted"> ({candidate.vote_pct}%)</span>}
+        </p>
+      )}
       {(candidate.website || candidate.ballotpedia_url) && (
         <p className="mt-1 text-xs text-muted">
           {candidate.ballotpedia_url ? "Ballotpedia profile available" : "Campaign website available"}
