@@ -25,3 +25,15 @@ export function formatUpdated(iso: string | null | undefined): string | null {
     timeZoneName: "short",
   });
 }
+
+export function formatVerified(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "America/Los_Angeles",
+  });
+}

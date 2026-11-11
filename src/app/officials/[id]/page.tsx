@@ -7,6 +7,7 @@ import { OutsideMoney } from "@/components/OutsideMoney";
 import { CorrectionModal } from "@/components/CorrectionModal";
 import { TakeActionCenter } from "@/components/TakeActionCenter";
 import { SiteShell } from "@/components/SiteShell";
+import { formatVerified } from "@/lib/electionFlags";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -79,6 +80,30 @@ export default async function OfficialPage({ params }: Props) {
           <p className="mt-1 text-sm text-muted">
             <LocationLine level={official.level} jurisdictionName={official.jurisdiction_name} />
           </p>
+
+          {(official.source || official.last_verified_at) && (
+            <p className="mt-3 text-xs text-muted">
+              {official.source && (
+                <>
+                  Source:{" "}
+                  {official.source_url ? (
+                    <a
+                      href={official.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2 hover:text-fg"
+                    >
+                      {official.source}
+                    </a>
+                  ) : (
+                    official.source
+                  )}
+                </>
+              )}
+              {official.source && official.last_verified_at && " · "}
+              {official.last_verified_at && <>Last verified {formatVerified(official.last_verified_at)}</>}
+            </p>
+          )}
         </div>
 
         {/* ── Key details ─────────────────────────────────────────── */}
