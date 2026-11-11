@@ -76,12 +76,6 @@ export default async function OfficialPage({ params }: Props) {
               {official.office_title}
             </p>
           )}
-                </>
-              )}
-              {official.source && official.last_verified_at && " · "}
-              {official.last_verified_at && <>Last verified {formatVerified(official.last_verified_at)}</>}
-            </p>
-          )}
 
           <p className="mt-1 text-sm text-muted">
             <LocationLine level={official.level} jurisdictionName={official.jurisdiction_name} />
@@ -104,6 +98,12 @@ export default async function OfficialPage({ params }: Props) {
                   ) : (
                     official.source
                   )}
+                </>
+              )}
+              {official.source && official.last_verified_at && " · "}
+              {official.last_verified_at && <>Last verified {formatVerified(official.last_verified_at)}</>}
+            </p>
+          )}
         </div>
 
         {/* ── Key details ─────────────────────────────────────────── */}
