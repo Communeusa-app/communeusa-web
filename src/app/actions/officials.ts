@@ -128,6 +128,9 @@ export interface OfficialProfile {
   ballotpedia_url: string | null;
   key_committees: string | null;
   notes: string | null;
+  source: string | null;
+  source_url: string | null;
+  last_verified_at: string | null;
   jurisdiction_name: string | null;
 }
 
@@ -137,7 +140,7 @@ export async function getOfficialById(
   const { data, error } = await supabase
     .from("officials")
     .select(
-      "id, official_name, office_title, office_category, level, party, district, term_start, term_end, appointed_or_elected, phone, email, official_website, ballotpedia_url, key_committees, notes, is_active, municipalities(name), counties(name)",
+      "id, official_name, office_title, office_category, level, party, district, term_start, term_end, appointed_or_elected, phone, email, official_website, ballotpedia_url, key_committees, notes, source, source_url, last_verified_at, is_active, municipalities(name), counties(name)",
     )
     .eq("id", id)
     .single();
