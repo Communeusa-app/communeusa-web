@@ -27,7 +27,9 @@ export default async function OfficialPage({ params }: Props) {
     getOfficialBio(id),
   ]);
 
-  if (!official) {
+  const fields = official ? profileFields(official) : null;
+
+  if (!official || !fields) {
     return (
       <SiteShell>
 <main className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center">
@@ -120,11 +122,11 @@ export default async function OfficialPage({ params }: Props) {
             <Detail label="Role type"     value={official.appointed_or_elected} />
             <Detail label="Term start"    value={official.term_start} />
             <Detail label="Term end"      value={official.term_end} />
-            <Detail label="District"      value={official.district} />
-            <Detail label="Committees"    value={official.key_committees} />
-            {official.notes && (
+            <Detail label="District"      value={fields.district} fallback={fields.districtFallback} />
+            <Detail label="Committees"    value={official.key_committees} fallback={fields.committeesFallback} />
+            {fields.notes && (
               <div className="sm:col-span-2">
-                <Detail label="Notes" value={official.notes} />
+                <Detail label="Notes" value={fields.notes} />
               </div>
             )}
           </dl>
@@ -341,7 +343,40 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Detail({ label, value }: { label: string; value: string | null | undefined }) {
+const STATEWIDE_OFFICE = /governor|secretary of state|treasurer|auditor|attorney general|superintendent|public lands|insurance commissioner/i;
+const LEGISLATOR = /senator|representative|delegate/i;
+const DISTRICT_NOTE = /^(?:district|dist\.?|position|pos\.?|ward|seat)\s*#?\s*\w+$/i;
+
+/**
+ * What to show in Details. A district recorded in Notes (older records) is shown as the district,
+ * and offices that have no district or committees say so instead of "Not listed".
+ */
+function profileFields(o: OfficialProfile) {
+  const title = o.office_title ?? "";
+  const notes = o.notes?.trim() || null;
+
+  let district = o.district?.trim() || null;
+  let leftoverNotes = notes;
+  if (!district && notes && DISTRICT_NOTE.test(notes)) {
+    district = notes.replace(/^(?:district|dist\.?)\s*#?\s*/i, "").trim() || notes;
+    leftoverNotes = null;
+  }
+
+  const statewide = o.level === "state" && STATEWIDE_OFFICE.test(title) && !LEGISLATOR.test(title);
+  const countywide = o.level === "county" && !/commissioner|council/i.test(title);
+  const citywide = o.level === "city" && /mayor/i.test(title);
+  const usSenator = o.level === "federal" && /senator/i.test(title);
+
+  let districtFallback = "Not listed";
+  if (statewide || usSenator) districtFallback = "Statewide";
+  else if (countywide) districtFallback = "Countywide";
+  else if (citywide) districtFallback = "Citywide";
+
+  const committeesFallback = statewide || countywide || citywide ? "Not applicable" : "Not listed";
+  return { district, districtFallback, committeesFallback, notes: leftoverNotes };
+}
+
+function Detail({ label, value, fallback = "Not listed" }: { label: string; value: string | null | undefined; fallback?: string }) {
   const has = !!value?.trim();
   return (
     <div>
@@ -349,7 +384,7 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
         {label}
       </dt>
       <dd className={has ? "text-sm font-medium text-fg" : "text-sm text-muted"}>
-        {has ? value : "Not listed"}
+        {has ? value : fallback}
       </dd>
     </div>
   );
