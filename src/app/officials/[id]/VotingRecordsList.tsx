@@ -3,12 +3,13 @@
 import { useState } from "react";
 import type { VotingRecord } from "@/app/actions/officials";
 
-const DEFAULT_VISIBLE = 5;
+const INITIAL_VISIBLE = 5;
+const PAGE_SIZE = 10;
 
 // ── Public component ───────────────────────────────────────────────────────
 
 export function VotingRecordsList({ records }: { records: VotingRecord[] }) {
-  const [expanded, setExpanded] = useState(false);
+  const [visible, setVisible] = useState(INITIAL_VISIBLE);
 
   if (records.length === 0) {
     return (
@@ -18,52 +19,40 @@ export function VotingRecordsList({ records }: { records: VotingRecord[] }) {
     );
   }
 
-  const hasMore = records.length > DEFAULT_VISIBLE;
+  const shown = Math.min(visible, records.length);
+  const remaining = records.length - shown;
+  const nextBatch = Math.min(PAGE_SIZE, remaining);
+  const buttonClass =
+    "flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-line px-4 py-2.5 text-sm font-medium text-muted hover:text-brand-primary dark:hover:text-brand-light-blue hover:border-fg/30 transition-all duration-150";
 
   return (
     <div>
-      {/* Always-visible first five */}
       <div className="divide-y divide-line">
-        {records.slice(0, DEFAULT_VISIBLE).map((r) => (
+        {records.slice(0, shown).map((r) => (
           <VotingRecordCard key={r.id} record={r} />
         ))}
       </div>
 
-      {/* Expandable remainder */}
-      {hasMore && (
-        <>
-          <div
-            className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
-              expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-            }`}
-          >
-            <div className="overflow-hidden">
-              <div className="divide-y divide-line">
-                {records.slice(DEFAULT_VISIBLE).map((r) => (
-                  <VotingRecordCard key={r.id} record={r} />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setExpanded((e) => !e)}
-            className="mt-4 w-full flex items-center justify-center gap-1.5 rounded-xl border border-line px-4 py-2.5 text-sm font-medium text-muted hover:text-brand-primary dark:hover:text-brand-light-blue hover:border-fg/30 transition-all duration-150"
-            aria-expanded={expanded}
-          >
-            {expanded ? (
-              <>
+      {records.length > INITIAL_VISIBLE && (
+        <div className="mt-4">
+          <p className="mb-2 text-center text-xs text-muted tabular-nums">
+            Showing {shown} of {records.length} votes
+          </p>
+          <div className="flex gap-2">
+            {remaining > 0 && (
+              <button onClick={() => setVisible(shown + PAGE_SIZE)} className={buttonClass}>
+                Show {nextBatch} more
+                <ChevronDownIcon />
+              </button>
+            )}
+            {shown > INITIAL_VISIBLE && (
+              <button onClick={() => setVisible(INITIAL_VISIBLE)} className={buttonClass}>
                 Show fewer
                 <ChevronUpIcon />
-              </>
-            ) : (
-              <>
-                Show all {records.length} votes
-                <ChevronDownIcon />
-              </>
+              </button>
             )}
-          </button>
-        </>
+          </div>
+        </div>
       )}
     </div>
   );
