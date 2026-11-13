@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { USMap } from "./USMap";
 import { CountyPanel } from "./CountyPanel";
 
@@ -8,8 +8,38 @@ interface Props {
   initialState?: string;
 }
 
+const MAP_KEY = "communeusa_map";
+
+function readSaved(): { state?: string; county?: string } {
+  try {
+    return JSON.parse(sessionStorage.getItem(MAP_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function writeSaved(next: { state?: string; county?: string }) {
+  try {
+    if (!next.state && !next.county) sessionStorage.removeItem(MAP_KEY);
+    else sessionStorage.setItem(MAP_KEY, JSON.stringify(next));
+  } catch {
+    // storage unavailable
+  }
+}
+
 export function USMapSection({ initialState }: Props) {
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null);
+  // The map only reads its starting state once, so wait until we know what was saved.
+  const [ready, setReady] = useState(false);
+  const [startState, setStartState] = useState<string | undefined>(initialState);
+
+  // Coming back from a profile: reopen the same state and county.
+  useEffect(() => {
+    const saved = readSaved();
+    if (!initialState && saved.state) setStartState(saved.state);
+    if (saved.county) setSelectedCounty(saved.county);
+    setReady(true);
+  }, [initialState]);
 
   return (
     <section id="map" className="px-6 py-10">
@@ -25,20 +55,34 @@ export function USMapSection({ initialState }: Props) {
         <div className="flex items-start gap-4">
           {/* Map shrinks slightly when panel is open */}
           <div className="flex-1 min-w-0">
-            <USMap
-              initialState={initialState}
-              onStateClick={(fipsId) =>
-                console.log("State clicked — FIPS:", fipsId)
-              }
-              onCountyClick={setSelectedCounty}
-            />
+            {ready ? (
+              <USMap
+                initialState={startState}
+                onStateClick={(fipsId) => writeSaved({ ...readSaved(), state: fipsId })}
+                onStateReset={() => {
+                  writeSaved({});
+                  setSelectedCounty(null);
+                }}
+                onCountyClick={(name) => {
+                  writeSaved({ ...readSaved(), county: name });
+                  setSelectedCounty(name);
+                }}
+              />
+            ) : (
+              <div className="h-[420px]" aria-hidden />
+            )}
           </div>
 
           {selectedCounty && (
             <div className="relative z-10">
               <CountyPanel
                 countyName={selectedCounty}
-                onClose={() => setSelectedCounty(null)}
+                onClose={() => {
+                  const { county: _county, ...rest } = readSaved();
+                  void _county;
+                  writeSaved(rest);
+                  setSelectedCounty(null);
+                }}
               />
             </div>
           )}

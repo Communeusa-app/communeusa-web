@@ -7,6 +7,7 @@ import { OutsideMoney } from "@/components/OutsideMoney";
 import { CorrectionModal } from "@/components/CorrectionModal";
 import { TakeActionCenter } from "@/components/TakeActionCenter";
 import { SiteShell } from "@/components/SiteShell";
+import { BackLink } from "@/components/BackLink";
 import { formatVerified } from "@/lib/electionFlags";
 
 interface Props {
@@ -52,12 +53,11 @@ export default async function OfficialPage({ params }: Props) {
 <main className="flex-1 px-6 py-12">
       <div className="mx-auto max-w-3xl space-y-8">
         {/* Back button */}
-        <Link
-          href="/?state=53#map"
+        <BackLink
+          fallbackHref="/officials"
+          fallbackLabel="Back"
           className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand-primary dark:hover:text-brand-light-blue transition-colors"
-        >
-          ← Back to map
-        </Link>
+        />
 
         {/* ── Profile header ──────────────────────────────────────── */}
         <div className="rounded-2xl border border-line bg-surface px-6 py-6">
