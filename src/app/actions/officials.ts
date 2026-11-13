@@ -163,6 +163,24 @@ export async function getOfficialById(
   return { ...raw, jurisdiction_name } as OfficialProfile;
 }
 
+export interface OfficialBio {
+  bio_summary: string;
+  bio_source: string | null;
+  bio_source_url: string | null;
+  bio_license: string | null;
+}
+
+/** Short background paragraph with its credit. Null when none is stored (or the columns do not exist yet). */
+export async function getOfficialBio(officialId: string): Promise<OfficialBio | null> {
+  const { data, error } = await supabase
+    .from("officials")
+    .select("bio_summary, bio_source, bio_source_url, bio_license")
+    .eq("id", officialId)
+    .single();
+  if (error || !data || !data.bio_summary) return null;
+  return data as OfficialBio;
+}
+
 export interface OfficialTerm {
   id: string;
   office: string;
