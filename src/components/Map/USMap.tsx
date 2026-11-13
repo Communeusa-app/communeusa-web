@@ -353,7 +353,8 @@ export function USMap({
           setCountyTooltip(null);
           const fipsId     = String(d.id ?? "");
           const countyName = WA_COUNTY_NAMES[fipsId];
-          if (highlightedCountyRef.current) applyCountyHighlight(null);
+          // Keep the clicked county highlighted so it is clear which one is selected.
+          applyCountyHighlight(countyName ?? null);
           onClickRef.current?.(fipsId);
           if (countyName) onCountyClickRef.current?.(countyName);
         })

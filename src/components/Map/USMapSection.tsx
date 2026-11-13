@@ -82,6 +82,8 @@ export function USMapSection({ initialState }: Props) {
                   void _county;
                   writeSaved(rest);
                   setSelectedCounty(null);
+                  // Closing the panel clears the county highlight on the map.
+                  window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: null } }));
                 }}
               />
             </div>
