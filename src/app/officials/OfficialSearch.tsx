@@ -50,6 +50,8 @@ function partyClass(party: string) {
   return "text-muted";
 }
 
+const QUERY_KEY = "communeusa_official_query";
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function OfficialSearch() {
@@ -59,6 +61,28 @@ export function OfficialSearch() {
   const [failed, setFailed] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestId = useRef(0);
+  const queryRestored = useRef(false);
+
+  // Remember the search so coming back from a profile shows the same results.
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(QUERY_KEY);
+      if (saved) setQuery(saved);
+    } catch {
+      // storage unavailable
+    }
+    queryRestored.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!queryRestored.current) return;
+    try {
+      if (query) sessionStorage.setItem(QUERY_KEY, query);
+      else sessionStorage.removeItem(QUERY_KEY);
+    } catch {
+      // storage unavailable
+    }
+  }, [query]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
