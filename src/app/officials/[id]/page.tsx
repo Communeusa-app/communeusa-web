@@ -133,7 +133,7 @@ export default async function OfficialPage({ params }: Props) {
         </Section>
 
         {/* ── Public office history ───────────────────────────────── */}
-        <OfficeHistory official={official} terms={terms} />
+        <OfficeHistory official={official} terms={terms} district={fields.district} />
 
         {/* ── Contact ─────────────────────────────────────────────── */}
         <Section title="Contact">
@@ -201,7 +201,14 @@ interface HistoryItem {
   endsLabel: string | null;
 }
 
-function buildHistory(official: OfficialProfile, terms: OfficialTerm[]): HistoryItem[] {
+/** "County Councilmember" + "9" -> "County Councilmember, District 9"; "At-Large" stays as is. */
+function withDistrict(title: string, district: string | null): string {
+  const d = district?.trim();
+  if (!d || title.toLowerCase().includes(d.toLowerCase())) return title;
+  return /^\d+$/.test(d) ? `${title}, District ${d}` : `${title}, ${d}`;
+}
+
+function buildHistory(official: OfficialProfile, terms: OfficialTerm[], district: string | null): HistoryItem[] {
   if (terms.length > 0) {
     return terms.map((t, i) => ({
       key: t.id,
@@ -218,7 +225,7 @@ function buildHistory(official: OfficialProfile, terms: OfficialTerm[]): History
   if (official.term_start && official.office_title) {
     return [{
       key: "current",
-      office: official.office_title,
+      office: withDistrict(official.office_title, district),
       years: `${official.term_start} – Present`,
       current: true,
       how: null,
@@ -229,8 +236,8 @@ function buildHistory(official: OfficialProfile, terms: OfficialTerm[]): History
   return [];
 }
 
-function OfficeHistory({ official, terms }: { official: OfficialProfile; terms: OfficialTerm[] }) {
-  const items = buildHistory(official, terms);
+function OfficeHistory({ official, terms, district }: { official: OfficialProfile; terms: OfficialTerm[]; district: string | null }) {
+  const items = buildHistory(official, terms, district);
   if (items.length === 0) {
     return (
       <Section title="Public office history">
