@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getOfficialById, getVotingRecords, getCampaignFinance, getUpcomingElectionForOfficial, getOutsideMoneyForOfficial, getOfficialTerms } from "@/app/actions/officials";
-import type { OfficialTerm } from "@/app/actions/officials";
+import { getOfficialById, getVotingRecords, getCampaignFinance, getUpcomingElectionForOfficial, getOutsideMoneyForOfficial, getOfficialTerms, getOfficialBio } from "@/app/actions/officials";
+import type { OfficialTerm, OfficialBio } from "@/app/actions/officials";
 import type { OfficialProfile } from "@/app/actions/officials";
 import { VotingRecordsList } from "./VotingRecordsList";
 import { CampaignFinanceList } from "./CampaignFinanceList";
@@ -17,13 +17,14 @@ interface Props {
 
 export default async function OfficialPage({ params }: Props) {
   const { id } = await params;
-  const [official, votingRecords, campaignFinance, upcomingElectionDate, outsideMoney, terms] = await Promise.all([
+  const [official, votingRecords, campaignFinance, upcomingElectionDate, outsideMoney, terms, bio] = await Promise.all([
     getOfficialById(id),
     getVotingRecords(id),
     getCampaignFinance(id),
     getUpcomingElectionForOfficial(id),
     getOutsideMoneyForOfficial(id),
     getOfficialTerms(id),
+    getOfficialBio(id),
   ]);
 
   if (!official) {
@@ -107,6 +108,9 @@ export default async function OfficialPage({ params }: Props) {
             </p>
           )}
         </div>
+
+        {/* ── About ───────────────────────────────────────────────── */}
+        {bio && <AboutSection bio={bio} />}
 
         {/* ── Key details ─────────────────────────────────────────── */}
         <Section title="Details">
@@ -258,6 +262,54 @@ function OfficeHistory({ official, terms }: { official: OfficialProfile; terms: 
           ) : (
             sourced.source
           )}
+        </p>
+      )}
+    </Section>
+  );
+}
+
+const LICENSE_LINKS: Record<string, string> = {
+  "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+};
+
+function AboutSection({ bio }: { bio: OfficialBio }) {
+  const licenseUrl = bio.bio_license ? LICENSE_LINKS[bio.bio_license] : undefined;
+  return (
+    <Section title="About">
+      <p className="text-[15px] leading-relaxed text-fg">{bio.bio_summary}</p>
+      {bio.bio_source && (
+        <p className="mt-4 text-xs text-muted">
+          From{" "}
+          {bio.bio_source_url ? (
+            <a
+              href={bio.bio_source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-fg"
+            >
+              {bio.bio_source}
+            </a>
+          ) : (
+            bio.bio_source
+          )}
+          {bio.bio_license && (
+            <>
+              , licensed under{" "}
+              {licenseUrl ? (
+                <a
+                  href={licenseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 hover:text-fg"
+                >
+                  {bio.bio_license}
+                </a>
+              ) : (
+                bio.bio_license
+              )}
+            </>
+          )}
+          . Text may be shortened.
         </p>
       )}
     </Section>
