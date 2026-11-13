@@ -163,6 +163,28 @@ export async function getOfficialById(
   return { ...raw, jurisdiction_name } as OfficialProfile;
 }
 
+export interface OfficialTerm {
+  id: string;
+  office: string;
+  start_year: number;
+  end_year: number | null;
+  how_assumed: "elected" | "appointed" | null;
+  note: string | null;
+  source: string | null;
+  source_url: string | null;
+}
+
+/** Years of service in each office, newest first. Empty when none are recorded yet. */
+export async function getOfficialTerms(officialId: string): Promise<OfficialTerm[]> {
+  const { data, error } = await supabase
+    .from("official_terms")
+    .select("id, office, start_year, end_year, how_assumed, note, source, source_url")
+    .eq("official_id", officialId)
+    .order("start_year", { ascending: false });
+  if (error || !data) return [];
+  return data as OfficialTerm[];
+}
+
 export async function getVotingRecords(
   officialId: string,
 ): Promise<VotingRecord[]> {

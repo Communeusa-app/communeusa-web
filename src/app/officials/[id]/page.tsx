@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getOfficialById, getVotingRecords, getCampaignFinance, getUpcomingElectionForOfficial, getOutsideMoneyForOfficial } from "@/app/actions/officials";
+import { getOfficialById, getVotingRecords, getCampaignFinance, getUpcomingElectionForOfficial, getOutsideMoneyForOfficial, getOfficialTerms } from "@/app/actions/officials";
+import type { OfficialTerm } from "@/app/actions/officials";
 import type { OfficialProfile } from "@/app/actions/officials";
 import { VotingRecordsList } from "./VotingRecordsList";
 import { CampaignFinanceList } from "./CampaignFinanceList";
@@ -16,12 +17,13 @@ interface Props {
 
 export default async function OfficialPage({ params }: Props) {
   const { id } = await params;
-  const [official, votingRecords, campaignFinance, upcomingElectionDate, outsideMoney] = await Promise.all([
+  const [official, votingRecords, campaignFinance, upcomingElectionDate, outsideMoney, terms] = await Promise.all([
     getOfficialById(id),
     getVotingRecords(id),
     getCampaignFinance(id),
     getUpcomingElectionForOfficial(id),
     getOutsideMoneyForOfficial(id),
+    getOfficialTerms(id),
   ]);
 
   if (!official) {
@@ -123,6 +125,9 @@ export default async function OfficialPage({ params }: Props) {
           </dl>
         </Section>
 
+        {/* ── Public office history ───────────────────────────────── */}
+        <OfficeHistory official={official} terms={terms} />
+
         {/* ── Contact ─────────────────────────────────────────────── */}
         <Section title="Contact">
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
@@ -178,6 +183,86 @@ export default async function OfficialPage({ params }: Props) {
 }
 
 /* ── Sub-components ───────────────────────────────────────────────── */
+
+interface HistoryItem {
+  key: string;
+  office: string;
+  years: string;
+  current: boolean;
+  how: string | null;
+  note: string | null;
+  endsLabel: string | null;
+}
+
+function buildHistory(official: OfficialProfile, terms: OfficialTerm[]): HistoryItem[] {
+  if (terms.length > 0) {
+    return terms.map((t, i) => ({
+      key: t.id,
+      office: t.office,
+      years: t.end_year ? (t.end_year === t.start_year ? `${t.start_year}` : `${t.start_year} – ${t.end_year}`) : `${t.start_year} – Present`,
+      current: t.end_year === null,
+      how: t.how_assumed === "appointed" ? "Appointed" : t.how_assumed === "elected" ? "Elected" : null,
+      note: t.note,
+      // Only the current office carries the end of the present term.
+      endsLabel: t.end_year === null && i === 0 && official.term_end ? `Current term ends ${official.term_end}` : null,
+    }));
+  }
+  // Nothing recorded yet: show what we do know about the present office.
+  if (official.term_start && official.office_title) {
+    return [{
+      key: "current",
+      office: official.office_title,
+      years: `${official.term_start} – Present`,
+      current: true,
+      how: null,
+      note: null,
+      endsLabel: official.term_end ? `Current term ends ${official.term_end}` : null,
+    }];
+  }
+  return [];
+}
+
+function OfficeHistory({ official, terms }: { official: OfficialProfile; terms: OfficialTerm[] }) {
+  const items = buildHistory(official, terms);
+  if (items.length === 0) return null;
+  const sourced = terms.find((t) => t.source);
+  return (
+    <Section title="Public office history">
+      <ol className="relative ml-2 border-l border-line">
+        {items.map((it) => (
+          <li key={it.key} className="relative pl-6 pb-6 last:pb-0">
+            <span
+              className={`absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-surface ${
+                it.current ? "bg-brand-primary dark:bg-brand-light-blue" : "bg-muted/60"
+              }`}
+            />
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h3 className="text-sm font-semibold text-fg">{it.office}</h3>
+              <span className="text-sm text-muted tabular-nums">{it.years}</span>
+              {it.how && (
+                <span className="rounded-full bg-fg/10 px-2 py-0.5 text-[11px] font-medium text-muted">{it.how}</span>
+              )}
+            </div>
+            {it.endsLabel && <p className="mt-1 text-xs text-muted">{it.endsLabel}</p>}
+            {it.note && <p className="mt-1 text-xs text-muted leading-relaxed">{it.note}</p>}
+          </li>
+        ))}
+      </ol>
+      {sourced?.source && (
+        <p className="mt-5 text-[11px] text-muted">
+          Source:{" "}
+          {sourced.source_url ? (
+            <a href={sourced.source_url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-fg">
+              {sourced.source}
+            </a>
+          ) : (
+            sourced.source
+          )}
+        </p>
+      )}
+    </Section>
+  );
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
