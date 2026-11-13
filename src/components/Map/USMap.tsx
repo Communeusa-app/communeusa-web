@@ -192,7 +192,7 @@ export function USMap({
       const halfW = WIDTH / (2 * scale);
       const halfH = HEIGHT / (2 * scale);
       const stateExtent: [[number, number], [number, number]] = [[cx - halfW, cy - halfH], [cx + halfW, cy + halfH]];
-      zoom.scaleExtent([scale, 8]).translateExtent(stateExtent);
+      zoom.scaleExtent([scale, scale * 4]).translateExtent(stateExtent);
       const bounded = zoom.constrain()(target, [[0, 0], [WIDTH, HEIGHT]], stateExtent);
       svg.transition("zoom").duration(ZOOM_DURATION).call(zoom.transform, bounded);
     }
