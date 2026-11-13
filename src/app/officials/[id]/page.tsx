@@ -110,16 +110,17 @@ export default async function OfficialPage({ params }: Props) {
         </div>
 
         {/* ── About ───────────────────────────────────────────────── */}
-        {bio && <AboutSection bio={bio} />}
+        <AboutSection bio={bio} />
 
         {/* ── Key details ─────────────────────────────────────────── */}
         <Section title="Details">
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+            {/* Same fields in the same places on every profile; Term start and Term end sit side by side. */}
             <Detail label="Category"      value={official.office_category} />
-            <Detail label="District"      value={official.district} />
+            <Detail label="Role type"     value={official.appointed_or_elected} />
             <Detail label="Term start"    value={official.term_start} />
             <Detail label="Term end"      value={official.term_end} />
-            <Detail label="Role type"     value={official.appointed_or_elected} />
+            <Detail label="District"      value={official.district} />
             <Detail label="Committees"    value={official.key_committees} />
             {official.notes && (
               <div className="sm:col-span-2">
@@ -228,7 +229,13 @@ function buildHistory(official: OfficialProfile, terms: OfficialTerm[]): History
 
 function OfficeHistory({ official, terms }: { official: OfficialProfile; terms: OfficialTerm[] }) {
   const items = buildHistory(official, terms);
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    return (
+      <Section title="Public office history">
+        <p className="text-sm text-muted">No office history on file yet.</p>
+      </Section>
+    );
+  }
   const sourced = terms.find((t) => t.source);
   return (
     <Section title="Public office history">
@@ -272,7 +279,14 @@ const LICENSE_LINKS: Record<string, string> = {
   "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
 };
 
-function AboutSection({ bio }: { bio: OfficialBio }) {
+function AboutSection({ bio }: { bio: OfficialBio | null }) {
+  if (!bio) {
+    return (
+      <Section title="About">
+        <p className="text-sm text-muted">No background on file yet.</p>
+      </Section>
+    );
+  }
   const licenseUrl = bio.bio_license ? LICENSE_LINKS[bio.bio_license] : undefined;
   return (
     <Section title="About">
@@ -328,14 +342,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Detail({ label, value }: { label: string; value: string | null | undefined }) {
-  if (!value) return null;
+  const has = !!value?.trim();
   return (
     <div>
       <dt className="text-[11px] font-medium uppercase tracking-wider text-muted mb-0.5">
         {label}
       </dt>
-      <dd className="text-sm font-medium text-fg">
-        {value}
+      <dd className={has ? "text-sm font-medium text-fg" : "text-sm text-muted"}>
+        {has ? value : "Not listed"}
       </dd>
     </div>
   );
