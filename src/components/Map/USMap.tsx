@@ -183,9 +183,17 @@ export function USMap({
     function zoomToFeature(feature: GeoJSON.Feature) {
       const [[x0, y0], [x1, y1]] = pathGen.bounds(feature);
       const scale = Math.min(8, 0.85 / Math.max((x1 - x0) / WIDTH, (y1 - y0) / HEIGHT));
-      const target = d3.zoomIdentity.translate(WIDTH / 2, HEIGHT / 2).scale(scale).translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
-      // Keep the target inside the same pan limits the wheel/drag use.
-      const bounded = zoom.constrain()(target, [[0, 0], [WIDTH, HEIGHT]], [[0, 0], [WIDTH, HEIGHT]]);
+      const cx = (x0 + x1) / 2;
+      const cy = (y0 + y1) / 2;
+      const target = d3.zoomIdentity.translate(WIDTH / 2, HEIGHT / 2).scale(scale).translate(-cx, -cy);
+      // Lock the view to this state: it cannot be zoomed out past the fitted view, and the
+      // pan area is the fitted view itself, so the rest of the map stays out of reach until
+      // the user leaves the state. Zooming in still pans freely inside the state.
+      const halfW = WIDTH / (2 * scale);
+      const halfH = HEIGHT / (2 * scale);
+      const stateExtent: [[number, number], [number, number]] = [[cx - halfW, cy - halfH], [cx + halfW, cy + halfH]];
+      zoom.scaleExtent([scale, 8]).translateExtent(stateExtent);
+      const bounded = zoom.constrain()(target, [[0, 0], [WIDTH, HEIGHT]], stateExtent);
       svg.transition("zoom").duration(ZOOM_DURATION).call(zoom.transform, bounded);
     }
 
@@ -368,6 +376,8 @@ export function USMap({
       setSimpleTooltip(null);
       setDistrictTooltip(null);
 
+      // Leaving the state: free the full map again.
+      zoom.scaleExtent([1, 8]).translateExtent([[0, 0], [WIDTH, HEIGHT]]);
       svg.transition("zoom").duration(400)
         .call(zoom.transform, d3.zoomIdentity)
         .on("end", () => {
