@@ -32,12 +32,16 @@ export function USMapSection({ initialState }: Props) {
   // The map only reads its starting state once, so wait until we know what was saved.
   const [ready, setReady] = useState(false);
   const [startState, setStartState] = useState<string | undefined>(initialState);
+  const [startCounty, setStartCounty] = useState<string | undefined>(undefined);
 
   // Coming back from a profile: reopen the same state and county.
   useEffect(() => {
     const saved = readSaved();
     if (!initialState && saved.state) setStartState(saved.state);
-    if (saved.county) setSelectedCounty(saved.county);
+    if (saved.county) {
+      setSelectedCounty(saved.county);
+      setStartCounty(saved.county);
+    }
     setReady(true);
   }, [initialState]);
 
@@ -58,6 +62,7 @@ export function USMapSection({ initialState }: Props) {
             {ready ? (
               <USMap
                 initialState={startState}
+                initialCounty={startCounty}
                 onStateClick={(fipsId) => writeSaved({ ...readSaved(), state: fipsId })}
                 onStateReset={() => {
                   writeSaved({});
