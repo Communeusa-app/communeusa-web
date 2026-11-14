@@ -7,17 +7,14 @@ import { HowTabs, type HowTab } from "@/components/HowTabs";
 
 const GAPS = [
   {
-    n: "01",
     title: "It is scattered.",
     body: "Information about your officials sits on dozens of separate government sites, and most people do not know where to look.",
   },
   {
-    n: "02",
     title: "Local gets the least coverage.",
     body: "School boards, sheriffs and city councils shape daily life, and they get the least attention.",
   },
   {
-    n: "03",
     title: "Money is hard to follow.",
     body: "Campaign funding and outside spending live in filings that are slow to search and harder to read.",
   },
@@ -25,25 +22,25 @@ const GAPS = [
 
 const DATA_CARDS = [
   {
-    n: "01",
+    tag: "Who",
     title: "Officials",
     body: "Federal, state, county and city, with party, office and contact details where on file.",
     href: "/officials",
   },
   {
-    n: "02",
+    tag: "How they voted",
     title: "Voting records",
     body: "How each official voted, taken from official legislative records.",
     href: "/officials",
   },
   {
-    n: "03",
+    tag: "Who pays",
     title: "Campaign finance",
     body: "Who funds each campaign, and which PACs spent to support or oppose it.",
     href: "/finance",
   },
   {
-    n: "04",
+    tag: "On the ballot",
     title: "Elections",
     body: "What is on the ballot and who is running, on a map you can explore.",
     href: "/elections",
@@ -159,20 +156,26 @@ export default async function Home({
           </div>
         </section>
 
-        {/* ── The gap ──────────────────────────────────────────── */}
+        {/* ── Why this exists ──────────────────────────────────── */}
         <section id="about" className="mx-auto max-w-6xl px-6 pb-24">
-          <Eyebrow>The gap</Eyebrow>
-          <h2 className="mt-7 max-w-3xl text-[clamp(34px,4.6vw,56px)] font-bold leading-[1.08] tracking-[-0.035em]">
-            Your government is public. Finding it should not take a research project.
-          </h2>
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {GAPS.map((g) => (
-              <div key={g.n} className="rounded-[28px] border border-line bg-surface px-9 pb-11 pt-8">
-                <span className="font-mono text-sm text-accent">{g.n}</span>
-                <h3 className="mb-3.5 mt-7 text-[26px] font-semibold leading-tight tracking-tight">{g.title}</h3>
-                <p className="text-lg leading-relaxed text-muted">{g.body}</p>
-              </div>
-            ))}
+          <div className="grid gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
+            <div>
+              <Eyebrow>Why this exists</Eyebrow>
+              <h2 className="mt-7 text-[clamp(34px,4.6vw,56px)] font-bold leading-[1.08] tracking-[-0.035em]">
+                Your government is public. Finding it should not take a research project.
+              </h2>
+            </div>
+            <ul className="divide-y divide-line self-center border-y border-line">
+              {GAPS.map((g) => (
+                <li key={g.title} className="flex gap-5 py-8">
+                  <span aria-hidden="true" className="mt-2 h-10 w-1 shrink-0 rounded-full bg-accent" />
+                  <div>
+                    <h3 className="text-[24px] font-semibold leading-tight tracking-tight">{g.title}</h3>
+                    <p className="mt-2.5 text-[17px] leading-relaxed text-muted">{g.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
@@ -192,11 +195,11 @@ export default async function Home({
           <div className="grid min-w-0 flex-[1.5_1_480px] gap-6 sm:grid-cols-2">
             {DATA_CARDS.map((c) => (
               <Link
-                key={c.n}
+                key={c.title}
                 href={c.href}
                 className="group rounded-[28px] border border-line bg-surface px-[30px] pb-8 pt-7 transition-colors hover:border-brand-light-blue/40"
               >
-                <span className="font-mono text-sm text-accent">{c.n}</span>
+                <span className="font-mono text-xs uppercase tracking-[0.12em] text-accent">{c.tag}</span>
                 <h3 className="mb-2.5 mt-5 text-2xl font-semibold tracking-tight">{c.title}</h3>
                 <p className="text-[17px] leading-relaxed text-muted">{c.body}</p>
                 <span className="mt-6 inline-block font-mono text-[13px] text-brand-primary dark:text-brand-light-blue">Open →</span>
