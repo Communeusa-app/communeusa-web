@@ -174,7 +174,11 @@ export function AddressLookup() {
             inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
           });
           // Delay long enough for the map component to mount and attach its listener
-          if (savedCounty) {
+          // A county the person picked on the map wins over the one from an earlier address search,
+          // otherwise coming back from a profile highlights a different county than the open panel.
+          let mapCounty: string | undefined;
+          try { mapCounty = JSON.parse(sessionStorage.getItem("communeusa_map") || "{}").county; } catch {}
+          if (savedCounty && !mapCounty) {
             setTimeout(() => {
               window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: savedCounty } }));
             }, 300);
