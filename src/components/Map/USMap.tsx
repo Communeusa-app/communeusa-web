@@ -69,6 +69,8 @@ interface DistrictTooltip {
 
 interface Props {
   initialState?:      string;
+  /** County to show highlighted when the map opens already zoomed into the initial state. */
+  initialCounty?:     string;
   onStateClick?:      (fipsId: string) => void;
   onStateReset?:      () => void;
   onCountyClick?:     (countyName: string) => void;
@@ -94,6 +96,7 @@ interface CountyTooltip { x: number; y: number; name: string }
 
 export function USMap({
   initialState,
+  initialCounty,
   onStateClick,
   onStateReset,
   onCountyClick,
@@ -111,7 +114,7 @@ export function USMap({
   const inStateViewRef        = useRef(false);
   const waFeatureRef          = useRef<GeoJSON.Feature | null>(null);
   const highlightedCountyRef  = useRef<string | null>(null);
-  const pendingHighlightRef   = useRef<string | null>(null);
+  const pendingHighlightRef   = useRef<string | null>(initialState ? initialCounty ?? null : null);
   const districtTypeRef       = useRef(districtType ?? null);
   const districtOfficialsRef  = useRef(districtOfficials ?? null);
   const recentlyRedrawnRef    = useRef<Record<DistrictType, Set<string>>>(EMPTY_REDRAWN);
@@ -355,7 +358,8 @@ export function USMap({
           const countyName = WA_COUNTY_NAMES[fipsId];
           // Keep the clicked county highlighted so it is clear which one is selected.
           applyCountyHighlight(countyName ?? null);
-          onClickRef.current?.(fipsId);
+          // A county click is not a state click: reporting it as one overwrote the saved state with the
+          // county's id, so coming back from a profile restored the full map.
           if (countyName) onCountyClickRef.current?.(countyName);
         })
         .transition("fade").duration(400).attr("opacity", inDistrictMode ? 0 : 1);
