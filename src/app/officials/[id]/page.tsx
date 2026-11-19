@@ -1,3 +1,4 @@
+import { partyLabel } from "@/lib/party";
 import Link from "next/link";
 import { getOfficialById, getVotingRecords, getCampaignFinance, getUpcomingElectionForOfficial, getOutsideMoneyForOfficial, getOfficialTerms, getOfficialBio } from "@/app/actions/officials";
 import type { OfficialTerm, OfficialBio } from "@/app/actions/officials";
@@ -66,11 +67,9 @@ export default async function OfficialPage({ params }: Props) {
 
         {/* ── Profile header ──────────────────────────────────────── */}
         <div className="rounded-2xl border border-line bg-surface px-6 py-6">
-          {official.party?.trim() && (
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <PartyBadge party={official.party} />
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <PartyBadge party={official.party} />
+          </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-fg">
             {official.official_name}
@@ -112,7 +111,7 @@ export default async function OfficialPage({ params }: Props) {
         </div>
 
         {/* ── About ───────────────────────────────────────────────── */}
-        <AboutSection bio={bio} />
+        <AboutSection bio={bio} official={official} />
 
         {/* ── Key details ─────────────────────────────────────────── */}
         <Section title="Details">
@@ -288,11 +287,34 @@ const LICENSE_LINKS: Record<string, string> = {
   "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
 };
 
-function AboutSection({ bio }: { bio: OfficialBio | null }) {
+/** Plain-language summary built only from fields we hold, for officials with no published biography. */
+function recordSummary(o: OfficialProfile): string {
+  const place = o.jurisdiction_name?.trim();
+  const title = o.office_title?.trim();
+  const parts: string[] = [];
+  if (title) {
+    parts.push(`${o.official_name} holds the office of ${title}${place ? ` for ${place}` : ""}.`);
+  } else {
+    parts.push(`${o.official_name} is a public official${place ? ` in ${place}` : ""}.`);
+  }
+  const how = o.appointed_or_elected?.trim().toLowerCase();
+  if (how === "elected" || how === "appointed") parts.push(`The position is ${how}.`);
+  if (o.term_start && o.term_end) parts.push(`The current term runs from ${o.term_start} to ${o.term_end}.`);
+  else if (o.term_end) parts.push(`The current term ends ${o.term_end}.`);
+  parts.push(
+    o.party?.trim() ? `Party affiliation on record: ${o.party.trim()}.` : "No party affiliation is listed for this office.",
+  );
+  return parts.join(" ");
+}
+
+function AboutSection({ bio, official }: { bio: OfficialBio | null; official: OfficialProfile }) {
   if (!bio) {
     return (
       <Section title="About">
-        <p className="text-sm text-muted">No background on file yet.</p>
+        <p className="text-[15px] leading-relaxed text-fg">{recordSummary(official)}</p>
+        <p className="mt-4 text-xs text-muted">
+          Summary compiled from CommuneUSA&apos;s public records. A full biography has not been added yet.
+        </p>
       </Section>
     );
   }
@@ -412,8 +434,7 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
 }
 
 function PartyBadge({ party }: { party: OfficialProfile["party"] }) {
-  if (!party?.trim()) return null;
-  const normalized = party === "Democrat" ? "Democratic" : party;
+  const normalized = party?.trim() === "Democrat" ? "Democratic" : partyLabel(party);
   const styles: Record<string, string> = {
     Democratic: "bg-brand-primary/10 text-fg dark:bg-brand-primary/25",
     Republican: "bg-brand-red/15 text-brand-red dark:bg-brand-red/20",
