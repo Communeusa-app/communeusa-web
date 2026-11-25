@@ -156,9 +156,6 @@ export function AddressLookup() {
           sessionStorage.setItem(SESSION_KEY, JSON.stringify({ address: savedAddress, reps: savedReps, county: savedCounty, navigatedAway: false }));
           // Strip hash (e.g. #map) so the browser doesn't auto-scroll to the map
           window.history.replaceState(null, "", window.location.pathname + window.location.search);
-          requestAnimationFrame(() => {
-            inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-          });
         }
         // Delay long enough for the map section to mount and attach its listeners.
         setTimeout(() => {
@@ -166,6 +163,8 @@ export function AddressLookup() {
           if (savedCounty) {
             window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: savedCounty } }));
           }
+          // Coming back from a profile: land on the map and officials, not the top of the page.
+          if (navigatedAway) document.getElementById("map")?.scrollIntoView({ block: "start" });
         }, 300);
         return;
       }
