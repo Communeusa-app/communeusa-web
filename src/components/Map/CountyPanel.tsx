@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getOfficialsByCounty } from "@/app/actions/officials";
 import type { Official } from "@/app/actions/officials";
+import { partyLabel } from "@/lib/party";
 
 interface Props {
   countyName: string;
@@ -97,7 +98,7 @@ export function CountyPanel({ countyName, onClose }: Props) {
                       {o.official_name}
                     </p>
                     <p className={`mt-0.5 text-xs ${partyClass(o.party)}`}>
-                      {o.party ?? "—"}
+                      {partyLabel(o.party)}
                       {o.term_end ? ` · until ${o.term_end}` : ""}
                     </p>
                   </div>

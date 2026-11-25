@@ -71,6 +71,8 @@ function dbToRep(o: Official, level: Level): Rep {
 }
 
 // ── Party colour ───────────────────────────────────────────────────────────
+import { partyLabel } from "@/lib/party";
+
 function partyClass(party: string) {
   if (party === "Democratic" || party === "Democrat")
     return "text-brand-primary dark:text-brand-light-blue";
@@ -330,11 +332,9 @@ function RepCard({ rep }: { rep: Rep }) {
         </p>
         <p className="mt-0.5 text-sm text-muted">{rep.officeName}</p>
       </div>
-      {rep.party && (
-        <p className={`font-mono text-[13px] ${partyClass(rep.party)}`}>
-          {rep.party}
-        </p>
-      )}
+      <p className={`font-mono text-[13px] ${rep.party ? partyClass(rep.party) : "text-muted"}`}>
+        {partyLabel(rep.party)}
+      </p>
     </div>
   );
 }

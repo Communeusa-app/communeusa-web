@@ -44,6 +44,8 @@ function ChevronRight() {
 }
 
 // Same party colors used in the address lookup.
+import { NO_PARTY_LABEL } from "@/lib/party";
+
 function partyClass(party: string) {
   if (party === "Democratic" || party === "Democrat") return "text-brand-primary dark:text-brand-light-blue";
   if (party === "Republican") return "text-brand-red";
@@ -270,8 +272,10 @@ export function OfficialSearch() {
                             {[official.office_title, official.jurisdiction_name].filter(Boolean).join(" · ")}
                           </p>
                         </div>
-                        {official.party && (
+                        {official.party ? (
                           <p className={`font-mono text-[13px] ${partyClass(official.party)}`}>{official.party}</p>
+                        ) : (
+                          <p className="font-mono text-[13px] text-muted">{NO_PARTY_LABEL}</p>
                         )}
                       </div>
                       <span className="shrink-0 text-muted transition-colors group-hover:text-brand-primary dark:group-hover:text-brand-light-blue">
