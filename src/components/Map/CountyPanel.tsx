@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getOfficialsByCounty } from "@/app/actions/officials";
 import type { Official } from "@/app/actions/officials";
 import { partyLabel } from "@/lib/party";
+import { termEndShort } from "@/lib/term";
 
 interface Props {
   countyName: string;
@@ -99,7 +100,7 @@ export function CountyPanel({ countyName, onClose }: Props) {
                     </p>
                     <p className={`mt-0.5 text-xs ${partyClass(o.party)}`}>
                       {partyLabel(o.party)}
-                      {o.term_end ? ` · until ${o.term_end}` : ""}
+                      {` · ${termEndShort(o.term_end, o.appointed_or_elected)}`}
                     </p>
                   </div>
                   <svg

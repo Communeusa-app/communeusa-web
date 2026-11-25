@@ -1,4 +1,5 @@
 import { partyLabel } from "@/lib/party";
+import { termEndFallback } from "@/lib/term";
 import Link from "next/link";
 import { getOfficialById, getVotingRecords, getCampaignFinance, getUpcomingElectionForOfficial, getOutsideMoneyForOfficial, getOfficialTerms, getOfficialBio } from "@/app/actions/officials";
 import type { OfficialTerm, OfficialBio } from "@/app/actions/officials";
@@ -120,7 +121,7 @@ export default async function OfficialPage({ params }: Props) {
             <Detail label="Category"      value={official.office_category} />
             <Detail label="Role type"     value={official.appointed_or_elected} />
             <Detail label="Term start"    value={official.term_start} />
-            <Detail label="Term end"      value={official.term_end} />
+            <Detail label="Term end"      value={official.term_end} fallback={termEndFallback(official.appointed_or_elected)} />
             <Detail label="District"      value={fields.district} fallback={fields.districtFallback} />
             <Detail label="Committees"    value={official.key_committees} fallback={fields.committeesFallback} />
             {fields.notes && (
