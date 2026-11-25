@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SiteShell } from "@/components/SiteShell";
 import { USMapSection } from "@/components/Map/USMapSection";
+import { HeroGradientText } from "@/components/HeroGradientText";
 import { AddressLookup } from "@/components/AddressLookup";
 import { HowTabs, type HowTab } from "@/components/HowTabs";
 
@@ -122,9 +123,7 @@ export default async function Home({
           <h1 className="text-[clamp(44px,7vw,92px)] font-bold leading-[1.04] tracking-[-0.04em]">
             <span className="block">Your representatives.</span>
             <span className="block">Your votes.</span>
-            <span className="block bg-gradient-to-r from-fg to-brand-red/90 bg-clip-text pb-[0.14em] text-transparent">
-              Your government.
-            </span>
+            <HeroGradientText>Your government.</HeroGradientText>
           </h1>
 
           <p className="mt-8 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">

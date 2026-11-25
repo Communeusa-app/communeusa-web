@@ -89,3 +89,26 @@ body {
 .prose-communeusa li {
   @apply leading-relaxed;
 }
+
+/* Hero gradient line: the original fg-to-red gradient with a red glow that follows the pointer. */
+@property --r {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+.hero-glow {
+  --mx: 50%;
+  --my: 50%;
+  --r: 0px;
+  background-image:
+    radial-gradient(circle var(--r) at var(--mx) var(--my), var(--color-brand-red) 0%, transparent 100%),
+    linear-gradient(to right in oklab, var(--color-fg), color-mix(in oklab, var(--color-brand-red) 90%, transparent));
+  transition: --r 0.45s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-glow {
+    transition: none;
+  }
+}
