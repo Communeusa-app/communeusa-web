@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteShell } from "@/components/SiteShell";
+import { GradientHeadline, GlowPanel } from "@/components/InteractiveGradient";
 import { USMapSection } from "@/components/Map/USMapSection";
 import { AddressLookup } from "@/components/AddressLookup";
 import { HowTabs, type HowTab } from "@/components/HowTabs";
@@ -122,9 +123,7 @@ export default async function Home({
           <h1 className="text-[clamp(44px,7vw,92px)] font-bold leading-[1.04] tracking-[-0.04em]">
             <span className="block">Your representatives.</span>
             <span className="block">Your votes.</span>
-            <span className="block bg-gradient-to-r from-fg to-brand-red/90 bg-clip-text pb-[0.14em] text-transparent">
-              Your government.
-            </span>
+            <GradientHeadline>Your government.</GradientHeadline>
           </h1>
 
           <p className="mt-8 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
@@ -210,13 +209,7 @@ export default async function Home({
 
         {/* ── CTA ──────────────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-6 pb-24">
-          <div
-            className="rounded-[36px] border border-line bg-surface px-8 py-20 text-center sm:py-24"
-            style={{
-              backgroundImage:
-                "radial-gradient(700px 400px at 20% 0%, rgba(226,75,74,.12), transparent 60%), radial-gradient(800px 500px at 100% 100%, rgba(24,95,165,.30), transparent 60%)",
-            }}
-          >
+          <GlowPanel className="rounded-[36px] border border-line bg-surface px-8 py-20 text-center sm:py-24">
             <h2 className="text-[clamp(34px,5vw,60px)] font-bold leading-[1.06] tracking-[-0.04em]">
               Find the people who represent you.
             </h2>
@@ -231,7 +224,7 @@ export default async function Home({
                 Browse elections
               </Link>
             </div>
-          </div>
+          </GlowPanel>
         </section>
       </main>
     </SiteShell>
