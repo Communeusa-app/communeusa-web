@@ -9,25 +9,40 @@ function track(e: PointerEvent<HTMLElement>, el: HTMLElement) {
   return { x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) };
 }
 
-/** Headline text whose red end glows toward the cursor. Colors are unchanged at rest. */
-export function GradientHeadline({ children }: { children: ReactNode }) {
-  const ref = useRef<HTMLSpanElement>(null);
+/** The three-line hero headline. A red glow follows the cursor across every line; colors at rest are unchanged
+ *  (solid on the first lines, the last line fades to red). */
+export function GradientHeadline({ lines }: { lines: string[] }) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  function setGlow(el: HTMLHeadingElement, x: number | null, y: number | null) {
+    el.querySelectorAll<HTMLElement>(".hero-line").forEach((line) => {
+      if (x === null || y === null) {
+        line.style.setProperty("--glow", "0px");
+        return;
+      }
+      const r = line.getBoundingClientRect();
+      line.style.setProperty("--hx", `${x - r.left}px`);
+      line.style.setProperty("--hy", `${y - r.top}px`);
+      line.style.setProperty("--glow", "1.7em");
+    });
+  }
   return (
-    <span
+    <h1
       ref={ref}
-      className="hero-gradient-text block pb-[0.14em]"
+      className="text-[clamp(44px,7vw,92px)] font-bold leading-[1.04] tracking-[-0.04em]"
       onPointerMove={(e) => {
-        const el = ref.current;
-        if (!el || e.pointerType === "touch") return;
-        const { x, y } = track(e, el);
-        el.style.setProperty("--gx", `${x}%`);
-        el.style.setProperty("--gy", `${y}%`);
-        el.style.setProperty("--glow", "1.7em");
+        if (ref.current && e.pointerType !== "touch") setGlow(ref.current, e.clientX, e.clientY);
       }}
-      onPointerLeave={() => ref.current?.style.setProperty("--glow", "0px")}
+      onPointerLeave={() => ref.current && setGlow(ref.current, null, null)}
     >
-      {children}
-    </span>
+      {lines.map((text, i) => {
+        const last = i === lines.length - 1;
+        return (
+          <span key={text} className={`hero-line block ${last ? "hero-line--fade pb-[0.14em]" : ""}`}>
+            {text}
+          </span>
+        );
+      })}
+    </h1>
   );
 }
 

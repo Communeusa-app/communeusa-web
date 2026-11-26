@@ -92,21 +92,29 @@ body {
 
 /* ── Cursor-reactive gradients (homepage headline and closing banner) ─────── */
 @property --glow { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --hx   { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --hy   { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --gx   { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
 @property --gy   { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
 @property --bx   { syntax: "<percentage>"; inherits: true; initial-value: 100%; }
 @property --by   { syntax: "<percentage>"; inherits: true; initial-value: 100%; }
 @property --ra   { syntax: "<number>"; inherits: true; initial-value: 0.12; }
 
-/* Same fg to red fade as before; a red glow follows the cursor on top of it. */
-.hero-gradient-text {
+/* Every headline line: solid fg at rest (the last line fades to red as before), with a red glow that
+   follows the cursor across all three lines. --hx/--hy are set per line in pixels. */
+.hero-line {
   background-image:
-    radial-gradient(circle var(--glow) at var(--gx) var(--gy), var(--color-brand-red) 0%, var(--color-brand-red) 35%, transparent 100%),
-    linear-gradient(to right, var(--color-fg), color-mix(in srgb, var(--color-brand-red) 90%, transparent));
+    radial-gradient(circle var(--glow) at var(--hx) var(--hy), var(--color-brand-red) 0%, var(--color-brand-red) 35%, transparent 100%),
+    linear-gradient(var(--color-fg), var(--color-fg));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  transition: --glow 0.35s ease, --gx 0.15s linear, --gy 0.15s linear;
+  transition: --glow 0.35s ease, --hx 0.15s linear, --hy 0.15s linear;
+}
+.hero-line--fade {
+  background-image:
+    radial-gradient(circle var(--glow) at var(--hx) var(--hy), var(--color-brand-red) 0%, var(--color-brand-red) 35%, transparent 100%),
+    linear-gradient(to right, var(--color-fg), color-mix(in srgb, var(--color-brand-red) 90%, transparent));
 }
 
 /* Same two lights as before (red top left, blue bottom right); red follows the cursor, blue drifts opposite. */
@@ -123,5 +131,5 @@ body {
 }
 .cta-glow[data-active="true"] { --ra: 0.38; }
 @media (prefers-reduced-motion: reduce) {
-  .hero-gradient-text, .cta-glow { transition: none; }
+  .hero-line, .cta-glow { transition: none; }
 }

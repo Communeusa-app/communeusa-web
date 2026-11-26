@@ -120,11 +120,7 @@ export default async function Home({
       <main>
         {/* ── Hero ──────────────────────────────────────────────── */}
         <section id="representatives" className="mx-auto flex max-w-6xl flex-col items-center px-6 pt-24 pb-16 text-center sm:pt-28">
-          <h1 className="text-[clamp(44px,7vw,92px)] font-bold leading-[1.04] tracking-[-0.04em]">
-            <span className="block">Your representatives.</span>
-            <span className="block">Your votes.</span>
-            <GradientHeadline>Your government.</GradientHeadline>
-          </h1>
+          <GradientHeadline lines={["Your representatives.", "Your votes.", "Your government."]} />
 
           <p className="mt-8 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
             Enter an address and see every official who represents you, how they vote, who funds them, and what you can do about it.
@@ -220,8 +216,14 @@ export default async function Home({
               <a href="#lookup" className="rounded-full bg-fg px-8 py-[18px] text-[17px] font-semibold text-on-fg hover:bg-fg/90 transition-colors">
                 Look up my address
               </a>
+              <Link href="/officials" className="rounded-full border border-fg/25 px-8 py-[17px] text-[17px] font-medium hover:border-fg/60 transition-colors">
+                Browse officials
+              </Link>
               <Link href="/elections" className="rounded-full border border-fg/25 px-8 py-[17px] text-[17px] font-medium hover:border-fg/60 transition-colors">
                 Browse elections
+              </Link>
+              <Link href="/finance" className="rounded-full border border-fg/25 px-8 py-[17px] text-[17px] font-medium hover:border-fg/60 transition-colors">
+                Browse finances
               </Link>
             </div>
           </GlowPanel>
