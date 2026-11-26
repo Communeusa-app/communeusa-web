@@ -85,6 +85,7 @@ export interface Official {
   official_name: string;
   party: string | null;
   term_end: string | null;
+  appointed_or_elected: string | null;
 }
 
 export interface VotingRecord {
@@ -265,7 +266,7 @@ export async function getFederalOfficials(stateAbbr: string): Promise<Official[]
 
   const { data, error } = await supabase
     .from("officials")
-    .select("id, office_title, official_name, party, term_end")
+    .select("id, office_title, official_name, party, term_end, appointed_or_elected")
     .eq("level", "federal")
     .eq("state_id", state.id)
     .eq("is_active", true)
@@ -457,7 +458,7 @@ export async function getCityOfficials(cityName: string): Promise<Official[]> {
 
   const { data, error } = await supabase
     .from("officials")
-    .select("id, office_title, official_name, party, term_end")
+    .select("id, office_title, official_name, party, term_end, appointed_or_elected")
     .eq("municipality_id", municipality.id)
     .eq("level", "city")
     .eq("is_active", true)
@@ -495,7 +496,7 @@ export async function getOfficialsByCounty(
 
   const { data, error } = await supabase
     .from("officials")
-    .select("id, office_title, official_name, party, term_end")
+    .select("id, office_title, official_name, party, term_end, appointed_or_elected")
     .eq("level", "county")
     .eq("county_id", county.id)
     .eq("is_active", true)

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import {
   getFederalOfficials,
   getOfficialsByCounty,
@@ -11,16 +10,12 @@ import {
 import type { Official } from "@/app/actions/officials";
 import { geocodeAddress } from "@/app/actions/geocode";
 
-type Level = "Federal" | "State" | "County" | "City";
-const LEVEL_ORDER: Level[] = ["Federal", "State", "County", "City"];
-
-interface Rep {
-  name: string;
-  officeName: string;
-  party: string | null;
-  level: Level;
-  dbId: string | null;
-}
+import {
+  LOOKUP_SESSION_KEY as SESSION_KEY,
+  sendAddressResult,
+  type Level,
+  type Rep,
+} from "@/lib/lookup";
 
 // ── Open States API → state legislators ───────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,22 +65,8 @@ function dbToRep(o: Official, level: Level): Rep {
   };
 }
 
-// ── Party colour ───────────────────────────────────────────────────────────
-import { partyLabel } from "@/lib/party";
-
-function partyClass(party: string) {
-  if (party === "Democratic" || party === "Democrat")
-    return "text-brand-primary dark:text-brand-light-blue";
-  if (party === "Republican") return "text-brand-red";
-  return "text-muted";
-}
-
-const SESSION_KEY = "communeusa_lookup";
-
 // ── Component ──────────────────────────────────────────────────────────────
 export function AddressLookup() {
-  const router = useRouter();
-  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef     = useRef<HTMLInputElement>(null);
   const [address, setAddress] = useState("");
   const [reps, setReps]       = useState<Rep[] | null>(null);
@@ -142,7 +123,10 @@ export function AddressLookup() {
       setReps(allReps);
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({ address: trimmed, reps: allReps, county, navigatedAway: false }));
       window.history.replaceState(null, "", `/?address=${encodeURIComponent(trimmed)}`);
+      // The map zooms to the state, highlights the county and shows these officials beside it.
+      sendAddressResult({ address: trimmed, county, reps: allReps });
       window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county } }));
+      document.getElementById("map")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -172,20 +156,16 @@ export function AddressLookup() {
           sessionStorage.setItem(SESSION_KEY, JSON.stringify({ address: savedAddress, reps: savedReps, county: savedCounty, navigatedAway: false }));
           // Strip hash (e.g. #map) so the browser doesn't auto-scroll to the map
           window.history.replaceState(null, "", window.location.pathname + window.location.search);
-          requestAnimationFrame(() => {
-            inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-          });
-          // Delay long enough for the map component to mount and attach its listener
-          // A county the person picked on the map wins over the one from an earlier address search,
-          // otherwise coming back from a profile highlights a different county than the open panel.
-          let mapCounty: string | undefined;
-          try { mapCounty = JSON.parse(sessionStorage.getItem("communeusa_map") || "{}").county; } catch {}
-          if (savedCounty && !mapCounty) {
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: savedCounty } }));
-            }, 300);
-          }
         }
+        // Delay long enough for the map section to mount and attach its listeners.
+        setTimeout(() => {
+          sendAddressResult({ address: savedAddress, county: savedCounty, reps: savedReps });
+          if (savedCounty) {
+            window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: savedCounty } }));
+          }
+          // Coming back from a profile: land on the map and officials, not the top of the page.
+          if (navigatedAway) document.getElementById("map")?.scrollIntoView({ block: "start" });
+        }, 300);
         return;
       }
     } catch {
@@ -200,17 +180,6 @@ export function AddressLookup() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function navigateToProfile(id: string) {
-    try {
-      const saved = sessionStorage.getItem(SESSION_KEY);
-      if (saved) {
-        const data = JSON.parse(saved);
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...data, navigatedAway: true }));
-      }
-    } catch {}
-    router.push(`/officials/${id}`);
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = address.trim();
@@ -218,16 +187,8 @@ export function AddressLookup() {
     await runLookup(trimmed);
   }
 
-  const grouped = reps
-    ? LEVEL_ORDER.reduce<Partial<Record<Level, Rep[]>>>((acc, lvl) => {
-        const group = reps.filter((r) => r.level === lvl);
-        if (group.length) acc[lvl] = group;
-        return acc;
-      }, {})
-    : null;
-
   return (
-    <div ref={containerRef} className="mx-auto w-full max-w-2xl">
+    <div className="mx-auto w-full max-w-2xl">
       {/* Form */}
       <form
         onSubmit={handleSubmit}
@@ -241,6 +202,7 @@ export function AddressLookup() {
             if (!e.target.value) {
               sessionStorage.removeItem(SESSION_KEY);
               setReps(null);
+              sendAddressResult(null);
               window.dispatchEvent(new CustomEvent("communeusa:county-highlight", { detail: { county: null } }));
             }
           }}
@@ -271,83 +233,15 @@ export function AddressLookup() {
         </div>
       )}
 
-      {/* Results */}
-      {grouped && (
-        <div className="mt-10 space-y-6 text-left">
-          <p className="font-mono text-[13px] text-muted">
-            {reps?.length ?? 0} officials represent this address
-          </p>
-          {(Object.entries(grouped) as [Level, Rep[]][]).map(
-            ([level, officials]) => (
-              <section
-                key={level}
-                className="overflow-hidden rounded-[28px] border border-line bg-surface"
-              >
-                <div className="flex items-center justify-between gap-4 border-b border-line px-6 py-4 font-mono text-xs uppercase tracking-[0.12em] text-muted">
-                  <span>{level}</span>
-                  <span>{officials.length}</span>
-                </div>
-                <ul className="divide-y divide-line">
-                  {officials.map((rep, i) =>
-                    rep.dbId ? (
-                      <li key={i}>
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => navigateToProfile(rep.dbId!)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              navigateToProfile(rep.dbId!);
-                            }
-                          }}
-                          className="group flex cursor-pointer items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-fg/5 focus-visible:bg-fg/5 focus-visible:outline-none"
-                        >
-                          <RepCard rep={rep} />
-                          <ChevronRight />
-                        </div>
-                      </li>
-                    ) : (
-                      <li key={i} className="px-6 py-4">
-                        <RepCard rep={rep} />
-                      </li>
-                    )
-                  )}
-                </ul>
-              </section>
-            )
-          )}
-        </div>
+      {/* Results appear next to the map */}
+      {reps && (
+        <p className="mt-6 text-left font-mono text-[13px] text-muted">
+          {reps.length} officials represent this address.{" "}
+          <a href="#map" className="text-brand-primary dark:text-brand-light-blue hover:text-fg">
+            See them on the map ↓
+          </a>
+        </p>
       )}
     </div>
-  );
-}
-
-function RepCard({ rep }: { rep: Rep }) {
-  return (
-    <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <div className="min-w-0">
-        <p className="truncate text-lg font-semibold tracking-tight text-fg">
-          {rep.name}
-        </p>
-        <p className="mt-0.5 text-sm text-muted">{rep.officeName}</p>
-      </div>
-      <p className={`font-mono text-[13px] ${rep.party ? partyClass(rep.party) : "text-muted"}`}>
-        {partyLabel(rep.party)}
-      </p>
-    </div>
-  );
-}
-
-function ChevronRight() {
-  return (
-    <svg
-      width="16" height="16" viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" strokeWidth="2.5"
-      strokeLinecap="round" strokeLinejoin="round"
-      className="shrink-0 text-muted group-hover:text-brand-primary dark:group-hover:text-brand-light-blue transition-colors"
-    >
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
   );
 }
