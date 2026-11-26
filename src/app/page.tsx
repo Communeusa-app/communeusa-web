@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteShell } from "@/components/SiteShell";
+import { GradientHeadline, GlowPanel } from "@/components/InteractiveGradient";
 import { USMapSection } from "@/components/Map/USMapSection";
 import { AddressLookup } from "@/components/AddressLookup";
 import { HowTabs, type HowTab } from "@/components/HowTabs";
@@ -119,13 +120,7 @@ export default async function Home({
       <main>
         {/* ── Hero ──────────────────────────────────────────────── */}
         <section id="representatives" className="mx-auto flex max-w-6xl flex-col items-center px-6 pt-24 pb-16 text-center sm:pt-28">
-          <h1 className="text-[clamp(44px,7vw,92px)] font-bold leading-[1.04] tracking-[-0.04em]">
-            <span className="block">Your representatives.</span>
-            <span className="block">Your votes.</span>
-            <span className="block bg-gradient-to-r from-fg to-brand-red/90 bg-clip-text pb-[0.14em] text-transparent">
-              Your government.
-            </span>
-          </h1>
+          <GradientHeadline lines={["Your representatives.", "Your votes.", "Your government."]} />
 
           <p className="mt-8 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
             Enter an address and see every official who represents you, how they vote, who funds them, and what you can do about it.
@@ -210,13 +205,7 @@ export default async function Home({
 
         {/* ── CTA ──────────────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-6 pb-24">
-          <div
-            className="rounded-[36px] border border-line bg-surface px-8 py-20 text-center sm:py-24"
-            style={{
-              backgroundImage:
-                "radial-gradient(700px 400px at 20% 0%, rgba(226,75,74,.12), transparent 60%), radial-gradient(800px 500px at 100% 100%, rgba(24,95,165,.30), transparent 60%)",
-            }}
-          >
+          <GlowPanel className="rounded-[36px] border border-line bg-surface px-8 py-20 text-center sm:py-24">
             <h2 className="text-[clamp(34px,5vw,60px)] font-bold leading-[1.06] tracking-[-0.04em]">
               Find the people who represent you.
             </h2>
@@ -227,11 +216,17 @@ export default async function Home({
               <a href="#lookup" className="rounded-full bg-fg px-8 py-[18px] text-[17px] font-semibold text-on-fg hover:bg-fg/90 transition-colors">
                 Look up my address
               </a>
+              <Link href="/officials" className="rounded-full border border-fg/25 px-8 py-[17px] text-[17px] font-medium hover:border-fg/60 transition-colors">
+                Browse officials
+              </Link>
               <Link href="/elections" className="rounded-full border border-fg/25 px-8 py-[17px] text-[17px] font-medium hover:border-fg/60 transition-colors">
                 Browse elections
               </Link>
+              <Link href="/finance" className="rounded-full border border-fg/25 px-8 py-[17px] text-[17px] font-medium hover:border-fg/60 transition-colors">
+                Browse finances
+              </Link>
             </div>
-          </div>
+          </GlowPanel>
         </section>
       </main>
     </SiteShell>
