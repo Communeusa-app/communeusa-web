@@ -92,6 +92,7 @@ body {
 
 /* ── Cursor-reactive gradients (homepage headline and closing banner) ─────── */
 @property --glow { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --gs   { syntax: "<number>"; inherits: true; initial-value: 0; }
 @property --hx   { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --hy   { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --gx   { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
@@ -100,20 +101,39 @@ body {
 @property --by   { syntax: "<percentage>"; inherits: true; initial-value: 100%; }
 @property --ra   { syntax: "<number>"; inherits: true; initial-value: 0.12; }
 
-/* Every headline line: solid fg at rest (the last line fades to red as before), with a red glow that
-   follows the cursor across all three lines. --hx/--hy are set per line in pixels. */
+/* Every headline line: solid fg at rest (the last line fades to red as before), with a soft red glow that
+   follows the cursor across all three lines. --hx/--hy (px) and --gs (0 to 1 strength) are driven from
+   script every frame, so there is no CSS transition to stutter. The falloff is eased in small steps so
+   there is no visible edge. */
 .hero-line {
+  --glow: 2.1em;
+  --glow-red: var(--color-brand-red);
   background-image:
-    radial-gradient(circle var(--glow) at var(--hx) var(--hy), var(--color-brand-red) 0%, var(--color-brand-red) 35%, transparent 100%),
+    radial-gradient(
+      circle var(--glow) at var(--hx) var(--hy),
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 100%), transparent) 0%,
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 88%), transparent) 14%,
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 62%), transparent) 32%,
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 34%), transparent) 52%,
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 12%), transparent) 74%,
+      transparent 100%
+    ),
     linear-gradient(var(--color-fg), var(--color-fg));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  transition: --glow 0.35s ease, --hx 0.15s linear, --hy 0.15s linear;
 }
 .hero-line--fade {
   background-image:
-    radial-gradient(circle var(--glow) at var(--hx) var(--hy), var(--color-brand-red) 0%, var(--color-brand-red) 35%, transparent 100%),
+    radial-gradient(
+      circle var(--glow) at var(--hx) var(--hy),
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 100%), transparent) 0%,
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 88%), transparent) 14%,
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 62%), transparent) 32%,
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 34%), transparent) 52%,
+      color-mix(in srgb, var(--glow-red) calc(var(--gs) * 12%), transparent) 74%,
+      transparent 100%
+    ),
     linear-gradient(to right, var(--color-fg), color-mix(in srgb, var(--color-brand-red) 90%, transparent));
 }
 
@@ -131,5 +151,5 @@ body {
 }
 .cta-glow[data-active="true"] { --ra: 0.38; }
 @media (prefers-reduced-motion: reduce) {
-  .hero-line, .cta-glow { transition: none; }
+  .cta-glow { transition: none; }
 }
