@@ -100,6 +100,7 @@ export function CountyPanel({ countyName, onClose }: Props) {
                     </p>
                     <p className={`mt-0.5 text-xs ${partyClass(o.party)}`}>
                       {partyLabel(o.party)}
+                      {o.appointed_or_elected?.trim().toLowerCase() === "appointed" ? " · Appointed" : ""}
                       {` · ${termEndShort(o.term_end, o.appointed_or_elected)}`}
                     </p>
                   </div>

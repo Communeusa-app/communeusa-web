@@ -70,6 +70,11 @@ export default async function OfficialPage({ params }: Props) {
         <div className="rounded-2xl border border-line bg-surface px-6 py-6">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <PartyBadge party={official.party} />
+            {official.appointed_or_elected?.trim().toLowerCase() === "appointed" && (
+              <span className="inline-flex items-center rounded-full border border-fg/25 px-2.5 py-0.5 text-xs font-semibold text-fg">
+                Appointed
+              </span>
+            )}
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-fg">
@@ -119,7 +124,7 @@ export default async function OfficialPage({ params }: Props) {
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
             {/* Same fields in the same places on every profile; Term start and Term end sit side by side. */}
             <Detail label="Category"      value={official.office_category} />
-            <Detail label="Role type"     value={official.appointed_or_elected} />
+            <Detail label="Role type"     value={official.appointed_or_elected} fallback="Not listed" />
             <Detail label="Term start"    value={official.term_start} />
             <Detail label="Term end"      value={official.term_end} fallback={termEndFallback(official.appointed_or_elected)} />
             <Detail label="District"      value={fields.district} fallback={fields.districtFallback} />
