@@ -22,7 +22,7 @@ export function GradientHeadline({ children }: { children: ReactNode }) {
         const { x, y } = track(e, el);
         el.style.setProperty("--gx", `${x}%`);
         el.style.setProperty("--gy", `${y}%`);
-        el.style.setProperty("--glow", "0.9em");
+        el.style.setProperty("--glow", "1.7em");
       }}
       onPointerLeave={() => ref.current?.style.setProperty("--glow", "0px")}
     >

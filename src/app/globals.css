@@ -96,11 +96,12 @@ body {
 @property --gy   { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
 @property --bx   { syntax: "<percentage>"; inherits: true; initial-value: 100%; }
 @property --by   { syntax: "<percentage>"; inherits: true; initial-value: 100%; }
+@property --ra   { syntax: "<number>"; inherits: true; initial-value: 0.12; }
 
 /* Same fg to red fade as before; a red glow follows the cursor on top of it. */
 .hero-gradient-text {
   background-image:
-    radial-gradient(circle var(--glow) at var(--gx) var(--gy), var(--color-brand-red), transparent 70%),
+    radial-gradient(circle var(--glow) at var(--gx) var(--gy), var(--color-brand-red) 0%, var(--color-brand-red) 35%, transparent 100%),
     linear-gradient(to right, var(--color-fg), color-mix(in srgb, var(--color-brand-red) 90%, transparent));
   -webkit-background-clip: text;
   background-clip: text;
@@ -111,19 +112,16 @@ body {
 /* Same two lights as before (red top left, blue bottom right); red follows the cursor, blue drifts opposite. */
 .cta-glow {
   background-image:
-    radial-gradient(700px 400px at var(--gx) var(--gy), rgba(226, 75, 74, 0.12), transparent 60%),
+    radial-gradient(900px 560px at var(--gx) var(--gy), rgba(226, 75, 74, var(--ra)), transparent 62%),
     radial-gradient(800px 500px at var(--bx) var(--by), rgba(24, 95, 165, 0.3), transparent 60%);
   --gx: 20%;
   --gy: 0%;
   --bx: 100%;
   --by: 100%;
-  transition: --gx 0.5s ease-out, --gy 0.5s ease-out, --bx 0.5s ease-out, --by 0.5s ease-out;
+  --ra: 0.12;
+  transition: --gx 0.5s ease-out, --gy 0.5s ease-out, --bx 0.5s ease-out, --by 0.5s ease-out, --ra 0.4s ease;
 }
-.cta-glow[data-active="true"] {
-  background-image:
-    radial-gradient(700px 400px at var(--gx) var(--gy), rgba(226, 75, 74, 0.22), transparent 60%),
-    radial-gradient(800px 500px at var(--bx) var(--by), rgba(24, 95, 165, 0.3), transparent 60%);
-}
+.cta-glow[data-active="true"] { --ra: 0.38; }
 @media (prefers-reduced-motion: reduce) {
   .hero-gradient-text, .cta-glow { transition: none; }
 }
